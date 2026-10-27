@@ -2,13 +2,15 @@ import { McpServer } from '@modelcontextprotocol/server';
 import { serveStdio } from '@modelcontextprotocol/server/stdio';
 import * as z from 'zod';
 import { ReuseAssistant } from './core.js';
+import { ECOSYSTEMS, REMOTE_SOURCES } from './types.js';
 
 export const checkSchema = z.object({
   task: z.string().min(1).max(4000).describe('The development task; retained locally.'),
   queries: z.array(z.string().min(1).max(300)).min(1).max(3).describe('Public functional/technical search terms; preserve Chinese and add English synonyms where useful. Never send local source code or secrets.'),
   constraints: z.array(z.string().max(500)).max(20).optional(),
   scope: z.enum(['local', 'full']).default('full'),
-  ecosystem: z.enum(['auto', 'javascript', 'python']).default('auto'),
+  ecosystem: z.enum(ECOSYSTEMS).default('auto'),
+  sources: z.array(z.enum(REMOTE_SOURCES)).min(1).max(REMOTE_SOURCES.length).optional().describe('Explicit public sources override ecosystem routing. auto searches every implemented source; local scope never uses the network.'),
   packageNames: z.array(z.string().max(200)).max(3).optional().describe('Known PyPI distribution names from real installation/project evidence, not guesses.'),
   budgetMs: z.number().int().min(100).max(120000).default(60000),
   useCache: z.boolean().default(true),
@@ -32,7 +34,7 @@ export const decisionSchema = z.object({
 });
 
 export function createServer(assistant: ReuseAssistant): McpServer {
-  const server = new McpServer({ name: 'reuse-assistant', version: '0.1.0' });
+  const server = new McpServer({ name: 'reuse-assistant', version: '0.2.0' });
   const handler = (fn: (args: any) => Promise<unknown>) => async (args: any) => {
     try {
       const result = await fn(args);

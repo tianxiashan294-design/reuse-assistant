@@ -2,11 +2,16 @@ import { randomUUID } from 'node:crypto';
 import { realpath } from 'node:fs/promises';
 import { Http } from './http.js';
 import { digest, projectFingerprint, searchLocal } from './project.js';
-import { mergeCandidates, searchGitHub, searchNpm, verifyPypi } from './sources.js';
+import { mergeCandidates, searchGitHub, searchGitLab, searchNpm, verifyPypi } from './sources.js';
+import { searchRegistry } from './registries.js';
+import { SOURCE_CATALOG, selectedSources } from './catalog.js';
 import { inspectCandidate } from './inspect.js';
 import { Store } from './store.js';
 import { decisionNextAction } from './format.js';
 import type { CheckInput, CheckReport, Decision, DecisionInput, Inspection, SourceResult } from './types.js';
+import { ECOSYSTEMS } from './types.js';
+
+const context = (input: CheckInput, fingerprint: string) => digest({ task: input.task, queries: input.queries, constraints: input.constraints ?? [], scope: input.scope, ecosystem: input.ecosystem, packages: input.packageNames ?? [], ...(input.sources ? { sources: input.sources } : {}), fingerprint });
 
 export class ReuseAssistant {
   readonly store: Store;
@@ -16,11 +21,16 @@ export class ReuseAssistant {
   async check(input: CheckInput): Promise<CheckReport> {
     if (!input.task.trim() || !input.queries.length || input.queries.length > 3 || input.queries.some(q => !q.trim() || q.length > 300)) throw new Error('Provide a task and 1–3 nonempty queries (up to 300 characters each)');
     if (input.task.length > 4000 || (input.constraints?.length ?? 0) > 20 || (input.packageNames?.length ?? 0) > 3) throw new Error('Request exceeds the supported task/constraint/package limits');
+    if (input.ecosystem && !ECOSYSTEMS.includes(input.ecosystem)) throw new Error('Unsupported ecosystem');
+    if (input.scope && !['local', 'full'].includes(input.scope)) throw new Error('Unsupported scope');
+    const selection = selectedSources(input);
+    if (!input.sources && input.queries.some(q => /^@[\w.-]+\/[\w.-]+$/.test(q.trim())) && !selection.includes('npm')) selection.push('npm');
+    if (input.scope !== 'local' && input.packageNames?.length && !selection.includes('pypi')) throw new Error('packageNames verifies PyPI distributions; include pypi in sources');
     const start = performance.now();
     const root = await realpath(this.projectRoot);
     const fingerprint = await projectFingerprint(root);
-    const normalized: CheckInput = { ...input, queries: [...new Set(input.queries.map(q => q.trim()))], scope: input.scope ?? 'full', ecosystem: input.ecosystem ?? 'auto' };
-    const contextHash = digest({ task: normalized.task, queries: normalized.queries, constraints: normalized.constraints ?? [], scope: normalized.scope, ecosystem: normalized.ecosystem, packages: normalized.packageNames ?? [], fingerprint });
+    const normalized: CheckInput = { ...input, queries: [...new Set(input.queries.map(q => q.trim()))], scope: input.scope ?? 'full', ecosystem: input.ecosystem ?? 'auto', sources: input.scope === 'local' ? [] : selection };
+    const contextHash = context(normalized, fingerprint);
     const signal = AbortSignal.timeout(Math.max(100, Math.min(120_000, input.budgetMs ?? 60_000)));
     const localPromise = searchLocal(root, normalized.queries, signal);
     const cached = normalized.scope === 'full' && input.useCache !== false ? await this.store.cache(contextHash) : undefined;
@@ -28,9 +38,16 @@ export class ReuseAssistant {
     if (!cached && normalized.scope === 'full') {
       const jobs: (() => Promise<SourceResult>)[] = [];
       for (const q of normalized.queries) {
-        const scopedNpm = /^@[\w.-]+\/[\w.-]+$/.test(q);
-        if (!scopedNpm) jobs.push(() => searchGitHub(this.http, q, signal));
-        if (normalized.ecosystem !== 'python' || scopedNpm) jobs.push(() => searchNpm(this.http, q, signal));
+        const scopedNpm = !input.sources && /^@[\w.-]+\/[\w.-]+$/.test(q);
+        for (const source of selection) {
+          if (source === 'pypi') continue;
+          if (scopedNpm && source !== 'npm') {
+            jobs.push(async () => ({ source, query: q, status: 'skipped', candidates: [], elapsedMs: 0, notes: ['Exact scoped npm query routed to npm only.'] }));
+          } else if (source === 'github') jobs.push(() => searchGitHub(this.http, q, signal));
+          else if (source === 'gitlab') jobs.push(() => searchGitLab(this.http, q, signal));
+          else if (source === 'npm') jobs.push(() => searchNpm(this.http, q, signal));
+          else jobs.push(() => searchRegistry(this.http, source, q, signal));
+        }
       }
       for (const name of normalized.packageNames ?? []) jobs.push(() => verifyPypi(this.http, name, signal));
       // Bounded workers preserve source order and isolate failures.
@@ -43,7 +60,7 @@ export class ReuseAssistant {
         }
       }));
       remote = results;
-      if (normalized.ecosystem === 'python' && !normalized.packageNames?.length) remote.push({ source: 'pypi', query: '', status: 'skipped', candidates: [], elapsedMs: 0, notes: ['Discover Python projects via GitHub; inspect installation/project metadata to identify a distribution, then verify it with PyPI. PyPI full-text search is not available.'] });
+      if (selection.includes('pypi') && !normalized.packageNames?.length) remote.push({ source: 'pypi', query: '', status: 'skipped', candidates: [], elapsedMs: 0, notes: ['Discover Python projects via repository search; inspect installation/project metadata to identify a distribution, then verify it with PyPI. PyPI full-text search is not available.'] });
       if (remote.every(r => ['ok', 'empty', 'skipped'].includes(r.status))) await this.store.saveCache(contextHash, remote);
     }
     const local = await localPromise;
@@ -53,7 +70,8 @@ export class ReuseAssistant {
       coverage: sources.some(r => !['ok', 'empty', 'skipped'].includes(r.status)) ? 'partial' : 'complete',
       cached: Boolean(cached), cacheCreatedAt: cached?.createdAt, elapsedMs: Math.round(performance.now() - start),
       sources, candidates: mergeCandidates(sources.flatMap(r => r.candidates), normalized.queries), inspections: [],
-      notes: ['Complete means the bounded query plan finished, not exhaustive ecosystem coverage.', 'At most 8 local matches appear in the merged shortlist; source results retain additional matches.', 'Exact scoped npm names are routed to npm rather than invalid GitHub repository queries.', 'Host must inspect relevant evidence and judge requirement fit; health signals do not authorize adoption.', ...(normalized.queries.some(q => /\p{Script=Han}/u.test(q)) ? ['Chinese queries are preserved. Add English technical synonyms when useful; this tool does not translate or invent them.'] : [])],
+      sourcePlan: SOURCE_CATALOG.map(s => ({ ...s, selected: normalized.sources!.includes(s.source) })),
+      notes: ['Complete means the bounded query plan finished, not exhaustive ecosystem or all-platform coverage.', 'At most 8 local matches appear in the merged shortlist; source results retain additional matches. Each returning remote source keeps a representative when possible.', 'Exact scoped npm names are routed to npm unless explicit sources override routing.', 'Go currently uses repository search; no Go registry full-text adapter is implemented.', 'Host must inspect relevant evidence and judge requirement fit; health signals do not authorize adoption.', ...(normalized.queries.some(q => /\p{Script=Han}/u.test(q)) ? ['Chinese queries are preserved. Add English technical synonyms when useful; this tool does not translate or invent them.'] : [])],
     };
     if (normalized.binding) {
       const gate = await this.store.gate(normalized.binding.sessionId);
@@ -90,7 +108,7 @@ export class ReuseAssistant {
     const check = await this.store.check(input.checkId);
     if (!check) throw new Error('Unknown check');
     if (input.rationale.trim().length < 12) throw new Error('Explain requirement fit or concrete gaps in the rationale');
-    const actualHash = digest({ task: check.input.task, queries: check.input.queries, constraints: check.input.constraints ?? [], scope: check.input.scope, ecosystem: check.input.ecosystem, packages: check.input.packageNames ?? [], fingerprint: await projectFingerprint(this.projectRoot) });
+    const actualHash = context(check.input, await projectFingerprint(this.projectRoot));
     if (input.status === 'planned' && actualHash !== check.contextHash) throw new Error('Project dependency context changed; run a fresh check');
     if (input.status !== 'planned') {
       const previous = input.previousDecisionId ? await this.store.decision(input.previousDecisionId) : undefined;

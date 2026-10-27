@@ -10,6 +10,8 @@ This project combines selected existing designs and adapted code. It does not ru
 
 The official MCP SDK and smol-toml are normal dependencies, not copied source. Their own licenses ship with their packages. See `package-lock.json` for exact resolved dependencies.
 
+The v0.2 GitLab/crates.io/Maven/NuGet/RubyGems/Packagist adapters are new integration code built on this project's existing core and official public API documentation (references in `docs/SOURCES.md`). No additional upstream implementation was copied or added as a dependency. `query-registry@4.4.0` at `611281557e18d69135ce51acd71f74299fb6a26c` was inspected and rejected because its npm-only scope does not meet the multi-ecosystem requirement; none of its code is incorporated.
+
 ## Upstream MIT notices
 
 wheel-hub: Copyright (c) 2026 wheelhub contributors

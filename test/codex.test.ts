@@ -44,6 +44,7 @@ test('project initialization preserves other MCP and hook entries and is idempot
   const config = parse(first) as any;
   assert.equal(config.mcp_servers.other.command, 'other-tool');
   assert.equal(config.mcp_servers.reuse_assistant.command, process.execPath);
+  assert.deepEqual(config.mcp_servers.reuse_assistant.env_vars, ['GITHUB_TOKEN', 'GITLAB_TOKEN']);
   const hooks = JSON.parse(await readFile(path.join(root, '.codex/hooks.json'), 'utf8'));
   assert.equal(hooks.hooks.PreToolUse.length, 2);
   assert.equal(hooks.hooks.PreToolUse[0].hooks[0].command, 'echo original');

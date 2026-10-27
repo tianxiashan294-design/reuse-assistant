@@ -4,7 +4,9 @@
 
 目标是减少 AI 不必要的重复实现：先查当前项目，再找已有依赖、代码和设计；阅读证据后选择复用或自建，最后记录实际集成与验证结果。
 
-当前为 v0.1.0 预览版，官方源码仓库是 [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant)。项目尚未发布到 npm，请使用本仓库源码，不要仅凭同名 `npx` 包安装。
+当前为 v0.2.0 预览版，官方源码仓库是 [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant)。项目尚未发布到 npm，请使用本仓库源码，不要仅凭同名 `npx` 包安装。
+
+最终目标是**全代码语言、全平台搜集**。第二版先增加 6 个搜索源，长期方向和后续顺序保存在[路线图](docs/ROADMAP.md)，当前实际能力见[来源矩阵](docs/SOURCES.md)。
 
 ## 启动
 
@@ -45,13 +47,15 @@ node dist/src/cli.js uninstall --project 'C:\你的项目'
 
 ## 已实现的复用流程
 
-1. 查已有代码、依赖与相关模块。本地是有数量/大小上限的词法检索，匹配结果需要 Agent 阅读。
-2. 从 GitHub 和 npm 发现候选。小项目也能出现，热度只作辅助信号。
+1. 查已有代码、依赖与相关模块。本地扫描不再使用语言扩展名白名单，检查有数量/大小上限的 UTF-8 文本；二进制、其他编码、隐藏/依赖目录等仍有明确排除范围。匹配结果需要 Agent 阅读。
+2. 从 GitHub、GitLab.com、npm、crates.io、Maven Central、NuGet.org、RubyGems、Packagist 发现候选。新增 Rust、JVM、.NET、Ruby、PHP 生态；GitLab 支持嵌套组、公开仓库 URL 精确核查及固定提交文件取证。小项目也能出现，热度只作辅助信号。
 3. Python 通过 GitHub 和安装/项目元数据发现分发名，再用 PyPI 核验；不宣称 PyPI 需求全文搜索，也不假定仓库名等于 import 名或包名。
 4. 对最多 3 个候选阅读固定提交或版本的文档、许可证声明和关键代码。可以指定 `src/file.ts#L100-L180`；同仓库多包使用 `npm:@scope/name` 等别名选定具体包。
 5. 由当前 Agent 判断需求匹配、接入成本、运行负担和维护成本，记录 `planned`，再实施、记录 `applied`，验证后记录 `verified`。后两阶段通过 `previousDecisionId` 关联前一阶段。
 
 工具不会运行候选代码或替 Agent 修改业务实现。`verified` 的验证命令与结果由宿主提供，工具不会把它冒充为独立执行过的测试。
+
+默认 `--ecosystem auto` 查询全部已实现来源。可使用 `rust`、`java`、`dotnet`、`ruby`、`php` 等生态，或重复 `--source gitlab --source crates` 明确选择来源；MCP/JSON 使用 `sources: ["gitlab", "crates"]`。Go 当前只有仓库搜索。报告的 `sourcePlan` 显示已选/未选来源及能力限制。已经运行的 MCP 服务需要重新加载新构建，才会显示扩展参数。
 
 搜索区分零结果、超时、限流和未查询；不完整的检索或候选证据需要明确确认后继续。普通检索默认预算 60 秒，深入读取另有预算。远程缓存默认 6 小时并显示时间，本地代码每次重新检查。需求、约束和依赖状态变化会使相关记录失效。
 
@@ -61,7 +65,7 @@ npm 元数据与仓库源码提交分别记录；若不能证明源码对应发�
 
 ## 本地记录与配置
 
-无需额外模型 API Key，语义判断沿用当前 Agent。GitHub Token 可选，通过环境变量传入；不会写入生成配置或决策记录。
+无需额外模型 API Key，语义判断沿用当前 Agent。`GITHUB_TOKEN`、`GITLAB_TOKEN` 可选，通过环境变量传入，分别只发往对应平台；不会把令牌值写入生成配置或决策记录。NuGet 支持限定官方主机和次数的区域跳转。
 
 记录保存在目标项目 `.reuse-assistant/` 下，初始化会加入版本控制忽略规则。对外查询使用功能词和技术约束，本地源码在本地检查。
 
@@ -71,10 +75,11 @@ npm 元数据与仓库源码提交分别记录；若不能证明源码对应发�
 npm run check
 npm test
 npm run smoke
+npm run smoke:v2
 ```
 
 离线测试、联网接口观察、Agent 实际使用和真实 Codex hooks 激活是不同验证层次。具体完成情况见[验证记录](docs/VALIDATION.md)，Node 22/24、Windows/Linux 的远程检查见 [GitHub Actions](https://github.com/tianxiashan294-design/reuse-assistant/actions)。架构、已知限制与扩展方法见[架构说明](docs/ARCHITECTURE.md)。
 
-长期目标是在“避免 AI 重复造轮子”这条完整流程上整合现有工具，并适配更多 Agent 和生态。新增来源以实际复用收益为准。
+第二版的联网观察保存在 [live-smoke-v2.json](docs/live-smoke-v2.json)，包括历史失败。长期继续扩展语言生态、代码平台、分页召回和证据关联；当前结果不代表已完成全平台覆盖。
 
 MIT 开源；上游来源、固定提交和修改见[第三方归属](THIRD_PARTY_NOTICES.md)。

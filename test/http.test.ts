@@ -31,5 +31,5 @@ test('oversized and invalid registry responses remain explicit failures', async 
   const http = new Http(fakeFetch(() => json({ text: 'a'.repeat(2000) })), '');
   await assert.rejects(http.json('https://registry.npmjs.org/test', AbortSignal.timeout(1000), 100), (e: any) => e.code === 'too_large');
   const bad = new Http(fakeFetch(() => new Response('not json')), '');
-  await assert.rejects(bad.json('https://registry.npmjs.org/test', AbortSignal.timeout(1000)), (e: any) => e.code === 'unavailable');
+  await assert.rejects(bad.json('https://registry.npmjs.org/test', AbortSignal.timeout(1000)), (e: any) => e.code === 'invalid_response');
 });

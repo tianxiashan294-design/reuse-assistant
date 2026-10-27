@@ -9,9 +9,9 @@ import { doctor, installCodex, uninstallCodex } from './install.js';
 import { evaluateHook, readStdin } from './codex-hook.js';
 import { markdown } from './format.js';
 
-const HELP = `Reuse Assistant 0.1.0 — evidence-based reuse checks
+const HELP = `Reuse Assistant 0.2.0 — evidence-based reuse checks
 
-  node dist/src/cli.js check --project PATH --task TEXT --query TERMS [--query TERMS] [--scope local|full] [--ecosystem auto|javascript|python] [--json]
+  node dist/src/cli.js check --project PATH --task TEXT --query TERMS [--query TERMS] [--scope local|full] [--ecosystem NAME] [--source NAME] [--json]
   node dist/src/cli.js check --project PATH --input request.json
   node dist/src/cli.js inspect --project PATH --check ID --candidate ID [--path src/file.ts]
   node dist/src/cli.js decide --project PATH --input decision.json
@@ -22,6 +22,9 @@ const HELP = `Reuse Assistant 0.1.0 — evidence-based reuse checks
   node dist/src/cli.js mcp --project PATH
 
 --input - reads JSON from stdin. Commands keep records in PROJECT/.reuse-assistant/.
+Ecosystems: auto, javascript, python, rust, java, dotnet, ruby, php, go.
+Sources (repeat --source): github, gitlab, npm, pypi, crates, maven, nuget, rubygems, packagist.
+auto searches all implemented sources; --source overrides ecosystem selection.
 No candidate code is executed. The host performs integration and validation.
 init writes project-scoped Codex config and skill; --hooks adds a patch guard
 requiring host trust. Shell writes are outside this guard's coverage.
@@ -32,7 +35,7 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
     project: { type: 'string' }, input: { type: 'string' }, task: { type: 'string' }, query: { type: 'string', multiple: true },
     scope: { type: 'string' }, ecosystem: { type: 'string' }, check: { type: 'string' }, candidate: { type: 'string' },
     path: { type: 'string', multiple: true }, json: { type: 'boolean' }, hooks: { type: 'boolean' }, help: { type: 'boolean' },
-    'no-cache': { type: 'boolean' }, budget: { type: 'string' }, package: { type: 'string', multiple: true },
+    'no-cache': { type: 'boolean' }, budget: { type: 'string' }, package: { type: 'string', multiple: true }, source: { type: 'string', multiple: true },
   } });
   if (values.help || !positionals[0]) { process.stdout.write(HELP); return; }
   const command = positionals[0];
@@ -46,7 +49,7 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
   if (command === 'doctor') { print(await doctor(root)); return; }
   if (command === 'hook') { print(await evaluateHook(root, JSON.parse(await readStdin()))); return; }
   if (command === 'check') {
-    const input = checkSchema.parse(values.input ? await data() : { task: values.task, queries: values.query ?? [], scope: values.scope, ecosystem: values.ecosystem, packageNames: values.package, useCache: !values['no-cache'], ...(values.budget ? { budgetMs: Number(values.budget) } : {}) });
+    const input = checkSchema.parse(values.input ? await data() : { task: values.task, queries: values.query ?? [], scope: values.scope, ecosystem: values.ecosystem, sources: values.source, packageNames: values.package, useCache: !values['no-cache'], ...(values.budget ? { budgetMs: Number(values.budget) } : {}) });
     const result = await assistant.check(input);
     if (values.json) print(result); else process.stdout.write(markdown(result));
     return;

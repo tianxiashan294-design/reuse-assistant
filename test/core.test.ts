@@ -41,7 +41,7 @@ test('small projects remain discoverable; same repository merges packages withou
     if (url.hostname === 'api.github.com') { githubQuery = url.searchParams.get('q')!; return json({ items: [repo], incomplete_results: false }); }
     return json({ objects: [{ package: { name: 'tiny-scheduler', version: '2.0.0', description: 'background scheduler', links: { repository: 'git+https://github.com/tiny/scheduler.git' } } }] });
   }), '');
-  const report = await new ReuseAssistant(root, http).check({ task: 'Find a background scheduler', queries: ['background scheduler'], useCache: false });
+  const report = await new ReuseAssistant(root, http).check({ task: 'Find a background scheduler', queries: ['background scheduler'], sources: ['github', 'npm'], useCache: false });
   assert(!githubQuery.includes('stars:'));
   const candidate = report.candidates.find(c => c.source !== 'local')!;
   assert.equal(candidate.stars, 2);
@@ -54,7 +54,7 @@ test('rate limits remain distinct from successful zero results and require ackno
   const root = await fixture(t);
   const assistant = new ReuseAssistant(root, new Http(fakeFetch(url => url.hostname === 'api.github.com'
     ? json({}, 403, { 'x-ratelimit-remaining': '0', 'retry-after': '30' }) : json({ objects: [] })), ''));
-  const report = await assistant.check({ task: 'Implement background jobs', queries: ['background jobs'], useCache: false });
+  const report = await assistant.check({ task: 'Implement background jobs', queries: ['background jobs'], sources: ['github', 'npm'], useCache: false });
   assert.equal(report.sources.find(s => s.source === 'github')!.status, 'rate_limited');
   assert.equal(report.sources.find(s => s.source === 'npm')!.status, 'empty');
   assert.equal(report.coverage, 'partial');
@@ -72,7 +72,7 @@ test('global deadline bounds a transport that ignores AbortSignal', { timeout: 5
   try {
     const report = await assistant.check({ task: 'Find bounded requests', queries: ['request retry'], budgetMs: 100, useCache: false });
     assert(performance.now() - start < 2000);
-    assert.equal(report.sources.filter(s => s.status === 'timeout').length, 2);
+    assert.equal(report.sources.filter(s => s.status === 'timeout').length, 8);
     assert.equal(report.coverage, 'partial');
   } finally { clearInterval(keepAlive); }
 });
@@ -81,7 +81,7 @@ test('cache annotates remote reuse while local changes are searched freshly; con
   const root = await fixture(t);
   let calls = 0;
   const assistant = new ReuseAssistant(root, new Http(fakeFetch(url => { calls++; return json(url.hostname === 'api.github.com' ? { items: [], incomplete_results: false } : { objects: [] }); }), ''));
-  const request = { task: 'Implement scheduleTask', queries: ['scheduleTask'] };
+  const request = { task: 'Implement scheduleTask', queries: ['scheduleTask'], sources: ['github', 'npm'] as ('github' | 'npm')[] };
   await assistant.check(request);
   const initial = calls;
   await writeFile(path.join(root, 'existing.ts'), 'export const scheduleTask = () => 1;');
@@ -117,7 +117,7 @@ test('code inspection pins commits, supports line ranges and verifies Python dis
     if (evidence) return evidence;
     throw new Error(`Unexpected fixture URL ${url.pathname}`);
   }), ''));
-  const report = await assistant.check({ task: 'Adapt background scheduler design', queries: ['background scheduler'], ecosystem: 'python', useCache: false });
+  const report = await assistant.check({ task: 'Adapt background scheduler design', queries: ['background scheduler'], ecosystem: 'python', sources: ['github', 'pypi'], useCache: false });
   assert.equal(report.sources.find(s => s.source === 'pypi')!.status, 'skipped');
   const candidate = report.candidates.find(c => c.id === 'github:tiny/scheduler')!;
   const inspected = await assistant.inspect(report.id, candidate.id, ['src/scheduler.py#L20-L25']);
@@ -157,7 +157,7 @@ test('many local matches cannot crowd every external candidate out of the shortl
   const root = await fixture(t);
   for (let i = 0; i < 35; i++) await writeFile(path.join(root, `scheduler-${i}.ts`), 'export const scheduler = true;');
   const assistant = new ReuseAssistant(root, new Http(fakeFetch(url => url.hostname === 'api.github.com' ? json({ items: [repo] }) : json({ objects: [] })), ''));
-  const report = await assistant.check({ task: 'Find scheduler implementations', queries: ['scheduler'], useCache: false });
+  const report = await assistant.check({ task: 'Find scheduler implementations', queries: ['scheduler'], sources: ['github', 'npm'], useCache: false });
   assert.equal(report.candidates.filter(c => c.source === 'local').length, 8);
   assert(report.candidates.some(c => c.id === 'github:tiny/scheduler'));
   assert.equal(report.sources[0]!.status, 'partial');
@@ -173,7 +173,7 @@ test('package alias inspection selects the correct published version in a multi-
     if (response) return response;
     throw new Error(`Unexpected fixture URL ${url.href}`);
   }), ''));
-  const report = await assistant.check({ task: 'Use server package', queries: ['scheduler'], useCache: false });
+  const report = await assistant.check({ task: 'Use server package', queries: ['scheduler'], sources: ['github', 'npm'], useCache: false });
   const inspection = await assistant.inspect(report.id, 'npm:@tiny/server');
   assert.equal((inspection.metadata.registry as any).version, '2.0.0');
   assert.equal(inspection.metadata.codeVersionAssociation, 'npm gitHead');
@@ -189,7 +189,7 @@ test('registry-specific query limits preserve returned results and expose shorte
     return json({ objects: [] });
   }), ''));
   const original = 'HTTP request retry 429 5xx exponential backoff injectable sleep JavaScript '.repeat(4).slice(0, 295);
-  const report = await assistant.check({ task: 'Find request retry implementations', queries: [original], useCache: false });
+  const report = await assistant.check({ task: 'Find request retry implementations', queries: [original], sources: ['github', 'npm'], useCache: false });
   assert(lengths.github! <= 256);
   assert(lengths.npm! <= 64);
   assert(report.candidates.some(c => c.id === 'github:tiny/scheduler'));

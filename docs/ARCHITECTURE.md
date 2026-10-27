@@ -8,7 +8,7 @@ flowchart TD
   CLI[CLI] --> Core[ReuseAssistant]
   MCP --> Core
   Core --> Local[Local bounded search]
-  Core --> Sources[GitHub / npm / PyPI adapters]
+  Core --> Sources[GitHub / GitLab / seven package registries]
   Core --> Evidence[Pinned evidence reader]
   Core --> Store[Project records / remote cache]
   Hooks[Codex lifecycle adapter] --> Store
@@ -24,9 +24,9 @@ flowchart TD
 
 ## Identity and evidence
 
-Repository identity and distribution identity are different. Candidates from one GitHub repository can share a shortlist entry while retaining all package aliases and versions. Inspecting a package alias selects that exact distribution/version. Package names need not match repository or import names.
+Repository identity and distribution identity are different. Repository keys include their platform. Candidates from one GitHub/GitLab repository can share a shortlist entry while retaining all package aliases and versions. Inspecting a package alias selects that exact distribution/version. Package names need not match repository or import names.
 
-GitHub files use fixed commits. npm `gitHead`, when present with a matching repository, is preferred for the code reference; otherwise source/package correspondence is marked unverified. PyPI verification uses real distribution names from supplied or static project/installation evidence and reports repository association separately.
+GitHub/GitLab files use fixed commits. npm `gitHead` and Packagist `source.reference`, when supplied with a matching repository, link code to published metadata; otherwise correspondence remains unverified. New registry readers retain selected version metadata, NuGet discovered registration/catalog URLs and Maven POM text. Unsupported repository associations and missing code/license evidence remain partial. PyPI verification uses real distribution names from supplied or static project/installation evidence and reports repository association separately.
 
 Source success means the finite query plan completed, not exhaustive recall. Local file/match limits and GitHub `incomplete_results` propagate as partial coverage. PyPI name verification is not full-text discovery.
 
@@ -38,6 +38,6 @@ The adapter guards declared patch paths only. Arbitrary shell writes and existin
 
 ## Extension seams and limits
 
-The initial source seam already has multiple adapters. Add language/package sources there; add client-specific configuration/trigger behavior beside `codex-hook.ts` and `install.ts`. Keep task, evidence and decision semantics in the shared core. Future clients can use standard MCP before a specialized lifecycle adapter exists.
+`catalog.ts` describes source capabilities and ecosystem routing; `sources.ts` handles repository adapters/merging and `registries.ts` handles new registry discovery/evidence. `core.ts` owns selection, bounded scheduling, failures and cache context. CLI/MCP consume the same semantics. Add client-specific configuration beside `codex-hook.ts` and `install.ts`. See [current source limits](SOURCES.md) and the [long-term goal](ROADMAP.md).
 
-Current limits include lexical local search, first-page public search results, no exhaustive recall guarantee, in-process rather than cross-process inspection update serialization, and host-reported semantic/validation claims. This is a local v0.1 implementation, not a multi-user coordination platform.
+Current limits include UTF-8 lexical local search, root-only dependency fingerprints, first-page public results, no exhaustive recall guarantee, in-process inspection update serialization, and host-reported semantic/validation claims. This is a local v0.2 implementation. All-language/all-platform collection remains the long-term direction, with per-source progress made explicit.

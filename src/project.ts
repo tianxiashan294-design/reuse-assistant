@@ -6,8 +6,7 @@ import type { Candidate, SourceResult } from './types.js';
 export const digest = (value: unknown) => createHash('sha256').update(typeof value === 'string' ? value : JSON.stringify(value)).digest('hex');
 export const queryTokens = (queries: string[]) => [...new Set(queries.flatMap(q => q.toLowerCase().match(/\p{Script=Han}{2,}|[\p{L}\p{N}_-]{3,}/gu) ?? []))];
 const SKIP = new Set(['.git', 'node_modules', '.reuse-assistant', '.codex', '.agents', 'dist', 'build', 'coverage', '.venv', 'venv', '__pycache__', 'vendor']);
-const EXT = /\.(?:[cm]?[jt]sx?|py|go|rs|java|kt|cs|rb|php|json|toml|yaml|yml|md)$/i;
-const MANIFESTS = ['package.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'pyproject.toml', 'requirements.txt', 'uv.lock', 'poetry.lock', 'Cargo.toml', 'go.mod'];
+const MANIFESTS = ['package.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'pyproject.toml', 'requirements.txt', 'uv.lock', 'poetry.lock', 'Cargo.toml', 'Cargo.lock', 'go.mod', 'go.sum', 'pom.xml', 'build.gradle', 'build.gradle.kts', 'settings.gradle', 'settings.gradle.kts', 'gradle.lockfile', 'Gemfile', 'Gemfile.lock', 'composer.json', 'composer.lock', 'Directory.Packages.props', 'packages.lock.json', 'packages.config', 'global.json', 'NuGet.Config', 'nuget.config', 'Package.swift', 'Package.resolved', 'pubspec.yaml', 'pubspec.lock', 'mix.exs', 'mix.lock', 'deps.edn', 'project.clj', 'CMakeLists.txt', 'conanfile.py', 'conanfile.txt', 'vcpkg.json', 'vcpkg-configuration.json'];
 
 export async function confined(root: string, relative: string): Promise<string> {
   const base = await realpath(root);
@@ -18,7 +17,9 @@ export async function confined(root: string, relative: string): Promise<string> 
 }
 
 export async function projectFingerprint(root: string): Promise<string> {
-  const manifests = await Promise.all(MANIFESTS.map(async name => {
+  const entries = await readdir(root, { withFileTypes: true });
+  const names = [...new Set([...MANIFESTS, ...entries.filter(e => e.isFile() && /\.(?:csproj|fsproj|vbproj|vcxproj|gemspec)$/i.test(e.name)).map(e => e.name)])].sort();
+  const manifests = await Promise.all(names.map(async name => {
     try { return [name, await readFile(await confined(root, name), 'utf8')]; }
     catch (error: any) { if (error.code === 'ENOENT') return [name, null]; throw error; }
   }));
@@ -30,6 +31,7 @@ export async function searchLocal(root: string, queries: string[], signal: Abort
   const candidates: Candidate[] = [];
   let count = 0;
   let truncated = false;
+  let nonText = 0;
   const tokens = queryTokens(queries).slice(0, 16);
   async function walk(dir: string): Promise<void> {
     if (signal.aborted || count >= 1200 || candidates.length >= 30) { truncated = true; return; }
@@ -39,12 +41,15 @@ export async function searchLocal(root: string, queries: string[], signal: Abort
       if (entry.isSymbolicLink() || SKIP.has(entry.name) || entry.name.startsWith('.env')) continue;
       const file = path.join(dir, entry.name);
       if (entry.isDirectory()) { if (!entry.name.startsWith('.')) await walk(file); continue; }
-      if (!entry.isFile() || !EXT.test(entry.name)) continue;
+      if (!entry.isFile()) continue;
       count++;
       const info = await stat(file);
       if (info.size > 180_000) { truncated = true; continue; }
-      const text = await readFile(await confined(root, path.relative(root, file)), 'utf8');
-      if (text.includes('\0')) continue;
+      const bytes = await readFile(await confined(root, path.relative(root, file)));
+      let text: string;
+      try { text = new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
+      catch { nonText++; continue; }
+      if (text.includes('\0')) { nonText++; continue; }
       const lower = text.toLowerCase();
       const matched = tokens.filter(t => lower.includes(t.toLowerCase()));
       if (!matched.length) continue;
@@ -56,7 +61,7 @@ export async function searchLocal(root: string, queries: string[], signal: Abort
   }
   try {
     await walk(root);
-    return { source: 'local', query: queries.join(' | '), status: truncated ? 'partial' : candidates.length ? 'ok' : 'empty', candidates, elapsedMs: Math.round(performance.now() - start), notes: [`Scanned ${count} text files; lexical matches require host review.`, ...(truncated ? ['Local scan reached a budget or size limit.'] : [])] };
+    return { source: 'local', query: queries.join(' | '), status: truncated ? 'partial' : candidates.length ? 'ok' : 'empty', candidates, elapsedMs: Math.round(performance.now() - start), notes: [`Scanned ${count} files without a language-extension allowlist; UTF-8 lexical matches require host review.`, `${nonText} binary/non-UTF-8 files skipped. Hidden directories, dependency/build directories, symlinks and .env files are excluded.`, 'Dependency fingerprints cover recognized root manifests, not every nested workspace manifest.', ...(truncated ? ['Local scan reached a budget or size limit.'] : [])] };
   } catch (error: any) {
     return { source: 'local', query: '', status: 'unavailable', candidates: [], elapsedMs: Math.round(performance.now() - start), error: { code: 'local_read', message: error.code ? `Project read failed (${error.code})` : 'Project read failed' }, notes: [] };
   }

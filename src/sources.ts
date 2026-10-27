@@ -16,10 +16,28 @@ export function githubRepo(value?: string): string | undefined {
   } catch { return undefined; }
 }
 
+export function gitlabRepo(value?: string): string | undefined {
+  if (!value) return undefined;
+  try {
+    const url = new URL(value.replace(/^git\+/, '').replace(/^git@gitlab\.com:/, 'https://gitlab.com/'));
+    if (url.hostname !== 'gitlab.com' || url.username || url.password || !['https:', 'http:', 'ssh:'].includes(url.protocol) || url.port) return undefined;
+    const name = url.pathname.replace(/^\//, '').replace(/\.git\/?$/, '').replace(/\/$/, '');
+    return /^[\w.-]+(?:\/[\w.-]+)+$/.test(name) && !name.split('/').some(p => p === '.' || p === '..' || p === '-') ? name : undefined;
+  } catch { return undefined; }
+}
+
+export function repositoryKey(value?: string): string | undefined {
+  const github = githubRepo(value);
+  if (github) return `github:${github.toLowerCase()}`;
+  const gitlab = gitlabRepo(value);
+  return gitlab ? `gitlab:${gitlab}` : undefined;
+}
+
 export async function outcome(source: Source, query: string, signal: AbortSignal,
   operation: () => Promise<{ candidates: Candidate[]; partial?: boolean; notes?: string[]; effectiveQuery?: string }>): Promise<SourceResult> {
   const start = performance.now();
   try {
+    if (signal.aborted) throw new SourceError('timeout', 'Request budget exhausted before this source could start');
     const result = await abortable(operation(), signal);
     return { source, query, effectiveQuery: result.effectiveQuery, status: result.partial ? 'partial' : result.candidates.length ? 'ok' : 'empty', candidates: result.candidates, notes: result.notes ?? [], elapsedMs: Math.round(performance.now() - start) };
   } catch (error) {
@@ -66,6 +84,27 @@ export function searchGitHub(http: Http, query: string, signal: AbortSignal): Pr
   });
 }
 
+export function searchGitLab(http: Http, query: string, signal: AbortSignal): Promise<SourceResult> {
+  return outcome('gitlab', query, signal, async () => {
+    const exact = gitlabRepo(query);
+    const url = new URL('https://gitlab.com/api/v4/projects');
+    if (exact) url.pathname += `/${encodeURIComponent(exact)}`;
+    else {
+      url.searchParams.set('search', query);
+      url.searchParams.set('visibility', 'public');
+      url.searchParams.set('per_page', '6');
+    }
+    const data = await http.json(url.href, signal);
+    const projects = exact ? data.visibility === 'public' ? [data] : [] : data;
+    if (!Array.isArray(projects) || projects.some(p => typeof p.path_with_namespace !== 'string' || !gitlabRepo(p.web_url))) throw new SourceError('invalid_response', 'Invalid GitLab project search response');
+    return { effectiveQuery: query, candidates: projects.slice(0, 6).map((p: any): Candidate => ({
+      id: `gitlab:${p.path_with_namespace}`, source: 'gitlab', name: p.path_with_namespace,
+      url: p.web_url, repository: p.web_url, description: p.description ?? '',
+      stars: p.star_count, archived: p.archived, updatedAt: p.last_activity_at, matchedQueries: [query],
+    })), notes: [exact ? 'Exact public gitlab.com project lookup; non-public project metadata is excluded.' : 'Public gitlab.com project name/path/description substring search only; first 6 newest projects, not global code search or self-hosted GitLab coverage.'] };
+  });
+}
+
 export function repoSignals(repo: any, now = Date.now()): string[] {
   // Adapted from wheel-hub scorePopularity: log scale is a descriptive signal,
   // never an adopt verdict or a relevance score.
@@ -109,7 +148,7 @@ export function verifyPypi(http: Http, name: string, signal: AbortSignal): Promi
     const p = data.info;
     if (!p?.name || !p.version) throw new SourceError('invalid_response', 'PyPI response has no distribution metadata');
     const urls = Object.values(p.project_urls ?? {}) as string[];
-    const repository = urls.find(u => githubRepo(u));
+    const repository = urls.find(u => repositoryKey(u));
     return { candidates: [{ id: `pypi:${p.name}`, source: 'pypi', name: p.name,
       url: `https://pypi.org/project/${p.name}/`, description: p.summary ?? '', version: p.version,
       repository, license: p.license_expression || p.license || undefined,
@@ -121,8 +160,8 @@ export function verifyPypi(http: Http, name: string, signal: AbortSignal): Promi
 export function mergeCandidates(candidates: Candidate[], queries: string[]): Candidate[] {
   const merged = new Map<string, Candidate>();
   for (const c of candidates) {
-    const repo = githubRepo(c.repository);
-    const key = c.source === 'local' ? c.id : repo ? `repo:${repo.toLowerCase()}` : c.id.toLowerCase();
+    const repo = repositoryKey(c.repository);
+    const key = c.source === 'local' ? c.id : repo ? `repo:${repo}` : c.id;
     const existing = merged.get(key);
     if (existing) {
       existing.aliases = [...new Set([...(existing.aliases ?? []), c.id])];
@@ -131,7 +170,7 @@ export function mergeCandidates(candidates: Candidate[], queries: string[]): Can
       existing.packages = [...new Map([...(existing.packages ?? []), ...(c.packages ?? [])].map(p => [`${p.source}:${p.name}`, p])).values()];
       // A repository can publish multiple packages/versions. Keep versions on
       // packages instead of mislabeling the repository with one package version.
-      if (existing.source !== 'github') existing.version ??= c.version;
+      if (existing.source !== 'github' && existing.source !== 'gitlab') existing.version ??= c.version;
       existing.license ??= c.license;
     } else merged.set(key, { ...c, aliases: [c.id], sources: [c.source] });
   }
@@ -141,5 +180,11 @@ export function mergeCandidates(candidates: Candidate[], queries: string[]): Can
     + (c.matchedQueries?.length ?? 0) - (c.archived ? 20 : 0);
   const sorted = [...merged.values()].sort((a, b) => score(b) - score(a));
   const local = sorted.filter(c => c.source === 'local').slice(0, 8);
-  return [...local, ...sorted.filter(c => c.source !== 'local').slice(0, 30 - local.length)];
+  const remote = sorted.filter(c => c.source !== 'local');
+  const representatives = new Set<Candidate>();
+  for (const source of new Set(remote.flatMap(c => c.sources ?? [c.source]))) {
+    const best = remote.find(c => (c.sources ?? [c.source]).includes(source));
+    if (best) representatives.add(best);
+  }
+  return [...local, ...[...new Set([...representatives, ...remote])].slice(0, 30 - local.length)];
 }

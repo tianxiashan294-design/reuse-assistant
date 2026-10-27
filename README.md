@@ -4,7 +4,9 @@
 
 Check what already exists before a coding agent implements a feature. Reuse Assistant finds local implementations and public alternatives, retrieves pinned evidence, and records why the agent chose to reuse, adapt, learn from a design, or build a small implementation itself.
 
-**v0.1.0 preview.** The official source repository is [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant). This project is not published on npm; use this source checkout rather than a similarly named `npx` package.
+**v0.2.0 preview.** The official source repository is [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant). This project is not published on npm; use this source checkout rather than a similarly named `npx` package.
+
+The long-term target is **all programming languages and platforms**. This version adds six sources while keeping explicit coverage limits; see the [roadmap](docs/ROADMAP.md) and [source matrix](docs/SOURCES.md).
 
 ## Quick start
 
@@ -74,10 +76,14 @@ Other agents can use the standard MCP tools and workflow skill now; client-speci
 
 ## Discovery and evidence
 
-- **Local:** bounded lexical search, manifests and relevant code. It is not a semantic code index. Up to 1,200 text files, 180 KB per file and 30 raw matches; the merged shortlist includes at most eight local matches so external options stay visible. Symlinks and generated/dependency/state directories are skipped.
+- **Local:** bounded UTF-8 lexical search without a programming-language extension allowlist. Up to 1,200 scanned files, 180 KB per file and 30 raw matches; the shortlist includes at most eight local matches. Binary/non-UTF-8 files, symlinks and generated/dependency/state directories are skipped. Root dependency fingerprints cover additional language ecosystems; nested workspace manifests are not all covered.
 - **GitHub:** repository/README discovery, including small projects; no minimum-star filter or automatic adopt threshold. Exact scoped npm queries are routed to npm.
+- **GitLab.com:** public project substring search or exact public project URL lookup, with nested groups and commit-pinned file/directory evidence.
 - **npm:** registry search plus exact published-version metadata. Multiple packages in one repository keep distinct names and versions.
+- **Rust, JVM, .NET, Ruby and PHP:** crates.io, Maven Central, NuGet.org, RubyGems and Packagist discovery plus published metadata evidence. Maven POM interpretation and unsupported source associations remain explicit gaps.
 - **Python:** GitHub discovery, then installation/`pyproject.toml` evidence to identify a real distribution and PyPI JSON verification. Known names may be supplied with `packageNames`. This is **not PyPI full-text search**. Repository, import and distribution names are not assumed equal.
+
+`--ecosystem auto` searches every implemented source. Select an ecosystem (`javascript`, `python`, `rust`, `java`, `dotnet`, `ruby`, `php`, `go`) or repeat `--source gitlab --source crates` to override routing. Go currently has repository search only. JSON/MCP use `sources: ["gitlab", "crates"]`. Reports expose selected and unselected capabilities in `sourcePlan`; source selection invalidates remote caches. Existing MCP processes need to reload the new build for the expanded schema. See [source limits and examples](docs/SOURCES.md).
 
 `inspect_candidate` accepts repository-relative paths, including `src/file.ts#L100-L180`. Inspect a package alias such as `npm:@scope/name` when a merged repository publishes several packages. Code is pinned to a commit. An npm `gitHead`, when supplied and associated with the repository, can link that commit to the published package; otherwise the report explicitly marks that association unverified. Registry metadata and repository HEAD are distinct evidence.
 
@@ -89,7 +95,7 @@ Ordinary discovery defaults to a 60-second budget with up to four workers, bound
 
 ## Configuration and local records
 
-No additional model API key is required. `GITHUB_TOKEN` is optional; the generated Codex config forwards its environment variable name, never a literal token. Only GitHub receives that authorization header. Network reads use the GitHub API, npm registry and PyPI; redirects and unsupported URL hosts are rejected.
+No additional model API key is required. Optional `GITHUB_TOKEN` and `GITLAB_TOKEN` are forwarded by environment variable name and sent only to their corresponding platform. Network reads use supported public API hosts; only bounded redirects between supported official NuGet global/regional endpoints are followed. Other redirects and unsupported hosts are rejected.
 
 Project records live in `.reuse-assistant/`:
 
@@ -109,9 +115,10 @@ Use public functional terms for external queries. Local source files are inspect
 npm run check
 npm test
 npm run smoke
+npm run smoke:v2
 ```
 
-`npm test` is deterministic and includes a real stdio SDK-client workflow. `npm run smoke` contacts public endpoints and writes `docs/live-smoke.json`; it is an observation, not a recall benchmark. See [validation notes](docs/VALIDATION.md), [contribution guide](CONTRIBUTING.md), and [architecture](docs/ARCHITECTURE.md).
+`npm test` is deterministic and includes real stdio SDK-client workflows. `npm run smoke` observes v0.1 sources; `npm run smoke:v2` observes the six new sources and retains historical runs in `docs/live-smoke-v2.json`. These are network-dependent observations, not recall benchmarks. See [validation notes](docs/VALIDATION.md), [contribution guide](CONTRIBUTING.md), and [architecture](docs/ARCHITECTURE.md).
 
 The core is shared by CLI and MCP. Source adapters and future client adapters extend separate seams; candidate/evidence/decision semantics stay common. npm distribution and additional client adapters are future work.
 

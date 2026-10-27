@@ -1,4 +1,24 @@
-export type Source = 'local' | 'github' | 'npm' | 'pypi';
+export const REMOTE_SOURCES = ['github', 'gitlab', 'npm', 'pypi', 'crates', 'maven', 'nuget', 'rubygems', 'packagist'] as const;
+export const ECOSYSTEMS = ['auto', 'javascript', 'python', 'rust', 'java', 'dotnet', 'ruby', 'php', 'go'] as const;
+export type RemoteSource = typeof REMOTE_SOURCES[number];
+export type Ecosystem = typeof ECOSYSTEMS[number];
+export type Source = 'local' | RemoteSource;
+export type RegistrySource = Exclude<RemoteSource, 'github' | 'gitlab'>;
+export interface PackageIdentity {
+  source: RegistrySource;
+  name: string;
+  version?: string;
+  url: string;
+  metadataUrl?: string;
+  registrationUrl?: string;
+  platform?: string;
+}
+export interface SourceCapability {
+  source: RemoteSource;
+  ecosystems: string[];
+  mode: 'repository_search' | 'package_search' | 'name_verification';
+  limitations: string[];
+}
 export type SourceStatus = 'ok' | 'empty' | 'partial' | 'rate_limited' | 'timeout' | 'unavailable' | 'skipped';
 export interface SourceResult {
   source: Source;
@@ -28,7 +48,7 @@ export interface Candidate {
   sources?: Source[];
   signals?: string[];
   aliases?: string[];
-  packages?: { source: 'npm' | 'pypi'; name: string; version?: string; url: string }[];
+  packages?: PackageIdentity[];
 }
 export interface Binding { sessionId: string; turnId: string }
 export interface CheckInput {
@@ -36,7 +56,8 @@ export interface CheckInput {
   queries: string[];
   constraints?: string[];
   scope?: 'local' | 'full';
-  ecosystem?: 'auto' | 'javascript' | 'python';
+  ecosystem?: Ecosystem;
+  sources?: RemoteSource[];
   packageNames?: string[];
   budgetMs?: number;
   useCache?: boolean;
@@ -74,6 +95,7 @@ export interface CheckReport {
   cacheCreatedAt?: string;
   elapsedMs: number;
   sources: SourceResult[];
+  sourcePlan?: (SourceCapability & { selected: boolean })[];
   candidates: Candidate[];
   inspections: Inspection[];
   notes: string[];

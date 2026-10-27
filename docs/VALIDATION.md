@@ -1,6 +1,31 @@
 # Validation record
 
-Local v0.1 verification, 2026-10-27 (Asia/Shanghai). Environment: Windows PowerShell, Node v24.15.0, npm 11.12.1, Codex CLI 0.147.0. This document separates deterministic tests, public endpoint observations, independent skill use and actual client activation.
+## v0.2 local verification — 2026-10-27 (Asia/Shanghai)
+
+The user reports v0.1 passed acceptance. This run extends the implementation to v0.2; it does not repeat or claim a new desktop hook activation. Environment: Windows PowerShell, Node v24.15.0, npm 11.12.1.
+
+`npm run check` and `npm test` pass; the deterministic suite now has **40/40** passing tests. The added tests exercise the public `ReuseAssistant.check/inspect/decide` interface and a real MCP SDK client/server over stdio, with deterministic injected endpoint responses. They cover all new registries, ecosystem/explicit source selection, cache isolation, cross-platform identities, package aliases, fixed commits/version evidence, NuGet index/pages and regional redirects, source failures/deadlines, credential isolation, local language-independent UTF-8 search and additional root manifests. The existing Codex transport/BOM regression tests still pass. These tests do not execute upstream packages or call a model.
+
+`node dist/test/live-smoke-v2.js` (also available through `npm run smoke:v2`) exited **0** on the latest run, 15:09:13–15:09:44 UTC. All six source queries returned candidates. The exact records and prior two unsuccessful runs are retained in [live-smoke-v2.json](live-smoke-v2.json).
+
+| Source | Observed candidate/version | Evidence result |
+|---|---|---|
+| GitLab | `libeigen/eigen`, commit `1c67c09148a0eef07bf3278f351e75b92196c3af` | Complete bounded read: README, license file and CMake code range |
+| crates.io | `serde_json@1.0.154` | Version metadata, README, license and Cargo.toml; repository/release code correspondence unverified |
+| Maven Central | `com.google.code.gson:gson@2.14.0` | Fixed version POM; partial overall evidence because SCM/license/parent interpretation remains host work |
+| NuGet | `Newtonsoft.Json@13.0.4` | Fixed version metadata selected from registration index; partial overall evidence because no supported repository association was supplied |
+| RubyGems | `rake@13.4.2` | Version metadata, README and license; repository/release code correspondence unverified |
+| Packagist | `monolog/monolog@3.12.1` | Version metadata and code at published `source.reference`, README, license and composer.json |
+
+Earlier runs retained GitLab search/inspection timeouts, a NuGet redirect failure and catalog HTTP 404, Packagist metadata timeout, and GitHub evidence HTTP 403. NuGet reads now support bounded official regional redirects and registration-page metadata rather than depending on an available catalog endpoint. These observations are individual network samples, not a recall benchmark or reliability guarantee. `coverage: complete` still means the selected finite plan completed.
+
+`git diff --check` and `npm pack --dry-run --json` pass. The dry run includes the new compiled modules, source files, changelog, source matrix and roadmap. No v0.2 remote CI matrix, npm publication, macOS run or new desktop MCP reload/activation is claimed. Running desktop MCP processes must reload the new build for the expanded schema.
+
+Reuse workflow: original check `f0546310-a8c1-4062-9429-3cf4f6c730ee`; continuation check `6ce3f35d-52d0-486b-b07b-050fdce7dba3` after the user supplied a new turn binding. The continuation cites inspected local transport/registry evidence and links planned/applied/verified decisions. Incomplete local discovery and historical source outages are explicitly acknowledged in those records. No new upstream implementation was copied; existing attribution and the user's RSS example changes were preserved.
+
+## Historical v0.1 baseline
+
+The following record describes the earlier v0.1 run on 2026-10-27 (Asia/Shanghai), using Windows PowerShell, Node v24.15.0, npm 11.12.1 and Codex CLI 0.147.0. Counts and host status below are historical, not the current v0.2 test total.
 
 ## Deterministic product checks
 

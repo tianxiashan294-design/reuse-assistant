@@ -30,7 +30,7 @@ export async function installCodex(project: string, hooks: boolean): Promise<Rec
   const stripped = old.replace(/\n?# BEGIN reuse-assistant \(generated\)[\s\S]*?# END reuse-assistant \(generated\)\n?/g, '');
   const parsed = parse(stripped) as any;
   if (parsed.mcp_servers?.reuse_assistant) throw new Error('An unmanaged mcp_servers.reuse_assistant entry exists. Choose a different server name or resolve it before installation.');
-  const block = `${START}\n[mcp_servers.reuse_assistant]\ncommand = ${JSON.stringify(process.execPath)}\nargs = ${JSON.stringify([cliPath, 'mcp', '--project', root])}\nenv_vars = ["GITHUB_TOKEN"]\ntool_timeout_sec = 120\n${END}\n`;
+  const block = `${START}\n[mcp_servers.reuse_assistant]\ncommand = ${JSON.stringify(process.execPath)}\nargs = ${JSON.stringify([cliPath, 'mcp', '--project', root])}\nenv_vars = ["GITHUB_TOKEN", "GITLAB_TOKEN"]\ntool_timeout_sec = 120\n${END}\n`;
   const config = `${stripped.trimEnd()}\n\n${block}`;
   parse(config);
   const skillFile = await writable(root, '.agents/skills/reuse-first/SKILL.md');
@@ -80,7 +80,7 @@ export async function doctor(project: string): Promise<Record<string, unknown>> 
     projectTrust: 'host-managed: project-local config and hooks load only in trusted projects',
     mcpRuntimeLoaded: 'not verified by this filesystem check; test in a trusted client session',
     hooksTrusted: 'unknown: host-managed; must verify in a real session', guardedPaths: ['apply_patch / Edit / Write when configured and trusted'], unguardedPaths: ['shell writes', 'interactive write_stdin', 'other clients without an equivalent adapter'],
-    githubTokenPresent: Boolean(process.env.GITHUB_TOKEN), modelApiRequired: false, issues };
+    githubTokenPresent: Boolean(process.env.GITHUB_TOKEN), gitlabTokenPresent: Boolean(process.env.GITLAB_TOKEN), modelApiRequired: false, issues };
 }
 
 export async function uninstallCodex(project: string): Promise<Record<string, unknown>> {
