@@ -1,0 +1,586 @@
+{
+  "startedAt": "2026-10-26T16:15:48.896Z",
+  "node": "v24.15.0",
+  "sdk": {
+    "id": "8180526f-919a-4954-ae29-c21c0772d9dc",
+    "elapsedMs": 1871,
+    "coverage": "complete",
+    "sources": [
+      {
+        "source": "local",
+        "query": "modelcontextprotocol typescript SDK | @modelcontextprotocol/server",
+        "status": "ok",
+        "count": 10,
+        "notes": [
+          "Scanned 25 text files; lexical matches require host review."
+        ]
+      },
+      {
+        "source": "github",
+        "query": "modelcontextprotocol typescript SDK",
+        "status": "ok",
+        "count": 6,
+        "notes": [
+          "Repository/README discovery, not global source-code full-text search."
+        ]
+      },
+      {
+        "source": "npm",
+        "query": "modelcontextprotocol typescript SDK",
+        "status": "ok",
+        "count": 6,
+        "notes": [
+          "Package registry search; published metadata must be verified before adoption."
+        ]
+      },
+      {
+        "source": "npm",
+        "query": "@modelcontextprotocol/server",
+        "status": "ok",
+        "count": 6,
+        "notes": [
+          "Package registry search; published metadata must be verified before adoption."
+        ]
+      }
+    ],
+    "candidates": [
+      {
+        "id": "github:modelcontextprotocol/typescript-sdk",
+        "name": "modelcontextprotocol/typescript-sdk",
+        "packages": [
+          {
+            "source": "npm",
+            "name": "@modelcontextprotocol/sdk",
+            "version": "1.32.2",
+            "url": "https://www.npmjs.com/package/@modelcontextprotocol/sdk"
+          },
+          {
+            "source": "npm",
+            "name": "@modelcontextprotocol/server",
+            "version": "2.4.0",
+            "url": "https://www.npmjs.com/package/@modelcontextprotocol/server"
+          },
+          {
+            "source": "npm",
+            "name": "@modelcontextprotocol/client",
+            "version": "2.4.0",
+            "url": "https://www.npmjs.com/package/@modelcontextprotocol/client"
+          },
+          {
+            "source": "npm",
+            "name": "composiohq-modelcontextprotocol-typescript-sdk",
+            "version": "1.12.2",
+            "url": "https://www.npmjs.com/package/composiohq-modelcontextprotocol-typescript-sdk"
+          },
+          {
+            "source": "npm",
+            "name": "@modelcontextprotocol/core",
+            "version": "2.4.0",
+            "url": "https://www.npmjs.com/package/@modelcontextprotocol/core"
+          }
+        ]
+      },
+      {
+        "id": "npm:@mdavieds/mcp-tmp-files",
+        "name": "@mdavieds/mcp-tmp-files",
+        "packages": [
+          {
+            "source": "npm",
+            "name": "@mdavieds/mcp-tmp-files",
+            "version": "1.1.2",
+            "url": "https://www.npmjs.com/package/@mdavieds/mcp-tmp-files"
+          }
+        ]
+      },
+      {
+        "id": "github:modelcontextprotocol/servers",
+        "name": "modelcontextprotocol/servers",
+        "packages": [
+          {
+            "source": "npm",
+            "name": "@modelcontextprotocol/server-everything",
+            "version": "2.0.1",
+            "url": "https://www.npmjs.com/package/@modelcontextprotocol/server-everything"
+          }
+        ]
+      },
+      {
+        "id": "github:modelcontextprotocol/inspector",
+        "name": "modelcontextprotocol/inspector"
+      },
+      {
+        "id": "github:codeany-ai/open-agent-sdk-typescript",
+        "name": "codeany-ai/open-agent-sdk-typescript"
+      },
+      {
+        "id": "npm:figma-mcp",
+        "name": "figma-mcp",
+        "packages": [
+          {
+            "source": "npm",
+            "name": "figma-mcp",
+            "version": "0.1.4",
+            "url": "https://www.npmjs.com/package/figma-mcp"
+          }
+        ]
+      },
+      {
+        "id": "npm:ref-tools-mcp",
+        "name": "ref-tools-mcp",
+        "packages": [
+          {
+            "source": "npm",
+            "name": "ref-tools-mcp",
+            "version": "3.0.3",
+            "url": "https://www.npmjs.com/package/ref-tools-mcp"
+          }
+        ]
+      },
+      {
+        "id": "npm:puppeteer-mcp-server",
+        "name": "puppeteer-mcp-server",
+        "packages": [
+          {
+            "source": "npm",
+            "name": "puppeteer-mcp-server",
+            "version": "0.7.2",
+            "url": "https://www.npmjs.com/package/puppeteer-mcp-server"
+          }
+        ]
+      },
+      {
+        "id": "npm:@hisma/server-puppeteer",
+        "name": "@hisma/server-puppeteer",
+        "packages": [
+          {
+            "source": "npm",
+            "name": "@hisma/server-puppeteer",
+            "version": "0.6.5",
+            "url": "https://www.npmjs.com/package/@hisma/server-puppeteer"
+          }
+        ]
+      },
+      {
+        "id": "github:MCP-UI-Org/mcp-ui",
+        "name": "MCP-UI-Org/mcp-ui"
+      },
+      {
+        "id": "github:koala73/worldmonitor",
+        "name": "koala73/worldmonitor"
+      }
+    ]
+  },
+  "sdkEvidence": {
+    "id": "fee7cc2f-3944-41f0-97ef-153d95952580",
+    "status": "complete",
+    "metadata": {
+      "relatedPackages": [
+        {
+          "source": "npm",
+          "name": "@modelcontextprotocol/server",
+          "version": "2.4.0",
+          "url": "https://www.npmjs.com/package/@modelcontextprotocol/server"
+        }
+      ],
+      "registry": {
+        "source": "npm",
+        "name": "@modelcontextprotocol/server",
+        "version": "2.4.0",
+        "license": "Apache-2.0",
+        "repository": "git+https://github.com/modelcontextprotocol/typescript-sdk.git",
+        "integrity": "sha512-rgR9yxSaAJ+bcsi/XroT/S2AfPiIWloXAnrdfYSCms9ivVju0ishu/wW0J21Ho6+ZOR1r7RyeRbjiRuF87ix5Q==",
+        "engines": {
+          "node": ">=20"
+        }
+      },
+      "license": "Apache-2.0",
+      "repository": "modelcontextprotocol/typescript-sdk",
+      "ref": "b415e60bdf0e8dd5d6cbe7e6353abfb982b06dd2",
+      "archived": false,
+      "codeVersionAssociation": "unverified: repository HEAD may differ from the published package",
+      "rootEntries": [
+        {
+          "path": ".changeset",
+          "type": "dir"
+        },
+        {
+          "path": ".git-blame-ignore-revs",
+          "type": "file"
+        },
+        {
+          "path": ".github",
+          "type": "dir"
+        },
+        {
+          "path": ".gitignore",
+          "type": "file"
+        },
+        {
+          "path": ".npmrc",
+          "type": "file"
+        },
+        {
+          "path": ".prettierignore",
+          "type": "file"
+        },
+        {
+          "path": ".prettierrc.json",
+          "type": "file"
+        },
+        {
+          "path": "CLAUDE.md",
+          "type": "file"
+        },
+        {
+          "path": "CODE_OF_CONDUCT.md",
+          "type": "file"
+        },
+        {
+          "path": "CONTRIBUTING.md",
+          "type": "file"
+        },
+        {
+          "path": "DEPENDENCY_POLICY.md",
+          "type": "file"
+        },
+        {
+          "path": "LICENSE",
+          "type": "file"
+        },
+        {
+          "path": "README.md",
+          "type": "file"
+        },
+        {
+          "path": "REVIEW.md",
+          "type": "file"
+        },
+        {
+          "path": "ROADMAP.md",
+          "type": "file"
+        },
+        {
+          "path": "SECURITY.md",
+          "type": "file"
+        },
+        {
+          "path": "VERSIONING.md",
+          "type": "file"
+        },
+        {
+          "path": "common",
+          "type": "dir"
+        },
+        {
+          "path": "docs",
+          "type": "dir"
+        },
+        {
+          "path": "examples",
+          "type": "dir"
+        },
+        {
+          "path": "lefthook-local.example.yml",
+          "type": "file"
+        },
+        {
+          "path": "lefthook.yml",
+          "type": "file"
+        },
+        {
+          "path": "package.json",
+          "type": "file"
+        },
+        {
+          "path": "packages",
+          "type": "dir"
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "type": "file"
+        },
+        {
+          "path": "pnpm-workspace.yaml",
+          "type": "file"
+        },
+        {
+          "path": "scripts",
+          "type": "dir"
+        },
+        {
+          "path": "skills",
+          "type": "dir"
+        },
+        {
+          "path": "test",
+          "type": "dir"
+        },
+        {
+          "path": "typedoc.config.mjs",
+          "type": "file"
+        },
+        {
+          "path": "vitest.workspace.js",
+          "type": "file"
+        }
+      ]
+    },
+    "errors": [],
+    "files": [
+      {
+        "path": "NPM-PUBLISHED-METADATA.json",
+        "ref": "2.4.0",
+        "url": "https://registry.npmjs.org/%40modelcontextprotocol%2Fserver/2.4.0",
+        "startLine": 1,
+        "endLine": 125,
+        "truncated": false
+      },
+      {
+        "path": "README.md",
+        "ref": "b415e60bdf0e8dd5d6cbe7e6353abfb982b06dd2",
+        "url": "https://github.com/modelcontextprotocol/typescript-sdk/blob/b415e60bdf0e8dd5d6cbe7e6353abfb982b06dd2/README.md",
+        "startLine": 1,
+        "endLine": 178,
+        "truncated": false
+      },
+      {
+        "path": "LICENSE",
+        "ref": "b415e60bdf0e8dd5d6cbe7e6353abfb982b06dd2",
+        "url": "https://github.com/modelcontextprotocol/typescript-sdk/blob/b415e60bdf0e8dd5d6cbe7e6353abfb982b06dd2/LICENSE",
+        "startLine": 1,
+        "endLine": 217,
+        "truncated": false
+      },
+      {
+        "path": "package.json",
+        "ref": "b415e60bdf0e8dd5d6cbe7e6353abfb982b06dd2",
+        "url": "https://github.com/modelcontextprotocol/typescript-sdk/blob/b415e60bdf0e8dd5d6cbe7e6353abfb982b06dd2/package.json",
+        "startLine": 1,
+        "endLine": 96,
+        "truncated": false
+      },
+      {
+        "path": "packages/server/src/server/mcp.ts",
+        "ref": "b415e60bdf0e8dd5d6cbe7e6353abfb982b06dd2",
+        "url": "https://github.com/modelcontextprotocol/typescript-sdk/blob/b415e60bdf0e8dd5d6cbe7e6353abfb982b06dd2/packages/server/src/server/mcp.ts#L1100-L1180",
+        "startLine": 1100,
+        "endLine": 1180,
+        "truncated": true
+      }
+    ]
+  },
+  "python": {
+    "id": "b76225b8-ae81-4bd8-b574-2ddc9e7df423",
+    "elapsedMs": 800,
+    "coverage": "complete",
+    "sources": [
+      {
+        "source": "local",
+        "query": "python in-process task scheduling",
+        "status": "ok",
+        "count": 12,
+        "notes": [
+          "Scanned 25 text files; lexical matches require host review."
+        ]
+      },
+      {
+        "source": "github",
+        "query": "python in-process task scheduling",
+        "status": "ok",
+        "count": 6,
+        "notes": [
+          "Repository/README discovery, not global source-code full-text search."
+        ]
+      },
+      {
+        "source": "pypi",
+        "query": "APScheduler",
+        "status": "ok",
+        "count": 1,
+        "notes": [
+          "Known-name verification only; this is not PyPI full-text search."
+        ]
+      }
+    ],
+    "candidates": [
+      {
+        "id": "pypi:APScheduler",
+        "name": "APScheduler",
+        "packages": [
+          {
+            "source": "pypi",
+            "name": "APScheduler",
+            "version": "3.11.3",
+            "url": "https://pypi.org/project/APScheduler/"
+          }
+        ]
+      },
+      {
+        "id": "github:vinta/awesome-python",
+        "name": "vinta/awesome-python"
+      },
+      {
+        "id": "github:rq/rq",
+        "name": "rq/rq"
+      },
+      {
+        "id": "github:pycaret/pycaret",
+        "name": "pycaret/pycaret"
+      },
+      {
+        "id": "github:floci-io/floci",
+        "name": "floci-io/floci"
+      },
+      {
+        "id": "github:pawl/awesome-etl",
+        "name": "pawl/awesome-etl"
+      },
+      {
+        "id": "github:awesome-selfhosted/awesome-selfhosted",
+        "name": "awesome-selfhosted/awesome-selfhosted"
+      }
+    ]
+  },
+  "pythonEvidence": {
+    "id": "baa3e4a4-03d3-49b9-b0e9-3c0401566d53",
+    "status": "complete",
+    "metadata": {
+      "relatedPackages": [
+        {
+          "source": "pypi",
+          "name": "APScheduler",
+          "version": "3.11.3",
+          "url": "https://pypi.org/project/APScheduler/"
+        }
+      ],
+      "registry": {
+        "source": "pypi",
+        "name": "APScheduler",
+        "version": "3.11.3",
+        "requiresPython": ">=3.8",
+        "license": "MIT",
+        "projectUrls": {
+          "Changelog": "https://apscheduler.readthedocs.io/en/3.x/versionhistory.html",
+          "Documentation": "https://apscheduler.readthedocs.io/en/3.x/",
+          "Issue tracker": "https://github.com/agronholm/apscheduler/issues",
+          "Source code": "https://github.com/agronholm/apscheduler"
+        }
+      },
+      "license": "MIT",
+      "repository": "agronholm/apscheduler",
+      "ref": "bdaceb12792f104f25798dee2850d45f9e7d83f8",
+      "archived": false,
+      "codeVersionAssociation": "unverified: repository HEAD may differ from the published package",
+      "rootEntries": [
+        {
+          "path": ".github",
+          "type": "dir"
+        },
+        {
+          "path": ".gitignore",
+          "type": "file"
+        },
+        {
+          "path": ".mailmap",
+          "type": "file"
+        },
+        {
+          "path": ".pre-commit-config.yaml",
+          "type": "file"
+        },
+        {
+          "path": ".readthedocs.yml",
+          "type": "file"
+        },
+        {
+          "path": "LICENSE.txt",
+          "type": "file"
+        },
+        {
+          "path": "README.rst",
+          "type": "file"
+        },
+        {
+          "path": "docker-compose.yml",
+          "type": "file"
+        },
+        {
+          "path": "docs",
+          "type": "dir"
+        },
+        {
+          "path": "examples",
+          "type": "dir"
+        },
+        {
+          "path": "pyproject.toml",
+          "type": "file"
+        },
+        {
+          "path": "src",
+          "type": "dir"
+        },
+        {
+          "path": "tests",
+          "type": "dir"
+        },
+        {
+          "path": "tools",
+          "type": "dir"
+        }
+      ],
+      "pythonDistributions": [
+        {
+          "name": "APScheduler",
+          "version": "3.11.3",
+          "repositoryConfirmed": true,
+          "url": "https://pypi.org/project/APScheduler/"
+        }
+      ]
+    },
+    "errors": [],
+    "files": [
+      {
+        "path": "PYPI-PUBLISHED-METADATA.json",
+        "ref": "3.11.3",
+        "url": "https://pypi.org/pypi/APScheduler/3.11.3/json",
+        "startLine": 1,
+        "endLine": 13,
+        "truncated": false
+      },
+      {
+        "path": "DISTRIBUTION-README",
+        "ref": "3.11.3",
+        "url": "https://pypi.org/pypi/APScheduler/3.11.3/json",
+        "startLine": 1,
+        "endLine": 89,
+        "truncated": false
+      },
+      {
+        "path": "README.rst",
+        "ref": "bdaceb12792f104f25798dee2850d45f9e7d83f8",
+        "url": "https://github.com/agronholm/apscheduler/blob/bdaceb12792f104f25798dee2850d45f9e7d83f8/README.rst",
+        "startLine": 1,
+        "endLine": 98,
+        "truncated": false
+      },
+      {
+        "path": "LICENSE.txt",
+        "ref": "bdaceb12792f104f25798dee2850d45f9e7d83f8",
+        "url": "https://github.com/agronholm/apscheduler/blob/bdaceb12792f104f25798dee2850d45f9e7d83f8/LICENSE.txt",
+        "startLine": 1,
+        "endLine": 21,
+        "truncated": false
+      },
+      {
+        "path": "pyproject.toml",
+        "ref": "bdaceb12792f104f25798dee2850d45f9e7d83f8",
+        "url": "https://github.com/agronholm/apscheduler/blob/bdaceb12792f104f25798dee2850d45f9e7d83f8/pyproject.toml",
+        "startLine": 1,
+        "endLine": 149,
+        "truncated": false
+      }
+    ]
+  },
+  "note": "Live endpoint observations only. Coverage is bounded and network-dependent; this is not an ecosystem recall benchmark or proof of real-client hook activation."
+}

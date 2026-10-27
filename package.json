@@ -1,0 +1,34 @@
+{
+  "name": "reuse-assistant-local",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Evidence-based reuse checks for coding agents: discover, inspect, decide, and verify.",
+  "repository": { "type": "git", "url": "git+https://github.com/tianxiashan294-design/reuse-assistant.git" },
+  "homepage": "https://github.com/tianxiashan294-design/reuse-assistant#readme",
+  "bugs": { "url": "https://github.com/tianxiashan294-design/reuse-assistant/issues" },
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=22" },
+  "bin": { "reuse-assistant": "dist/src/cli.js" },
+  "exports": { ".": "./dist/src/core.js" },
+  "types": "./dist/src/core.d.ts",
+  "files": ["dist/src", "src", "skills", "docs", "LICENSE", "THIRD_PARTY_NOTICES.md", "README.md", "README.zh-CN.md", "CONTRIBUTING.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test dist/test/*.test.js",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "prepack": "npm run build",
+    "start": "node dist/src/cli.js",
+    "smoke": "npm run build && node dist/test/live-smoke.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.4.0",
+    "smol-toml": "1.9.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.4.0",
+    "@types/node": "26.6.5",
+    "typescript": "7.0.2"
+  }
+}
