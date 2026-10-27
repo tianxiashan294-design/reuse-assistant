@@ -74,11 +74,17 @@ test('generated hook launcher handles shell metacharacters and UTF-8 BOM input',
   for (const transport of ['default', 'utf8-bom']) {
     // Windows PowerShell's UTF8 encoding emits a BOM on native pipelines.
     const prefix = transport === 'utf8-bom' ? '$OutputEncoding = [System.Text.Encoding]::UTF8; ' : '';
-    const shellArgs = process.platform === 'win32' ? ['-NoProfile', '-Command', `${prefix}$input | ${command}`] : ['-c', command];
-    const child = exec(shell, shellArgs, { timeout: 10000, maxBuffer: 1_000_000 });
+    const shellArgs = (script: string) => process.platform === 'win32' ? ['-NoProfile', '-Command', `${prefix}$input | ${script}`] : ['-c', script];
+    const child = exec(shell, shellArgs(command), { timeout: 10000, maxBuffer: 1_000_000 });
     child.child.stdin?.end(process.platform !== 'win32' && transport === 'utf8-bom' ? '\uFEFF' + input : input);
     const { stdout, stderr } = await child;
     const response = JSON.parse(stdout.trim());
+    if (response.hookSpecificOutput?.hookEventName !== 'UserPromptSubmit') {
+      const probeCommand = `node -e "let b=[];process.stdin.on('data',c=>b.push(c));process.stdin.on('end',()=>console.log(Buffer.concat(b).subarray(0,32).toString('hex')))"`;
+      const probe = exec(shell, shellArgs(probeCommand), { timeout: 10000 });
+      probe.child.stdin?.end(input);
+      console.error('[DEBUG-bom-ci]', transport, (await probe).stdout.trim());
+    }
     assert.equal(response.hookSpecificOutput?.hookEventName, 'UserPromptSubmit', JSON.stringify({ transport, response, stderr }));
     assert.match(response.hookSpecificOutput.additionalContext, /test-session/);
   }
