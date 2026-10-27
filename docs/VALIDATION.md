@@ -15,7 +15,7 @@ Local v0.1 verification, 2026-10-27 (Asia/Shanghai). Environment: Windows PowerS
 - source-specific query limits, explicit shortened coverage and returned results;
 - GitHub commit evidence, line-range reads and Python distribution association;
 - structured throttling, Retry-After date/seconds, bounded retries/deadlines, byte limits and selective authorization;
-- project initialization/uninstall preserving unrelated entries, safe generated launchers for paths with shell metacharacters, and confined storage;
+- project initialization/uninstall preserving unrelated entries, safe generated launchers for paths with shell metacharacters, UTF-8 input with or without a BOM, and confined storage;
 - session/turn-specific patch guard behavior and explicit absence of shell guard coverage;
 - a real MCP SDK client over stdio performing check → inspect → decision, including a failed invalid decision;
 - lifecycle report completion and recovery of pre-index records.
@@ -67,3 +67,5 @@ The runtime dependency audit reported zero known vulnerabilities at the time che
 Source and compiled CLI, skills, license/attribution and documentation are included in the package manifest. `prepack` builds the checkout before packaging. An actual tarball was installed into an isolated project with install scripts disabled: five runtime packages were installed, the packaged CLI generated the integration/skill, and an import of the packaged core successfully found the local manifest. The source archive was also extracted into a clean directory, installed and rebuilt; its 20/20 tests passed. Skill format validation passed using Python UTF-8 mode. The private package flag prevents accidental npm publication; GitHub is the initial distribution channel.
 
 CI is configured for Node 22/24 on Ubuntu/Windows with pinned action commits. See the actual [GitHub Actions runs](https://github.com/tianxiashan294-design/reuse-assistant/actions) for remote results; local Node 24 success does not imply those remote matrix jobs passed.
+
+The first remote run passed both Linux jobs but exposed a Windows PowerShell transport difference: native UTF-8 pipelines can prepend a BOM, causing hook JSON parsing to return the generic supported denial. A local three-mode probe reproduced the difference using the same generated command (default encoding passed, UTF-8 with BOM failed, UTF-8 without BOM passed). The existing bounded stdin reader now removes one leading UTF-8 BOM before JSON parsing. The real-shell regression exercises default and BOM-bearing input on each platform; malformed JSON still follows the existing denial path.

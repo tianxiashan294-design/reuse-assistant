@@ -38,7 +38,8 @@ export async function readStdin(): Promise<string> {
     if (bytes > 1_000_000) throw new Error('Input exceeds 1 MB');
     chunks.push(b);
   }
-  return Buffer.concat(chunks).toString('utf8');
+  // Windows PowerShell may prefix native-pipeline UTF-8 input with a BOM.
+  return Buffer.concat(chunks).toString('utf8').replace(/^\uFEFF/, '');
 }
 
 export async function runHookEncoded(encoded: string): Promise<void> {

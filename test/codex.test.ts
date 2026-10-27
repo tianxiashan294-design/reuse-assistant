@@ -60,7 +60,7 @@ test('project initialization preserves other MCP and hook entries and is idempot
   assert.equal(remainingHooks.hooks.PreToolUse[0].hooks[0].command, 'echo original');
 });
 
-test('generated hook launcher handles a project path containing spaces and shell metacharacters', async t => {
+test('generated hook launcher handles shell metacharacters and UTF-8 BOM input', async t => {
   const parent = await fixture(t);
   const root = path.join(parent, 'space $value & sample');
   await mkdir(root);
@@ -71,12 +71,17 @@ test('generated hook launcher handles a project path containing spaces and shell
   const input = JSON.stringify({ hook_event_name: 'UserPromptSubmit', session_id: 'test-session', turn_id: 'test-turn' });
   // Execute the exact generated command through the real platform shell.
   const shell = process.platform === 'win32' ? 'powershell.exe' : '/bin/sh';
-  const shellArgs = process.platform === 'win32' ? ['-NoProfile', '-Command', `$input | ${command}`] : ['-c', command];
-  const child = exec(shell, shellArgs, { timeout: 10000, maxBuffer: 1_000_000 });
-  child.child.stdin?.end(input);
-  const { stdout } = await child;
-  const response = JSON.parse(stdout.trim());
-  assert.match(response.hookSpecificOutput.additionalContext, /test-session/);
+  for (const transport of ['default', 'utf8-bom']) {
+    // Windows PowerShell's UTF8 encoding emits a BOM on native pipelines.
+    const prefix = transport === 'utf8-bom' ? '$OutputEncoding = [System.Text.Encoding]::UTF8; ' : '';
+    const shellArgs = process.platform === 'win32' ? ['-NoProfile', '-Command', `${prefix}$input | ${command}`] : ['-c', command];
+    const child = exec(shell, shellArgs, { timeout: 10000, maxBuffer: 1_000_000 });
+    child.child.stdin?.end(process.platform !== 'win32' && transport === 'utf8-bom' ? '\uFEFF' + input : input);
+    const { stdout, stderr } = await child;
+    const response = JSON.parse(stdout.trim());
+    assert.equal(response.hookSpecificOutput?.hookEventName, 'UserPromptSubmit', JSON.stringify({ transport, response, stderr }));
+    assert.match(response.hookSpecificOutput.additionalContext, /test-session/);
+  }
 });
 
 test('record storage refuses a symlink or junction outside the configured project', async t => {
