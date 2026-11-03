@@ -1,5 +1,11 @@
 # Validation record
 
+## GitHub publication checks - 2026-11-04 (Asia/Shanghai)
+
+Initial publication exposed a Node 22 test-fixture failure on both Windows and Linux: a deliberately never-settling transport left no live event-loop handle for the unref'ed AbortSignal deadline. The existing core deadline fixture already handles this case. Both pagination hang fixtures now use the same scoped keep-alive timer with cleanup and a bounded test timeout. Production code and all deadline/candidate-retention assertions are unchanged.
+
+After this correction, local Windows Node 22.23.4 and Node 24.15.0 each pass **72/72** tests. The Node 22 executable directory is first on PATH so generated real-shell hooks use the same runtime. The original failing and follow-up GitHub runs remain visible in [Actions](https://github.com/tianxiashan294-design/reuse-assistant/actions); local success alone is not the remote matrix result.
+
 ## v0.4 local verification — 2026-11-03 (Asia/Shanghai)
 
 Environment: Windows PowerShell, Node v24.15.0. This update adds code segmentation and whole-task alignment; it adds no language registry or hosting platform. Existing v0.3 work and the RSS example are preserved.

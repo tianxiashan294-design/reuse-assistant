@@ -77,8 +77,11 @@ test('continuation throttling retains earlier candidates and Retry-After; partia
   assert.equal(calls, 4);
 });
 
-test('a hung continuation returns within the global deadline and preserves the completed page', async t => {
+test('a hung continuation returns within the global deadline and preserves the completed page', { timeout: 5000 }, async t => {
   const assistant = new ReuseAssistant(await fixture(t), new Http(fakeFetch(url => searchPage(url) === 2 ? new Promise<Response>(() => {}) : pagedResponse(url)), '', ''));
+  // Like the core deadline fixture, keep Node 22 alive for the unref'ed abort timer.
+  const keepAlive = setInterval(() => {}, 2000);
+  t.after(() => clearInterval(keepAlive));
   const start = performance.now();
   const r = await assistant.check({ ...request, sources: ['npm'], maxPages: 3, budgetMs: 100 });
   assert(performance.now() - start < 2000);
@@ -119,12 +122,14 @@ test('partially overlapping pages retain new IDs and later upstream incomplete f
   assert(s.notes.some(n => n.includes('GitHub marked this result incomplete')));
 });
 
-test('an exhausted first-round budget never starts continuation requests and preserves successful sources', async t => {
+test('an exhausted first-round budget never starts continuation requests and preserves successful sources', { timeout: 5000 }, async t => {
   const calls: URL[] = [];
   const assistant = new ReuseAssistant(await fixture(t), new Http(fakeFetch(url => {
     calls.push(url);
     return url.hostname === 'api.github.com' ? new Promise<Response>(() => {}) : pagedResponse(url);
   }), '', ''));
+  const keepAlive = setInterval(() => {}, 2000);
+  t.after(() => clearInterval(keepAlive));
   const r = await assistant.check({ ...request, sources: ['github', 'npm'], budgetMs: 100 });
   assert.equal(calls.length, 2);
   assert(calls.every(u => searchPage(u) === 1));
