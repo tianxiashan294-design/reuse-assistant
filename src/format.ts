@@ -10,7 +10,7 @@ export function markdown(report: CheckReport, decision?: Decision): string {
     `# Reuse check: ${esc(report.input.task)}`,
     `Check: ${report.id} | scope: ${report.input.scope} | coverage: ${report.coverage} | ${report.elapsedMs} ms${report.cached ? ` | remote cache: ${report.cacheCreatedAt}` : ''}`,
     '', '## Source coverage', '', '| Source | Query | Status | Results | Notes |', '|---|---|---|---:|---|',
-    ...report.sources.map(s => `| ${s.source} | ${esc(s.effectiveQuery ?? s.query)} | ${s.status} | ${s.candidates.length} | ${esc(s.error?.message ?? s.notes.join(' '))} |`),
+    ...report.sources.map(s => `| ${s.source} | ${esc(s.effectiveQuery ?? s.query)} | ${s.status} | ${s.candidates.length} | ${esc([s.error?.message, ...(s.pagination ? [`${s.pagination.pagesFetched} pages / ${s.pagination.itemsFetched} items; ${s.pagination.stopReason}; hasMore=${s.pagination.hasMore}${s.pagination.totalAvailable !== undefined ? `; reported total=${s.pagination.totalAvailable}` : ''}${s.pagination.failedPage ? `; failed page=${s.pagination.failedPage}` : ''}`] : []), ...s.notes].filter(Boolean).join(' '))} |`),
     ...(report.sourcePlan ? ['', '## Supported source plan', '', ...report.sourcePlan.map(s => `- ${s.source}: ${s.selected ? 'selected' : 'not selected'}; ${s.mode}. ${esc(s.limitations.join(' '))}`)] : []),
     '', '## Candidates requiring review', '', '| ID | Candidate | Source | Version | Description |', '|---|---|---|---|---|',
     ...report.candidates.map(c => `| ${esc(c.id)} | ${esc(c.name)} | ${(c.sources ?? [c.source]).join(', ')} | ${esc(c.packages?.map(p => `${p.source}:${p.name}@${p.version ?? '?'}`).join('; ') || c.version || '')} | ${esc(c.description)} |`),

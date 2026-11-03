@@ -1,18 +1,40 @@
 {
   "name": "reuse-assistant-local",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Evidence-based reuse checks for coding agents: discover, inspect, decide, and verify.",
-  "repository": { "type": "git", "url": "git+https://github.com/tianxiashan294-design/reuse-assistant.git" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tianxiashan294-design/reuse-assistant.git"
+  },
   "homepage": "https://github.com/tianxiashan294-design/reuse-assistant#readme",
-  "bugs": { "url": "https://github.com/tianxiashan294-design/reuse-assistant/issues" },
+  "bugs": {
+    "url": "https://github.com/tianxiashan294-design/reuse-assistant/issues"
+  },
   "type": "module",
   "license": "MIT",
-  "engines": { "node": ">=22" },
-  "bin": { "reuse-assistant": "dist/src/cli.js" },
-  "exports": { ".": "./dist/src/core.js" },
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "reuse-assistant": "dist/src/cli.js"
+  },
+  "exports": {
+    ".": "./dist/src/core.js"
+  },
   "types": "./dist/src/core.d.ts",
-  "files": ["dist/src", "src", "skills", "docs", "LICENSE", "THIRD_PARTY_NOTICES.md", "README.md", "README.zh-CN.md", "CONTRIBUTING.md", "CHANGELOG.md"],
+  "files": [
+    "dist/src",
+    "src",
+    "skills",
+    "docs",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
+    "README.md",
+    "README.zh-CN.md",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "npm run build && node --test dist/test/*.test.js",
@@ -20,7 +42,8 @@
     "prepack": "npm run build",
     "start": "node dist/src/cli.js",
     "smoke": "npm run build && node dist/test/live-smoke.js",
-    "smoke:v2": "npm run build && node dist/test/live-smoke-v2.js"
+    "smoke:v2": "npm run build && node dist/test/live-smoke-v2.js",
+    "smoke:v3": "npm run build && node dist/test/live-smoke-v3.js"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "2.4.0",

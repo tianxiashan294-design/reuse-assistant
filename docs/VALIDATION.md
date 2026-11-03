@@ -1,5 +1,25 @@
 # Validation record
 
+## v0.3 local verification — 2026-10-29 (Asia/Shanghai)
+
+Environment: Windows PowerShell, Node v24.15.0, npm 11.12.1. This update adds bounded pagination to the existing eight discovery sources; it does not add a language registry or hosting platform.
+
+`npm run check`, `npm test` and `git diff --check` pass. The deterministic suite has **58/58** passing tests (40 existing, 18 new). The added cases use the public `ReuseAssistant.check/inspect/decide` interfaces, the compiled CLI and a real SDK client/server over MCP stdio with injected endpoint fixtures. They verify source-specific page/offset parameters and second-page recall; three-page exhaustion; all-first-pages scheduling with four workers; page cap/cache isolation; local and exact-lookup behavior; continuation throttling and deadline retention; overlapping/repeated pages; malformed pages; persistent partial flags; and parameter bounds. The MCP test inspects a second-page package and traverses the planned/applied/verified protocol; its validation statement is explicitly a host-reported fixture claim, not a package installation.
+
+`npm pack --dry-run --json` passes and includes `src/pagination.ts`, compiled JavaScript/declarations and the updated documentation. No runtime dependency was added. The previous third-party notices and the user's local RSS example changes are retained.
+
+### Real public endpoint observations
+
+`npm run smoke:v3` ran from **22:22:08 to 22:22:29** (Asia/Shanghai). GitLab, npm, crates.io, Maven Central, NuGet, RubyGems and Packagist each returned two successful pages for `json`. GitHub returned HTTP 403 with rate-limit evidence, so that full run correctly exited **1**. The original failure remains in [live-smoke-v3.json](live-smoke-v3.json).
+
+After the reported cooldown, `node dist/test/live-smoke-v3.js github` ran from **22:23:22 to 22:23:23**, exited **0**, and returned two GitHub pages. Across these two runs, all eight sources have successful two-page observations. Each returned 12 distinct source candidates except RubyGems, which returned 60 (its fixed 30-item pages). All successful observations stopped at `page_limit` with `hasMore: true`, explicitly retaining unqueried scope. These are individual HTTP samples, not a recall benchmark, exhaustive collection or reliability guarantee. This run did not repeat v0.2 release-code inspection.
+
+### Host and reuse workflow boundaries
+
+No v0.3 remote CI matrix, npm publication, macOS execution or new desktop MCP reload is claimed. Running desktop MCP processes must reload the compiled v0.3 server to expose `maxPages`; the stdio tests launch the new server directly. The host supplied a current session/turn binding for this task, which was included in its reuse check. Shell writes remain outside the declared patch guard.
+
+The pre-implementation reuse check was `5e0df4f8-93a3-403a-83b1-eab8e3a0df6c`, with planned decision `a90bdfb2-d27c-4a2d-9a8f-8ea04eba5a86`. It inspected local `src/sources.ts` and `src/core.ts`, plus `algoliasearch-helper@3.30.1` at fixed revision `3d258cf58b621da1347809e06282b83d4aab8ca2`. The local implementation was reused; the Algolia-specific dependency was rejected. Initial GitHub rate limits and local match limits were explicitly acknowledged before implementation. Applied and verified records are linked to that planned decision in `.reuse-assistant/`; verification commands/outcomes are host-reported.
+
 ## v0.2 local verification — 2026-10-27 (Asia/Shanghai)
 
 The user reports v0.1 passed acceptance. This run extends the implementation to v0.2; it does not repeat or claim a new desktop hook activation. Environment: Windows PowerShell, Node v24.15.0, npm 11.12.1.

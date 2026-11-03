@@ -20,7 +20,10 @@ flowchart TD
 - `inspect(checkId, candidateId, paths)` resolves an existing candidate/alias, fetches fixed evidence and saves an inspection. It accepts up to five explicit paths and at most three distinct candidates per check. Inspection updates are serialized inside one core instance.
 - `decide(input)` validates check/evidence identity, expiry, incomplete coverage acknowledgment and lifecycle transitions. Planned decisions require the original dependency context. Applied/verified decisions may include expected integration changes when linked to the correct preceding stage. Validation text is host-reported.
 
+
 `Http` concentrates cancellation, response limits, public-host restrictions, selective authorization and bounded throttling retries. `Store` confines records to the configured project and writes JSON atomically. Source adapters and tests consume these interfaces rather than duplicating transport logic.
+
+`pagination.ts` schedules discovery rounds with four workers and a shared signal. Source adapters read one page and expose progress; every first-page job finishes before any second page starts. The core defaults `maxPages` to two (allowed: one through three). The cap is part of cache/decision context; checks created before this field existed retain their original context hash. A continuation merges by candidate ID, retains successful pages on failure, preserves partial flags and stops repeated pages without claiming exhaustion. Failed/partial plans are not cached. Exact lookups do not request continuations. Successful finite plans may still have `hasMore: true` at the page cap.
 
 ## Identity and evidence
 
@@ -38,6 +41,6 @@ The adapter guards declared patch paths only. Arbitrary shell writes and existin
 
 ## Extension seams and limits
 
-`catalog.ts` describes source capabilities and ecosystem routing; `sources.ts` handles repository adapters/merging and `registries.ts` handles new registry discovery/evidence. `core.ts` owns selection, bounded scheduling, failures and cache context. CLI/MCP consume the same semantics. Add client-specific configuration beside `codex-hook.ts` and `install.ts`. See [current source limits](SOURCES.md) and the [long-term goal](ROADMAP.md).
+`catalog.ts` describes source capabilities and ecosystem routing; `sources.ts` handles repository adapters/merging and `registries.ts` handles registry discovery/evidence. `core.ts` owns selection, failures and cache context, using `pagination.ts` for bounded scheduling. CLI/MCP consume the same semantics. Add client-specific configuration beside `codex-hook.ts` and `install.ts`. See [current source limits](SOURCES.md) and the [long-term goal](ROADMAP.md).
 
-Current limits include UTF-8 lexical local search, root-only dependency fingerprints, first-page public results, no exhaustive recall guarantee, in-process inspection update serialization, and host-reported semantic/validation claims. This is a local v0.2 implementation. All-language/all-platform collection remains the long-term direction, with per-source progress made explicit.
+Current limits include UTF-8 lexical local search, root-only dependency fingerprints, at most three offset/numbered search pages, mutable upstream totals/rankings, no exhaustive recall guarantee, in-process inspection update serialization, and host-reported semantic/validation claims. This is a local v0.3 implementation. Cursor traversal, automatic query translation, official fallback endpoints and selective failed-source retries inside an existing check remain future work. All-language/all-platform collection remains the long-term direction, with per-source progress made explicit.

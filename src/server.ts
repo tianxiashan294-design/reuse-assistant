@@ -13,6 +13,7 @@ export const checkSchema = z.object({
   sources: z.array(z.enum(REMOTE_SOURCES)).min(1).max(REMOTE_SOURCES.length).optional().describe('Explicit public sources override ecosystem routing. auto searches every implemented source; local scope never uses the network.'),
   packageNames: z.array(z.string().max(200)).max(3).optional().describe('Known PyPI distribution names from real installation/project evidence, not guesses.'),
   budgetMs: z.number().int().min(100).max(120000).default(60000),
+  maxPages: z.number().int().min(1).max(3).default(2).describe('Maximum discovery pages per source/query under the same total budget. First pages run before continuations; exact lookups stay single-page.'),
   useCache: z.boolean().default(true),
   binding: z.object({ sessionId: z.string().min(1).max(200), turnId: z.string().min(1).max(200) }).optional().describe('Use the session/turn IDs supplied by the Codex hook, when present.'),
 });
@@ -34,7 +35,7 @@ export const decisionSchema = z.object({
 });
 
 export function createServer(assistant: ReuseAssistant): McpServer {
-  const server = new McpServer({ name: 'reuse-assistant', version: '0.2.0' });
+  const server = new McpServer({ name: 'reuse-assistant', version: '0.3.0' });
   const handler = (fn: (args: any) => Promise<unknown>) => async (args: any) => {
     try {
       const result = await fn(args);

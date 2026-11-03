@@ -5,13 +5,14 @@ import { digest, projectFingerprint, searchLocal } from './project.js';
 import { mergeCandidates, searchGitHub, searchGitLab, searchNpm, verifyPypi } from './sources.js';
 import { searchRegistry } from './registries.js';
 import { SOURCE_CATALOG, selectedSources } from './catalog.js';
+import { searchPages, type SearchJob } from './pagination.js';
 import { inspectCandidate } from './inspect.js';
 import { Store } from './store.js';
 import { decisionNextAction } from './format.js';
 import type { CheckInput, CheckReport, Decision, DecisionInput, Inspection, SourceResult } from './types.js';
 import { ECOSYSTEMS } from './types.js';
 
-const context = (input: CheckInput, fingerprint: string) => digest({ task: input.task, queries: input.queries, constraints: input.constraints ?? [], scope: input.scope, ecosystem: input.ecosystem, packages: input.packageNames ?? [], ...(input.sources ? { sources: input.sources } : {}), fingerprint });
+const context = (input: CheckInput, fingerprint: string) => digest({ task: input.task, queries: input.queries, constraints: input.constraints ?? [], scope: input.scope, ecosystem: input.ecosystem, packages: input.packageNames ?? [], ...(input.sources ? { sources: input.sources } : {}), ...(input.maxPages !== undefined ? { maxPages: input.maxPages } : {}), fingerprint });
 
 export class ReuseAssistant {
   readonly store: Store;
@@ -23,43 +24,35 @@ export class ReuseAssistant {
     if (input.task.length > 4000 || (input.constraints?.length ?? 0) > 20 || (input.packageNames?.length ?? 0) > 3) throw new Error('Request exceeds the supported task/constraint/package limits');
     if (input.ecosystem && !ECOSYSTEMS.includes(input.ecosystem)) throw new Error('Unsupported ecosystem');
     if (input.scope && !['local', 'full'].includes(input.scope)) throw new Error('Unsupported scope');
+    if (input.maxPages !== undefined && (!Number.isInteger(input.maxPages) || input.maxPages < 1 || input.maxPages > 3)) throw new Error('maxPages must be an integer from 1 to 3');
     const selection = selectedSources(input);
     if (!input.sources && input.queries.some(q => /^@[\w.-]+\/[\w.-]+$/.test(q.trim())) && !selection.includes('npm')) selection.push('npm');
     if (input.scope !== 'local' && input.packageNames?.length && !selection.includes('pypi')) throw new Error('packageNames verifies PyPI distributions; include pypi in sources');
     const start = performance.now();
     const root = await realpath(this.projectRoot);
     const fingerprint = await projectFingerprint(root);
-    const normalized: CheckInput = { ...input, queries: [...new Set(input.queries.map(q => q.trim()))], scope: input.scope ?? 'full', ecosystem: input.ecosystem ?? 'auto', sources: input.scope === 'local' ? [] : selection };
+    const normalized: CheckInput = { ...input, queries: [...new Set(input.queries.map(q => q.trim()))], scope: input.scope ?? 'full', ecosystem: input.ecosystem ?? 'auto', sources: input.scope === 'local' ? [] : selection, maxPages: input.maxPages ?? 2 };
     const contextHash = context(normalized, fingerprint);
     const signal = AbortSignal.timeout(Math.max(100, Math.min(120_000, input.budgetMs ?? 60_000)));
     const localPromise = searchLocal(root, normalized.queries, signal);
     const cached = normalized.scope === 'full' && input.useCache !== false ? await this.store.cache(contextHash) : undefined;
     let remote: SourceResult[] = cached?.results ?? [];
     if (!cached && normalized.scope === 'full') {
-      const jobs: (() => Promise<SourceResult>)[] = [];
+      const jobs: SearchJob[] = [];
       for (const q of normalized.queries) {
         const scopedNpm = !input.sources && /^@[\w.-]+\/[\w.-]+$/.test(q);
         for (const source of selection) {
           if (source === 'pypi') continue;
           if (scopedNpm && source !== 'npm') {
             jobs.push(async () => ({ source, query: q, status: 'skipped', candidates: [], elapsedMs: 0, notes: ['Exact scoped npm query routed to npm only.'] }));
-          } else if (source === 'github') jobs.push(() => searchGitHub(this.http, q, signal));
-          else if (source === 'gitlab') jobs.push(() => searchGitLab(this.http, q, signal));
-          else if (source === 'npm') jobs.push(() => searchNpm(this.http, q, signal));
-          else jobs.push(() => searchRegistry(this.http, source, q, signal));
+          } else if (source === 'github') jobs.push(page => searchGitHub(this.http, q, signal, page));
+          else if (source === 'gitlab') jobs.push(page => searchGitLab(this.http, q, signal, page));
+          else if (source === 'npm') jobs.push(page => searchNpm(this.http, q, signal, page));
+          else jobs.push(page => searchRegistry(this.http, source, q, signal, page));
         }
       }
       for (const name of normalized.packageNames ?? []) jobs.push(() => verifyPypi(this.http, name, signal));
-      // Bounded workers preserve source order and isolate failures.
-      const results: SourceResult[] = [];
-      let next = 0;
-      await Promise.all(Array.from({ length: Math.min(4, jobs.length) }, async () => {
-        while (next < jobs.length) {
-          const i = next++;
-          results[i] = await jobs[i]!();
-        }
-      }));
-      remote = results;
+      remote = await searchPages(jobs, normalized.maxPages!, signal);
       if (selection.includes('pypi') && !normalized.packageNames?.length) remote.push({ source: 'pypi', query: '', status: 'skipped', candidates: [], elapsedMs: 0, notes: ['Discover Python projects via repository search; inspect installation/project metadata to identify a distribution, then verify it with PyPI. PyPI full-text search is not available.'] });
       if (remote.every(r => ['ok', 'empty', 'skipped'].includes(r.status))) await this.store.saveCache(contextHash, remote);
     }
@@ -71,7 +64,7 @@ export class ReuseAssistant {
       cached: Boolean(cached), cacheCreatedAt: cached?.createdAt, elapsedMs: Math.round(performance.now() - start),
       sources, candidates: mergeCandidates(sources.flatMap(r => r.candidates), normalized.queries), inspections: [],
       sourcePlan: SOURCE_CATALOG.map(s => ({ ...s, selected: normalized.sources!.includes(s.source) })),
-      notes: ['Complete means the bounded query plan finished, not exhaustive ecosystem or all-platform coverage.', 'At most 8 local matches appear in the merged shortlist; source results retain additional matches. Each returning remote source keeps a representative when possible.', 'Exact scoped npm names are routed to npm unless explicit sources override routing.', 'Go currently uses repository search; no Go registry full-text adapter is implemented.', 'Host must inspect relevant evidence and judge requirement fit; health signals do not authorize adoption.', ...(normalized.queries.some(q => /\p{Script=Han}/u.test(q)) ? ['Chinese queries are preserved. Add English technical synonyms when useful; this tool does not translate or invent them.'] : [])],
+      notes: ['Complete means the bounded query plan finished, not exhaustive ecosystem or all-platform coverage.', `Searches fetch at most ${normalized.maxPages} pages per source/query, sharing the total budget; all first-page jobs run before continuations. Pagination exposes remaining results and stop reasons. Full pages without a reported total may have more results; totals and offset rankings can change between requests.`, 'At most 8 local matches appear in the merged shortlist; source results retain additional matches. Each returning remote source keeps a representative when possible.', 'Exact scoped npm names are routed to npm unless explicit sources override routing.', 'Go currently uses repository search; no Go registry full-text adapter is implemented.', 'Host must inspect relevant evidence and judge requirement fit; health signals do not authorize adoption.', ...(normalized.queries.some(q => /\p{Script=Han}/u.test(q)) ? ['Chinese queries are preserved. Add English technical synonyms when useful; this tool does not translate or invent them.'] : [])],
     };
     if (normalized.binding) {
       const gate = await this.store.gate(normalized.binding.sessionId);

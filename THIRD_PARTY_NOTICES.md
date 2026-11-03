@@ -12,6 +12,8 @@ The official MCP SDK and smol-toml are normal dependencies, not copied source. T
 
 The v0.2 GitLab/crates.io/Maven/NuGet/RubyGems/Packagist adapters are new integration code built on this project's existing core and official public API documentation (references in `docs/SOURCES.md`). No additional upstream implementation was copied or added as a dependency. `query-registry@4.4.0` at `611281557e18d69135ce51acd71f74299fb6a26c` was inspected and rejected because its npm-only scope does not meet the multi-ecosystem requirement; none of its code is incorporated.
 
+The v0.3 pagination scheduler and adapter changes reuse this project's existing core/transport and official API protocols (see `docs/SOURCES.md`); no additional upstream code was copied and no dependency was added. `algoliasearch-helper@3.30.1` / `algolia/instantsearch` at `3d258cf58b621da1347809e06282b83d4aab8ca2` was inspected and rejected because its Algolia-specific search model does not fit these independent public registries; none of its code is incorporated. Existing upstream notices and modifications above remain applicable.
+
 ## Upstream MIT notices
 
 wheel-hub: Copyright (c) 2026 wheelhub contributors

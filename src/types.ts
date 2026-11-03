@@ -20,6 +20,15 @@ export interface SourceCapability {
   limitations: string[];
 }
 export type SourceStatus = 'ok' | 'empty' | 'partial' | 'rate_limited' | 'timeout' | 'unavailable' | 'skipped';
+export interface SearchPagination {
+  pageSize: number;
+  pagesFetched: number;
+  itemsFetched: number;
+  totalAvailable?: number;
+  hasMore: boolean;
+  stopReason: 'exhausted' | 'page_limit' | 'error' | 'budget' | 'no_new_candidates' | 'lookup';
+  failedPage?: number;
+}
 export interface SourceResult {
   source: Source;
   query: string;
@@ -29,6 +38,7 @@ export interface SourceResult {
   elapsedMs: number;
   error?: { code: string; message: string; status?: number; retryAfterMs?: number };
   notes: string[];
+  pagination?: SearchPagination;
 }
 export interface Candidate {
   id: string;
@@ -60,6 +70,7 @@ export interface CheckInput {
   sources?: RemoteSource[];
   packageNames?: string[];
   budgetMs?: number;
+  maxPages?: number;
   useCache?: boolean;
   binding?: Binding;
 }

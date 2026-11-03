@@ -50,7 +50,7 @@ export class Http {
       throw new SourceError('invalid_url', 'Only supported public registry endpoints are readable');
     }
     const signal = AbortSignal.any([parent, AbortSignal.timeout(12_000)]);
-    const headers: Record<string, string> = { 'User-Agent': 'reuse-assistant/0.2 (+https://github.com/tianxiashan294-design/reuse-assistant)', Accept: 'application/json, text/plain, application/xml' };
+    const headers: Record<string, string> = { 'User-Agent': 'reuse-assistant/0.3 (+https://github.com/tianxiashan294-design/reuse-assistant)', Accept: 'application/json, text/plain, application/xml' };
     if (target.hostname === 'api.github.com') {
       headers.Accept = 'application/vnd.github+json';
       headers['X-GitHub-Api-Version'] = '2022-11-28';

@@ -1,0 +1,754 @@
+{
+  "runs": [
+    {
+      "startedAt": "2026-10-29T14:22:08.517Z",
+      "finishedAt": "2026-10-29T14:22:29.266Z",
+      "node": "v24.15.0",
+      "passed": false,
+      "observations": [
+        {
+          "source": "github",
+          "checkId": "4cc4fed2-2476-463a-8609-87bf31757b25",
+          "query": "json",
+          "passed": false,
+          "status": "rate_limited",
+          "elapsedMs": 718,
+          "count": 0,
+          "error": {
+            "code": "rate_limited",
+            "message": "api.github.com returned HTTP 403",
+            "status": 403,
+            "retryAfterMs": 8763
+          },
+          "notes": [],
+          "candidates": []
+        },
+        {
+          "source": "gitlab",
+          "checkId": "c62ea88d-5d8f-4f1b-980b-45305f10d7d4",
+          "query": "json",
+          "passed": true,
+          "status": "ok",
+          "elapsedMs": 2069,
+          "count": 12,
+          "pagination": {
+            "pageSize": 6,
+            "pagesFetched": 2,
+            "itemsFetched": 12,
+            "hasMore": true,
+            "stopReason": "page_limit"
+          },
+          "notes": [
+            "Public gitlab.com project name/path/description substring search; ascending project ID for stable paging, not relevance order, global code search or self-hosted GitLab coverage."
+          ],
+          "candidates": [
+            {
+              "id": "gitlab:bat/js2json"
+            },
+            {
+              "id": "gitlab:chrisallick/ruby-json-websocket-server"
+            },
+            {
+              "id": "gitlab:tarmstrong/git2json"
+            },
+            {
+              "id": "gitlab:benjyw/rgonaut"
+            },
+            {
+              "id": "gitlab:ricardokirkner/collection-json-python"
+            },
+            {
+              "id": "gitlab:jmkoni/book-app"
+            },
+            {
+              "id": "gitlab:Dorianux/data_repo_test"
+            },
+            {
+              "id": "gitlab:jeff.triplett/flask-whois"
+            },
+            {
+              "id": "gitlab:magnum/cloudstats"
+            },
+            {
+              "id": "gitlab:jksdua/jsonschema-extra"
+            },
+            {
+              "id": "gitlab:gzw/create-json"
+            },
+            {
+              "id": "gitlab:ancc_GitLab/jsonfordic"
+            }
+          ]
+        },
+        {
+          "source": "npm",
+          "checkId": "b6442373-f0be-4681-8120-96ef36c0ddea",
+          "query": "json",
+          "passed": true,
+          "status": "ok",
+          "elapsedMs": 3898,
+          "count": 12,
+          "pagination": {
+            "pageSize": 6,
+            "pagesFetched": 2,
+            "itemsFetched": 12,
+            "totalAvailable": 352118,
+            "hasMore": true,
+            "stopReason": "page_limit"
+          },
+          "notes": [
+            "Package registry search; published metadata must be verified before adoption."
+          ],
+          "candidates": [
+            {
+              "id": "npm:json",
+              "version": "11.0.0"
+            },
+            {
+              "id": "npm:strip-json-comments",
+              "version": "5.0.3"
+            },
+            {
+              "id": "npm:parse-json",
+              "version": "8.3.0"
+            },
+            {
+              "id": "npm:json-schema",
+              "version": "0.4.0"
+            },
+            {
+              "id": "npm:@types/json-schema",
+              "version": "7.0.15"
+            },
+            {
+              "id": "npm:json-schema-traverse",
+              "version": "1.0.0"
+            },
+            {
+              "id": "npm:@tufjs/canonical-json",
+              "version": "2.0.0"
+            },
+            {
+              "id": "npm:zod-to-json-schema",
+              "version": "3.25.2"
+            },
+            {
+              "id": "npm:secure-json-parse",
+              "version": "4.1.1"
+            },
+            {
+              "id": "npm:@jsonjoy.com/json-pack",
+              "version": "18.30.0"
+            },
+            {
+              "id": "npm:@jsonjoy.com/json-pointer",
+              "version": "18.30.0"
+            },
+            {
+              "id": "npm:json-buffer",
+              "version": "3.0.1"
+            }
+          ]
+        },
+        {
+          "source": "crates",
+          "checkId": "2f66f4da-2d23-4775-b6ef-0cc4a729d89a",
+          "query": "json",
+          "passed": true,
+          "status": "ok",
+          "elapsedMs": 1733,
+          "count": 12,
+          "pagination": {
+            "pageSize": 6,
+            "pagesFetched": 2,
+            "itemsFetched": 12,
+            "totalAvailable": 51234,
+            "hasMore": true,
+            "stopReason": "page_limit"
+          },
+          "notes": [
+            "Bounded package metadata discovery; not exhaustive recall or global source-code search."
+          ],
+          "candidates": [
+            {
+              "id": "crates:json",
+              "version": "0.12.4"
+            },
+            {
+              "id": "crates:typed-json",
+              "version": "0.1.1"
+            },
+            {
+              "id": "crates:datafusion-functions-json",
+              "version": "0.55.6"
+            },
+            {
+              "id": "crates:valico",
+              "version": "4.0.0"
+            },
+            {
+              "id": "crates:serde_json",
+              "version": "1.0.154"
+            },
+            {
+              "id": "crates:from",
+              "version": "0.1.4"
+            },
+            {
+              "id": "crates:struson",
+              "version": "0.7.2"
+            },
+            {
+              "id": "crates:sonic-rs",
+              "version": "0.5.10"
+            },
+            {
+              "id": "crates:jsonpath_lib",
+              "version": "0.3.0"
+            },
+            {
+              "id": "crates:jsonrepair-rs",
+              "version": "0.2.6"
+            },
+            {
+              "id": "crates:serde_json_borrow",
+              "version": "0.9.0"
+            },
+            {
+              "id": "crates:assert-json-diff",
+              "version": "2.0.2"
+            }
+          ]
+        },
+        {
+          "source": "maven",
+          "checkId": "ad7c90b0-2aca-4bde-aa0f-2905557336fa",
+          "query": "json",
+          "passed": true,
+          "status": "ok",
+          "elapsedMs": 2411,
+          "count": 12,
+          "pagination": {
+            "pageSize": 6,
+            "pagesFetched": 2,
+            "itemsFetched": 12,
+            "totalAvailable": 21378,
+            "hasMore": true,
+            "stopReason": "page_limit"
+          },
+          "notes": [
+            "Bounded package metadata discovery; not exhaustive recall or global source-code search.",
+            "Maven query syntax searches artifact coordinates; natural-language needs may require shorter technical terms."
+          ],
+          "candidates": [
+            {
+              "id": "maven:org.openidentityplatform.commons.selfservice:json",
+              "version": "2.3.0"
+            },
+            {
+              "id": "maven:org.openidentityplatform.commons.audit:json",
+              "version": "2.3.0"
+            },
+            {
+              "id": "maven:net.akehurst.kotlin.json:json",
+              "version": "2.1.21"
+            },
+            {
+              "id": "maven:io.airlift:json",
+              "version": "338"
+            },
+            {
+              "id": "maven:com.zuunr:json",
+              "version": "0.1.7"
+            },
+            {
+              "id": "maven:io.github.ralfspoeth:json",
+              "version": "1.1.43"
+            },
+            {
+              "id": "maven:com.github.bibsysdev:json",
+              "version": "2.2.6"
+            },
+            {
+              "id": "maven:com.facebook.airlift:json",
+              "version": "0.219"
+            },
+            {
+              "id": "maven:org.json:json",
+              "version": "20250517"
+            },
+            {
+              "id": "maven:com.growingio.android:json",
+              "version": "4.4.3"
+            },
+            {
+              "id": "maven:com.buschmais.jqassistant.plugin:json",
+              "version": "2.7.0"
+            },
+            {
+              "id": "maven:com.thegoate:json",
+              "version": "0.16.17.202504292036"
+            }
+          ]
+        },
+        {
+          "source": "nuget",
+          "checkId": "27dd9ed4-5f22-430a-b848-dc222282abc4",
+          "query": "json",
+          "passed": true,
+          "status": "ok",
+          "elapsedMs": 4368,
+          "count": 12,
+          "pagination": {
+            "pageSize": 6,
+            "pagesFetched": 2,
+            "itemsFetched": 12,
+            "totalAvailable": 12536,
+            "hasMore": true,
+            "stopReason": "page_limit"
+          },
+          "notes": [
+            "Bounded package metadata discovery; not exhaustive recall or global source-code search."
+          ],
+          "candidates": [
+            {
+              "id": "nuget:Newtonsoft.Json",
+              "version": "13.0.4"
+            },
+            {
+              "id": "nuget:System.Text.Json",
+              "version": "10.0.14"
+            },
+            {
+              "id": "nuget:Microsoft.IdentityModel.JsonWebTokens",
+              "version": "8.23.0"
+            },
+            {
+              "id": "nuget:Microsoft.Extensions.Configuration.Json",
+              "version": "10.0.14"
+            },
+            {
+              "id": "nuget:Microsoft.AspNetCore.JsonPatch",
+              "version": "10.0.14"
+            },
+            {
+              "id": "nuget:Newtonsoft.Json.Bson",
+              "version": "1.0.3"
+            },
+            {
+              "id": "nuget:Microsoft.AspNetCore.Mvc.NewtonsoftJson",
+              "version": "10.0.14"
+            },
+            {
+              "id": "nuget:Microsoft.AspNetCore.Mvc.Formatters.Json",
+              "version": "2.3.13"
+            },
+            {
+              "id": "nuget:System.IdentityModel.Tokens.Jwt",
+              "version": "8.23.0"
+            },
+            {
+              "id": "nuget:System.Runtime.Serialization.Json",
+              "version": "4.3.0"
+            },
+            {
+              "id": "nuget:Serilog.Formatting.Compact",
+              "version": "3.0.0"
+            },
+            {
+              "id": "nuget:JsonSubTypes",
+              "version": "2.2.0"
+            }
+          ]
+        },
+        {
+          "source": "rubygems",
+          "checkId": "6724b644-9497-4e68-ba27-03f92dcd2fae",
+          "query": "json",
+          "passed": true,
+          "status": "ok",
+          "elapsedMs": 1226,
+          "count": 60,
+          "pagination": {
+            "pageSize": 30,
+            "pagesFetched": 2,
+            "itemsFetched": 60,
+            "hasMore": true,
+            "stopReason": "page_limit"
+          },
+          "notes": [
+            "Bounded package metadata discovery; not exhaustive recall or global source-code search."
+          ],
+          "candidates": [
+            {
+              "id": "rubygems:json",
+              "version": "3.1.0"
+            },
+            {
+              "id": "rubygems:json-schema",
+              "version": "6.2.1"
+            },
+            {
+              "id": "rubygems:json-jwt",
+              "version": "1.17.2"
+            },
+            {
+              "id": "rubygems:json_schemer",
+              "version": "2.5.0"
+            },
+            {
+              "id": "rubygems:json_pure",
+              "version": "2.8.1"
+            },
+            {
+              "id": "rubygems:json_schema",
+              "version": "0.21.0"
+            },
+            {
+              "id": "rubygems:json_spec",
+              "version": "1.1.5"
+            },
+            {
+              "id": "rubygems:multi_json",
+              "version": "1.21.2"
+            },
+            {
+              "id": "rubygems:json-diff",
+              "version": "0.4.1"
+            },
+            {
+              "id": "rubygems:json_matchers",
+              "version": "0.11.1"
+            },
+            {
+              "id": "rubygems:json_expressions",
+              "version": "0.9.0"
+            },
+            {
+              "id": "rubygems:json-canonicalization",
+              "version": "1.0.0"
+            },
+            {
+              "id": "rubygems:json-ld",
+              "version": "3.3.2"
+            },
+            {
+              "id": "rubygems:json-stream",
+              "version": "1.0.0"
+            },
+            {
+              "id": "rubygems:fog-json",
+              "version": "1.5.0"
+            },
+            {
+              "id": "rubygems:json_logic",
+              "version": "0.4.7"
+            },
+            {
+              "id": "rubygems:json-emitter",
+              "version": "1.1.0"
+            },
+            {
+              "id": "rubygems:json_refs",
+              "version": "0.1.9"
+            },
+            {
+              "id": "rubygems:json-compare",
+              "version": "0.1.8"
+            },
+            {
+              "id": "rubygems:json-streamer",
+              "version": "2.1.0"
+            },
+            {
+              "id": "rubygems:json_skooma",
+              "version": "0.2.7"
+            },
+            {
+              "id": "rubygems:json_api_client",
+              "version": "1.25.0"
+            },
+            {
+              "id": "rubygems:json-minify",
+              "version": "0.0.3"
+            },
+            {
+              "id": "rubygems:json-patch",
+              "version": "1.0.0"
+            },
+            {
+              "id": "rubygems:json_builder",
+              "version": "3.1.7"
+            },
+            {
+              "id": "rubygems:json_translate",
+              "version": "4.0.1"
+            },
+            {
+              "id": "rubygems:simplecov-json",
+              "version": "0.2.3"
+            },
+            {
+              "id": "rubygems:json_truncate",
+              "version": "0.0.2"
+            },
+            {
+              "id": "rubygems:json-jruby",
+              "version": "1.5.0"
+            },
+            {
+              "id": "rubygems:json-ld-preloaded",
+              "version": "3.3.2"
+            },
+            {
+              "id": "rubygems:simplecov_json_formatter",
+              "version": "0.1.4"
+            },
+            {
+              "id": "rubygems:package_json",
+              "version": "0.2.0"
+            },
+            {
+              "id": "rubygems:json-schema-generator",
+              "version": "0.0.9"
+            },
+            {
+              "id": "rubygems:json-pointer",
+              "version": "0.0.1"
+            },
+            {
+              "id": "rubygems:json_world",
+              "version": "0.4.0"
+            },
+            {
+              "id": "rubygems:json-repair",
+              "version": "0.15.0"
+            },
+            {
+              "id": "rubygems:json_rpc_handler",
+              "version": "0.1.1"
+            },
+            {
+              "id": "rubygems:json_select",
+              "version": "0.1.4"
+            },
+            {
+              "id": "rubygems:json-api-vanilla",
+              "version": "1.0.4"
+            },
+            {
+              "id": "rubygems:json-schema_builder",
+              "version": "0.8.2"
+            },
+            {
+              "id": "rubygems:json_completer",
+              "version": "1.2.0"
+            },
+            {
+              "id": "rubygems:json_kit",
+              "version": "1.0.0"
+            },
+            {
+              "id": "rubygems:json-schema-rspec",
+              "version": "0.0.4"
+            },
+            {
+              "id": "rubygems:json-logic-rb",
+              "version": "0.4.0"
+            },
+            {
+              "id": "rubygems:json_voorhees",
+              "version": "1.5.1"
+            },
+            {
+              "id": "rubygems:json_converter",
+              "version": "0.0.1"
+            },
+            {
+              "id": "rubygems:json_color",
+              "version": "0.1.0"
+            },
+            {
+              "id": "rubygems:json_mapper",
+              "version": "0.2.1"
+            },
+            {
+              "id": "rubygems:json_schema_tools",
+              "version": "0.6.6"
+            },
+            {
+              "id": "rubygems:json_vat",
+              "version": "2.0.0"
+            },
+            {
+              "id": "rubygems:strong_json",
+              "version": "2.1.2"
+            },
+            {
+              "id": "rubygems:json_record",
+              "version": "1.1.1"
+            },
+            {
+              "id": "rubygems:json-serializer",
+              "version": "1.0.0"
+            },
+            {
+              "id": "rubygems:attr_json",
+              "version": "2.6.0"
+            },
+            {
+              "id": "rubygems:json_requester",
+              "version": "2.0.9"
+            },
+            {
+              "id": "rubygems:json_validator",
+              "version": "0.0.2"
+            },
+            {
+              "id": "rubygems:json-prettyprint",
+              "version": "0.0.2"
+            },
+            {
+              "id": "rubygems:sensu-json",
+              "version": "2.1.1"
+            },
+            {
+              "id": "rubygems:po_to_json",
+              "version": "3.1.0"
+            },
+            {
+              "id": "rubygems:rspec-json_expectations",
+              "version": "2.2.0"
+            }
+          ]
+        },
+        {
+          "source": "packagist",
+          "checkId": "7ede7179-5248-4a06-90dd-d4e02b1ea11b",
+          "query": "json",
+          "passed": true,
+          "status": "ok",
+          "elapsedMs": 4281,
+          "count": 12,
+          "pagination": {
+            "pageSize": 6,
+            "pagesFetched": 2,
+            "itemsFetched": 12,
+            "totalAvailable": 9735,
+            "hasMore": true,
+            "stopReason": "page_limit"
+          },
+          "notes": [
+            "Bounded package metadata discovery; not exhaustive recall or global source-code search."
+          ],
+          "candidates": [
+            {
+              "id": "packagist:justinrainbow/json-schema"
+            },
+            {
+              "id": "packagist:nette/utils"
+            },
+            {
+              "id": "packagist:mtdowling/jmespath.php"
+            },
+            {
+              "id": "packagist:symfony/serializer"
+            },
+            {
+              "id": "packagist:lcobucci/jwt"
+            },
+            {
+              "id": "packagist:firebase/php-jwt"
+            },
+            {
+              "id": "packagist:seld/jsonlint"
+            },
+            {
+              "id": "packagist:opis/json-schema"
+            },
+            {
+              "id": "packagist:netresearch/jsonmapper"
+            },
+            {
+              "id": "packagist:zircote/swagger-php"
+            },
+            {
+              "id": "packagist:league/fractal"
+            },
+            {
+              "id": "packagist:laravel/pao"
+            }
+          ]
+        }
+      ],
+      "note": "Live endpoint pagination samples only, not a recall benchmark, remote CI result or Codex desktop reload/activation claim. Prior failures are retained in runs."
+    },
+    {
+      "startedAt": "2026-10-29T14:23:22.161Z",
+      "finishedAt": "2026-10-29T14:23:23.800Z",
+      "node": "v24.15.0",
+      "passed": true,
+      "observations": [
+        {
+          "source": "github",
+          "checkId": "48536a52-d130-4ce8-9b53-c27866269278",
+          "query": "json",
+          "passed": true,
+          "status": "ok",
+          "elapsedMs": 1632,
+          "count": 12,
+          "pagination": {
+            "pageSize": 6,
+            "pagesFetched": 2,
+            "itemsFetched": 12,
+            "totalAvailable": 19488829,
+            "hasMore": true,
+            "stopReason": "page_limit"
+          },
+          "notes": [
+            "Repository/README discovery, not global source-code full-text search."
+          ],
+          "candidates": [
+            {
+              "id": "github:nlohmann/json"
+            },
+            {
+              "id": "github:serde-rs/json"
+            },
+            {
+              "id": "github:ruby/json"
+            },
+            {
+              "id": "github:konklone/json"
+            },
+            {
+              "id": "github:trentm/json"
+            },
+            {
+              "id": "github:rsanchez/json"
+            },
+            {
+              "id": "github:boostorg/json"
+            },
+            {
+              "id": "github:taocpp/json"
+            },
+            {
+              "id": "github:zanders3/json"
+            },
+            {
+              "id": "github:go-json-experiment/json"
+            },
+            {
+              "id": "github:MrFuguDataScience/JSON"
+            },
+            {
+              "id": "github:soffes/JSON"
+            }
+          ]
+        }
+      ],
+      "note": "Live endpoint pagination samples only, not a recall benchmark, remote CI result or Codex desktop reload/activation claim. Prior failures are retained in runs."
+    }
+  ]
+}

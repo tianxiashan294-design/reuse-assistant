@@ -4,9 +4,10 @@
 
 目标是减少 AI 不必要的重复实现：先查当前项目，再找已有依赖、代码和设计；阅读证据后选择复用或自建，最后记录实际集成与验证结果。
 
-当前为 v0.2.0 预览版，官方源码仓库是 [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant)。项目尚未发布到 npm，请使用本仓库源码，不要仅凭同名 `npx` 包安装。
+当前为 v0.3.0 预览版，官方源码仓库是 [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant)。项目尚未发布到 npm，请使用本仓库源码，不要仅凭同名 `npx` 包安装。
 
-最终目标是**全代码语言、全平台搜集**。第二版先增加 6 个搜索源，长期方向和后续顺序保存在[路线图](docs/ROADMAP.md)，当前实际能力见[来源矩阵](docs/SOURCES.md)。
+最终目标是**全代码语言、全平台搜集**。第二版增加 6 个搜索源；第三版增加有预算的分页召回，后续页失败时保留已有候选。长期方向和后续顺序保存在[路线图](docs/ROADMAP.md)，当前实际能力见[来源矩阵](docs/SOURCES.md)。
+
 
 ## 启动
 
@@ -59,6 +60,10 @@ node dist/src/cli.js uninstall --project 'C:\你的项目'
 
 搜索区分零结果、超时、限流和未查询；不完整的检索或候选证据需要明确确认后继续。普通检索默认预算 60 秒，深入读取另有预算。远程缓存默认 6 小时并显示时间，本地代码每次重新检查。需求、约束和依赖状态变化会使相关记录失效。
 
+每个来源、每条查询默认最多读 **2 页**，可通过 `--max-pages 1`、`2` 或 `3` 调整；JSON/MCP 使用 `maxPages`。所有来源的第一页任务完成后再读后续页，最多四个工作任务并发，所有页共享总预算。多数来源每页 6 条；RubyGems 按官方固定页大小保留全部 30 条，避免跨页时漏掉原先被截去的条目。GitLab 精确 URL 和 PyPI 包名仍只核验一次。总候选短名单保持最多 30 条，各来源结果保留全部已读候选。
+
+成功读取的搜索结果公开 `pagination`：页大小、成功页数、读取条目数、上游总数（如有）、`hasMore` 与停止原因。达到页数上限表示有限计划完成，仍可能有未读结果。后续页失败保留已有候选、错误和失败页码，标记覆盖不完整且不缓存；重复页也会明确停止并标记不完整。分页上限参与缓存隔离。上游总数和偏移排序可能变化，当前不提供快照或穷尽搜索。
+
 查询按来源限制调整：npm 最多 64 字符，GitHub 连同筛选条件最多 256 字符。缩短查询会显示实际请求，并标记覆盖不完整。完成验证后的报告显示最新决策阶段及验证结果。
 
 npm 元数据与仓库源码提交分别记录；若不能证明源码对应发布包，报告会明确标记关联未核实。
@@ -76,10 +81,11 @@ npm run check
 npm test
 npm run smoke
 npm run smoke:v2
+npm run smoke:v3
 ```
 
 离线测试、联网接口观察、Agent 实际使用和真实 Codex hooks 激活是不同验证层次。具体完成情况见[验证记录](docs/VALIDATION.md)，Node 22/24、Windows/Linux 的远程检查见 [GitHub Actions](https://github.com/tianxiashan294-design/reuse-assistant/actions)。架构、已知限制与扩展方法见[架构说明](docs/ARCHITECTURE.md)。
 
-第二版的联网观察保存在 [live-smoke-v2.json](docs/live-smoke-v2.json)，包括历史失败。长期继续扩展语言生态、代码平台、分页召回和证据关联；当前结果不代表已完成全平台覆盖。
+第二版的联网观察保存在 [live-smoke-v2.json](docs/live-smoke-v2.json)。第三版两页搜索观察保存在 [live-smoke-v3.json](docs/live-smoke-v3.json)，均保留历史失败。构建后可用 `node dist/test/live-smoke-v3.js github` 只重查该来源。长期继续扩展语言生态、代码平台、召回与证据关联；当前结果不代表已完成全平台覆盖。
 
 MIT 开源；上游来源、固定提交和修改见[第三方归属](THIRD_PARTY_NOTICES.md)。

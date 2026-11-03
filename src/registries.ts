@@ -1,5 +1,6 @@
 import { Http, SourceError } from './http.js';
 import { outcome, repositoryKey } from './sources.js';
+import { pageProgress } from './pagination.js';
 import type { Candidate, PackageIdentity, RegistrySource, SourceResult } from './types.js';
 
 function array(value: unknown, label: string): any[] {
@@ -23,42 +24,47 @@ export async function nugetResource(http: Http, type: string, signal: AbortSigna
   return resource['@id'];
 }
 
-export function searchRegistry(http: Http, source: Exclude<RegistrySource, 'npm' | 'pypi'>, query: string, signal: AbortSignal): Promise<SourceResult> {
+export function searchRegistry(http: Http, source: Exclude<RegistrySource, 'npm' | 'pypi'>, query: string, signal: AbortSignal, page = 1): Promise<SourceResult> {
   return outcome(source, query, signal, async () => {
     let candidates: Candidate[];
+    let total: unknown;
     if (source === 'crates') {
       const url = new URL('https://crates.io/api/v1/crates');
-      url.search = new URLSearchParams({ q: query, per_page: '6' }).toString();
+      url.search = new URLSearchParams({ q: query, per_page: '6', page: String(page) }).toString();
       const data = await http.json(url.href, signal);
-      candidates = array(data.crates, 'crates.io search').slice(0, 6).map(p => candidate(source, query, p.name, `https://crates.io/crates/${encodeURIComponent(p.name)}`, p.description, p.max_stable_version || p.max_version, p.repository));
+      total = data.meta?.total;
+      candidates = array(data.crates, 'crates.io search').map(p => candidate(source, query, p.name, `https://crates.io/crates/${encodeURIComponent(p.name)}`, p.description, p.max_stable_version || p.max_version, p.repository));
     } else if (source === 'maven') {
       const url = new URL('https://search.maven.org/solrsearch/select');
-      url.search = new URLSearchParams({ q: query, rows: '6', wt: 'json' }).toString();
+      url.search = new URLSearchParams({ q: query, rows: '6', start: String((page - 1) * 6), wt: 'json' }).toString();
       const data = await http.json(url.href, signal);
-      candidates = array(data.response?.docs, 'Maven search').slice(0, 6).map(p => {
+      total = data.response?.numFound;
+      candidates = array(data.response?.docs, 'Maven search').map(p => {
         if (!string(p.g) || !string(p.a)) throw new SourceError('invalid_response', 'Missing Maven coordinates');
         return candidate(source, query, `${p.g}:${p.a}`, `https://central.sonatype.com/artifact/${encodeURIComponent(p.g)}/${encodeURIComponent(p.a)}`, `${p.g}:${p.a} (${p.p ?? 'artifact'})`, p.latestVersion ?? p.v);
       });
     } else if (source === 'nuget') {
       const url = new URL(await nugetResource(http, 'SearchQueryService', signal));
-      url.search = new URLSearchParams({ q: query, take: '6', skip: '0', prerelease: 'false', semVerLevel: '2.0.0' }).toString();
+      url.search = new URLSearchParams({ q: query, take: '6', skip: String((page - 1) * 6), prerelease: 'false', semVerLevel: '2.0.0' }).toString();
       const data = await http.json(url.href, signal);
-      candidates = array(data.data, 'NuGet search').slice(0, 6).map(p => {
+      total = data.totalHits;
+      candidates = array(data.data, 'NuGet search').map(p => {
         const c = candidate(source, query, p.id, `https://www.nuget.org/packages/${encodeURIComponent(p.id)}`, p.description, p.version, repo(p.projectUrl), string(p.versions?.find((v: any) => v.version === p.version)?.['@id']));
         c.packages![0]!.registrationUrl = string(p.registration);
         return c;
       });
     } else if (source === 'rubygems') {
       const url = new URL('https://rubygems.org/api/v1/search.json');
-      url.search = new URLSearchParams({ query, page: '1' }).toString();
-      candidates = array(await http.json(url.href, signal), 'RubyGems search').slice(0, 6).map(p => candidate(source, query, p.name, `https://rubygems.org/gems/${encodeURIComponent(p.name)}`, p.info, p.version, repo(p.source_code_uri, p.metadata?.source_code_uri), undefined, string(p.platform)));
+      url.search = new URLSearchParams({ query, page: String(page) }).toString();
+      candidates = array(await http.json(url.href, signal), 'RubyGems search').map(p => candidate(source, query, p.name, `https://rubygems.org/gems/${encodeURIComponent(p.name)}`, p.info, p.version, repo(p.source_code_uri, p.metadata?.source_code_uri), undefined, string(p.platform)));
     } else {
       const url = new URL('https://packagist.org/search.json');
-      url.search = new URLSearchParams({ q: query, per_page: '6' }).toString();
+      url.search = new URLSearchParams({ q: query, per_page: '6', page: String(page) }).toString();
       const data = await http.json(url.href, signal);
-      candidates = array(data.results, 'Packagist search').slice(0, 6).map(p => candidate(source, query, p.name, `https://packagist.org/packages/${encodeURIComponent(p.name).replace('%2F', '/')}`, p.description, undefined, p.repository));
+      total = data.total;
+      candidates = array(data.results, 'Packagist search').map(p => candidate(source, query, p.name, `https://packagist.org/packages/${encodeURIComponent(p.name).replace('%2F', '/')}`, p.description, undefined, p.repository));
     }
-    return { candidates, effectiveQuery: query, notes: ['Bounded first-page package metadata discovery; not exhaustive recall or global source-code search.', ...(source === 'maven' ? ['Maven query syntax searches artifact coordinates; natural-language needs may require shorter technical terms.'] : [])] };
+    return { candidates, effectiveQuery: query, pagination: pageProgress(page, source === 'rubygems' ? 30 : 6, candidates.length, total), notes: ['Bounded package metadata discovery; not exhaustive recall or global source-code search.', ...(source === 'maven' ? ['Maven query syntax searches artifact coordinates; natural-language needs may require shorter technical terms.'] : [])] };
   });
 }
 

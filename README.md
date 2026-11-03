@@ -4,9 +4,9 @@
 
 Check what already exists before a coding agent implements a feature. Reuse Assistant finds local implementations and public alternatives, retrieves pinned evidence, and records why the agent chose to reuse, adapt, learn from a design, or build a small implementation itself.
 
-**v0.2.0 preview.** The official source repository is [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant). This project is not published on npm; use this source checkout rather than a similarly named `npx` package.
+**v0.3.0 preview.** The official source repository is [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant). This project is not published on npm; use this source checkout rather than a similarly named `npx` package.
 
-The long-term target is **all programming languages and platforms**. This version adds six sources while keeping explicit coverage limits; see the [roadmap](docs/ROADMAP.md) and [source matrix](docs/SOURCES.md).
+The long-term target is **all programming languages and platforms**. v0.2 added six sources; v0.3 adds bounded pagination and retains candidates when a later page fails. See the [roadmap](docs/ROADMAP.md) and [source matrix](docs/SOURCES.md).
 
 ## Quick start
 
@@ -36,6 +36,7 @@ For structured constraints, client bindings, or decisions, put arguments in a JS
 4. **Integrate and validate** in the host agent. Record `applied`, then `verified`, linking each preceding decision and supplying the actual validation command/outcome.
 
 The host performs semantic judgment and project edits. These tools store evidence and decisions; they do not execute candidate code, install dependencies, or independently run the validation command reported by the host.
+
 
 ## MCP and Codex
 
@@ -93,6 +94,10 @@ Queries are adapted to registry limits (npm 64 characters; GitHub 256 including 
 
 Ordinary discovery defaults to a 60-second budget with up to four workers, bounded retry/response sizes and cancellation. Deep inspection has a separate per-call budget and a three-distinct-candidate limit. Remote results may be cached for six hours and are labeled; local code is searched freshly. Changed tasks, constraints or dependency manifests invalidate the relevant context. Expected manifest changes during integration are tracked through linked decision stages.
 
+Discovery reads up to **two pages per source/query** by default. Use `--max-pages 1`, `2` or `3` (JSON/MCP: `maxPages`) to choose the cap under the same total deadline. All first-page jobs finish before continuations. Most sources return six items per page; RubyGems uses its fixed 30-item pages, retained in full. Exact GitLab URL and PyPI name checks remain single lookups. The merged shortlist stays capped at 30 while source results retain all fetched candidates.
+
+Successful search reads expose `pagination`: page size, successful pages, raw items fetched, optional upstream total, `hasMore` and a stop reason. Reaching the page cap completes the finite plan and may still report `hasMore: true`. A later-page error retains previous candidates, its failure and page number, marks coverage partial and prevents remote caching. Repeated pages stop with explicit partial coverage. Totals and offset rankings can change between requests; this is bounded discovery, not a snapshot or exhaustive search.
+
 ## Configuration and local records
 
 No additional model API key is required. Optional `GITHUB_TOKEN` and `GITLAB_TOKEN` are forwarded by environment variable name and sent only to their corresponding platform. Network reads use supported public API hosts; only bounded redirects between supported official NuGet global/regional endpoints are followed. Other redirects and unsupported hosts are rejected.
@@ -116,9 +121,10 @@ npm run check
 npm test
 npm run smoke
 npm run smoke:v2
+npm run smoke:v3
 ```
 
-`npm test` is deterministic and includes real stdio SDK-client workflows. `npm run smoke` observes v0.1 sources; `npm run smoke:v2` observes the six new sources and retains historical runs in `docs/live-smoke-v2.json`. These are network-dependent observations, not recall benchmarks. See [validation notes](docs/VALIDATION.md), [contribution guide](CONTRIBUTING.md), and [architecture](docs/ARCHITECTURE.md).
+`npm test` is deterministic and includes real stdio SDK-client workflows. `npm run smoke` observes v0.1 sources; `npm run smoke:v2` observes the six v0.2 sources. `npm run smoke:v3` checks two-page discovery on all eight search sources and preserves runs in `docs/live-smoke-v3.json`; after building, `node dist/test/live-smoke-v3.js github` checks only that source. These are network-dependent observations, not recall benchmarks. See [validation notes](docs/VALIDATION.md), [contribution guide](CONTRIBUTING.md), and [architecture](docs/ARCHITECTURE.md).
 
 The core is shared by CLI and MCP. Source adapters and future client adapters extend separate seams; candidate/evidence/decision semantics stay common. npm distribution and additional client adapters are future work.
 

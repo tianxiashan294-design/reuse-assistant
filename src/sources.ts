@@ -3,7 +3,8 @@
 // Copyright notices and fixed revisions: THIRD_PARTY_NOTICES.md.
 import { Http, SourceError, abortable } from './http.js';
 import { queryTokens } from './project.js';
-import type { Candidate, Source, SourceResult } from './types.js';
+import { pageProgress } from './pagination.js';
+import type { Candidate, SearchPagination, Source, SourceResult } from './types.js';
 
 export function githubRepo(value?: string): string | undefined {
   if (!value) return undefined;
@@ -34,12 +35,12 @@ export function repositoryKey(value?: string): string | undefined {
 }
 
 export async function outcome(source: Source, query: string, signal: AbortSignal,
-  operation: () => Promise<{ candidates: Candidate[]; partial?: boolean; notes?: string[]; effectiveQuery?: string }>): Promise<SourceResult> {
+  operation: () => Promise<{ candidates: Candidate[]; partial?: boolean; notes?: string[]; effectiveQuery?: string; pagination?: SearchPagination }>): Promise<SourceResult> {
   const start = performance.now();
   try {
     if (signal.aborted) throw new SourceError('timeout', 'Request budget exhausted before this source could start');
     const result = await abortable(operation(), signal);
-    return { source, query, effectiveQuery: result.effectiveQuery, status: result.partial ? 'partial' : result.candidates.length ? 'ok' : 'empty', candidates: result.candidates, notes: result.notes ?? [], elapsedMs: Math.round(performance.now() - start) };
+    return { source, query, effectiveQuery: result.effectiveQuery, status: result.partial ? 'partial' : result.candidates.length ? 'ok' : 'empty', candidates: result.candidates, notes: result.notes ?? [], pagination: result.pagination, elapsedMs: Math.round(performance.now() - start) };
   } catch (error) {
     const e = error instanceof SourceError ? error : new SourceError('unavailable', 'Source did not complete');
     return { source, query, status: e.code === 'rate_limited' ? 'rate_limited' : e.code === 'timeout' ? 'timeout' : 'unavailable', candidates: [], elapsedMs: Math.round(performance.now() - start), error: { code: e.code, message: e.message, status: e.status, retryAfterMs: e.retryAfterMs }, notes: [] };
@@ -58,7 +59,7 @@ function boundedQuery(query: string, maximum: number): string {
   return (word > maximum / 2 ? prefix.slice(0, word) : prefix).trim();
 }
 
-export function searchGitHub(http: Http, query: string, signal: AbortSignal): Promise<SourceResult> {
+export function searchGitHub(http: Http, query: string, signal: AbortSignal, page = 1): Promise<SourceResult> {
   return outcome('github', query, signal, async () => {
     const suffix = /\bin:/.test(query) ? '' : ' in:name,description,readme';
     const effective = boundedQuery(query, 256 - suffix.length);
@@ -67,11 +68,13 @@ export function searchGitHub(http: Http, query: string, signal: AbortSignal): Pr
     const url = new URL('https://api.github.com/search/repositories');
     url.searchParams.set('q', q);
     url.searchParams.set('per_page', '6');
+    url.searchParams.set('page', String(page));
     const data = await http.json(url.href, signal);
     if (!Array.isArray(data.items)) throw new SourceError('invalid_response', 'GitHub search response has no items');
     return {
       partial: Boolean(data.incomplete_results) || shortened,
       effectiveQuery: q,
+      pagination: pageProgress(page, 6, data.items.length, data.total_count),
       candidates: data.items.map((r: any): Candidate => ({
         id: `github:${r.full_name}`, source: 'github', name: r.full_name,
         url: `https://github.com/${r.full_name}`, repository: `https://github.com/${r.full_name}`,
@@ -84,7 +87,7 @@ export function searchGitHub(http: Http, query: string, signal: AbortSignal): Pr
   });
 }
 
-export function searchGitLab(http: Http, query: string, signal: AbortSignal): Promise<SourceResult> {
+export function searchGitLab(http: Http, query: string, signal: AbortSignal, page = 1): Promise<SourceResult> {
   return outcome('gitlab', query, signal, async () => {
     const exact = gitlabRepo(query);
     const url = new URL('https://gitlab.com/api/v4/projects');
@@ -93,15 +96,18 @@ export function searchGitLab(http: Http, query: string, signal: AbortSignal): Pr
       url.searchParams.set('search', query);
       url.searchParams.set('visibility', 'public');
       url.searchParams.set('per_page', '6');
+      url.searchParams.set('page', String(page));
+      url.searchParams.set('order_by', 'id');
+      url.searchParams.set('sort', 'asc');
     }
     const data = await http.json(url.href, signal);
     const projects = exact ? data.visibility === 'public' ? [data] : [] : data;
     if (!Array.isArray(projects) || projects.some(p => typeof p.path_with_namespace !== 'string' || !gitlabRepo(p.web_url))) throw new SourceError('invalid_response', 'Invalid GitLab project search response');
-    return { effectiveQuery: query, candidates: projects.slice(0, 6).map((p: any): Candidate => ({
+    return { effectiveQuery: query, pagination: exact ? { ...pageProgress(1, 1, projects.length), hasMore: false, stopReason: 'lookup' } : pageProgress(page, 6, projects.length), candidates: projects.map((p: any): Candidate => ({
       id: `gitlab:${p.path_with_namespace}`, source: 'gitlab', name: p.path_with_namespace,
       url: p.web_url, repository: p.web_url, description: p.description ?? '',
       stars: p.star_count, archived: p.archived, updatedAt: p.last_activity_at, matchedQueries: [query],
-    })), notes: [exact ? 'Exact public gitlab.com project lookup; non-public project metadata is excluded.' : 'Public gitlab.com project name/path/description substring search only; first 6 newest projects, not global code search or self-hosted GitLab coverage.'] };
+    })), notes: [exact ? 'Exact public gitlab.com project lookup; non-public project metadata is excluded.' : 'Public gitlab.com project name/path/description substring search; ascending project ID for stable paging, not relevance order, global code search or self-hosted GitLab coverage.'] };
   });
 }
 
@@ -117,7 +123,7 @@ export function repoSignals(repo: any, now = Date.now()): string[] {
   ];
 }
 
-export function searchNpm(http: Http, query: string, signal: AbortSignal): Promise<SourceResult> {
+export function searchNpm(http: Http, query: string, signal: AbortSignal, page = 1): Promise<SourceResult> {
   return outcome('npm', query, signal, async () => {
     const effective = boundedQuery(query, 64);
     if (effective.length < 2) throw new SourceError('invalid_query', 'npm search requires at least two characters; supply a more specific query');
@@ -125,9 +131,10 @@ export function searchNpm(http: Http, query: string, signal: AbortSignal): Promi
     const url = new URL('https://registry.npmjs.org/-/v1/search');
     url.searchParams.set('text', effective);
     url.searchParams.set('size', '6');
+    url.searchParams.set('from', String((page - 1) * 6));
     const data = await http.json(url.href, signal);
     if (!Array.isArray(data.objects)) throw new SourceError('invalid_response', 'npm search response has no objects');
-    return { partial: shortened, effectiveQuery: effective, candidates: data.objects.map(({ package: p }: any): Candidate => ({
+    return { partial: shortened, effectiveQuery: effective, pagination: pageProgress(page, 6, data.objects.length, data.total), candidates: data.objects.map(({ package: p }: any): Candidate => ({
       id: `npm:${p.name}`, source: 'npm', name: p.name, url: `https://www.npmjs.com/package/${p.name}`,
       description: p.description ?? '', version: p.version, repository: p.links?.repository,
       updatedAt: p.date, matchedQueries: [query],
