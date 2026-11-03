@@ -4,10 +4,11 @@
 
 目标是减少 AI 不必要的重复实现：先查当前项目，再找已有依赖、代码和设计；阅读证据后选择复用或自建，最后记录实际集成与验证结果。
 
-当前为 v0.3.0 预览版，官方源码仓库是 [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant)。项目尚未发布到 npm，请使用本仓库源码，不要仅凭同名 `npx` 包安装。
+当前为 v0.4.0 预览版，官方源码仓库是 [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant)。项目尚未发布到 npm，请使用本仓库源码，不要仅凭同名 `npx` 包安装。
 
 最终目标是**全代码语言、全平台搜集**。第二版增加 6 个搜索源；第三版增加有预算的分页召回，后续页失败时保留已有候选。长期方向和后续顺序保存在[路线图](docs/ROADMAP.md)，当前实际能力见[来源矩阵](docs/SOURCES.md)。
 
+第四版增加**代码语段与整体任务对齐**：JS/TS 家族按 AST 切分函数、类和方法，记录父级、哈希、调用和依赖事实；开启 `alignment` 契约后，新增 `assess_alignment` 核验全部任务/约束、语段引用、架构依赖规则和替代方案。缺项或冲突会阻止决策，语义判断仍明确标记为宿主报告。提示词、接口示例和语言限制见[对齐说明](docs/ALIGNMENT.md)。本次没有新增语言检索源。
 
 ## 启动
 
@@ -36,7 +37,7 @@ node dist/src/cli.js doctor --project 'C:\你的项目'
 
 初始化会生成项目级 MCP 配置、自动发现的 `reuse-first` 技能，以及可选的 hooks。已有无关配置会保留；同名非托管配置会提示冲突。生成内容带有本机工程路径，移动工程后需要重新初始化。
 
-在 Codex 中打开并信任目标项目，新开会话，再在宿主里审核、信任生成的 hooks。未受信任项目的本地配置和 hooks 会被 Codex 跳过，生成文件不等于已经激活。技能在新项目、功能或实质模块开发前执行完整检查；小修复先查相关本地代码。MCP 暴露 `check_reuse`、`inspect_candidate` 和 `record_decision` 三个工具。
+在 Codex 中打开并信任目标项目，新开会话，再在宿主里审核、信任生成的 hooks。未受信任项目的本地配置和 hooks 会被 Codex 跳过，生成文件不等于已经激活。技能在新项目、功能或实质模块开发前执行完整检查；小修复先查相关本地代码。MCP 暴露 `check_reuse`、`inspect_candidate`、`assess_alignment` 和 `record_decision` 四个工具。
 
 Codex 的写入检查使用当前会话/回合绑定和决策记录，覆盖声明的 `apply_patch`、`Edit`、`Write` 路径。**shell 写入、已有交互会话及其他未适配路径不在该检查覆盖内。** `doctor` 显示配置状态，不代表已经完成宿主信任或实际激活验证。
 

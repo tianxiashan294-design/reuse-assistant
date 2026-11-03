@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0 — 2026-11-03
+
+- Add bounded, static JS/TS/JSX/TSX AST segments, exact hashes/ranges, parent context, syntactic calls/control/write facts and import edges to inspection. Other languages and incomplete reads retain explicit gaps.
+- Add whole-task alignment contracts and core/MCP/CLI assessment. Validate every original task/constraint requirement, segment provenance, parent selection, forbidden dependencies, baseline alternatives and integration plans before an opted-in decision.
+- Recheck local evidence before planning; bind assessment strategy/candidates/evidence and keep the same report through lifecycle transitions. Semantic judgments and validation remain host-reported, not global optimality proofs.
+- Distribute task-specific prompts and the updated reuse skill/reference through the installer. Preserve legacy checks without contracts and all v0.3 pagination work.
+- Adopt unmodified `@babel/parser@7.28.5` with fixed lockfile provenance and notices. No language registry or hosting platform was added.
+
 ## 0.3.0 — 2026-10-29
 
 - Add bounded pagination to all eight discovery sources in the shared core, CLI (`--max-pages`) and MCP (`maxPages`); default two pages, maximum three under the existing total deadline.

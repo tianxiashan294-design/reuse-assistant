@@ -15,7 +15,7 @@ test('real stdio SDK client completes check -> inspect -> decide through the pub
   t.after(async () => { await client.close(); });
   await client.connect(transport);
   const listing = await client.listTools();
-  assert.deepEqual(listing.tools.map(t => t.name).sort(), ['check_reuse', 'inspect_candidate', 'record_decision']);
+  assert.deepEqual(listing.tools.map(t => t.name).sort(), ['assess_alignment', 'check_reuse', 'inspect_candidate', 'record_decision']);
   const call = async (name: string, args: Record<string, unknown>) => {
     const result: any = await client.callTool({ name, arguments: args });
     assert.notEqual(result.isError, true, result.content?.[0]?.text);

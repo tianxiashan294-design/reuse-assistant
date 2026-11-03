@@ -8,13 +8,15 @@ import { checkSchema, decisionSchema, inspectSchema, startMcp } from './server.j
 import { doctor, installCodex, uninstallCodex } from './install.js';
 import { evaluateHook, readStdin } from './codex-hook.js';
 import { markdown } from './format.js';
+import { alignmentInputSchema } from './alignment.js';
 
-const HELP = `Reuse Assistant 0.3.0 — evidence-based reuse checks
+const HELP = `Reuse Assistant 0.4.0 — evidence-based reuse checks
 
   node dist/src/cli.js check --project PATH --task TEXT --query TERMS [--query TERMS] [--scope local|full] [--ecosystem NAME] [--source NAME] [--json]
   node dist/src/cli.js check --project PATH --input request.json
   node dist/src/cli.js inspect --project PATH --check ID --candidate ID [--path src/file.ts]
   node dist/src/cli.js decide --project PATH --input decision.json
+  node dist/src/cli.js assess --project PATH --input alignment.json
   node dist/src/cli.js report --project PATH --check ID [--json]
   node dist/src/cli.js init --project PATH [--hooks]
   node dist/src/cli.js uninstall --project PATH
@@ -61,6 +63,7 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
     print(await assistant.inspect(input.checkId, input.candidateId, input.paths, input.budgetMs)); return;
   }
   if (command === 'decide') { print(await assistant.decide(decisionSchema.parse(await data()))); return; }
+  if (command === 'assess') { print(await assistant.assess(alignmentInputSchema.parse(await data()))); return; }
   if (command === 'report') {
     if (!values.check) throw new Error('Provide --check ID');
     const result = await assistant.store.check(values.check);

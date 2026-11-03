@@ -38,6 +38,8 @@ export async function installCodex(project: string, hooks: boolean): Promise<Rec
   if (oldSkill && !oldSkill.includes('<!-- reuse-assistant-managed -->')) throw new Error('An unmanaged reuse-first skill exists; installation leaves it unchanged.');
   const template = await readFile(new URL('../../skills/reuse-first/SKILL.md', import.meta.url), 'utf8');
   const referenceFile = await writable(root, '.agents/skills/reuse-first/references/local-cli.md');
+  const alignmentFile = await writable(root, '.agents/skills/reuse-first/references/alignment.md');
+  const alignmentReference = await readFile(new URL('../../skills/reuse-first/references/alignment.md', import.meta.url), 'utf8');
   let hookConfig: any;
   let hookFile: string | undefined;
   if (hooks) {
@@ -58,7 +60,8 @@ export async function installCodex(project: string, hooks: boolean): Promise<Rec
   }
   await writeFile(configFile, config);
   await writeFile(skillFile, template);
-  await writeFile(referenceFile, `# Local CLI fallback\n\nRun the installed CLI with Node. Use an input JSON file to avoid shell quoting problems.\n\n- Node executable: ${process.execPath}\n- CLI script: ${cliPath}\n- Project: ${root}\n\nCommands: check, inspect, decide, report, doctor. Use --input <absolute-json-file> --project <project> for tool arguments. Run --help for command syntax. The --project option binds every command to this project.\n\nMCP and CLI use the same check/evidence IDs and local records. Pass the hook-provided binding in check input when applicable.\n`);
+  await writeFile(alignmentFile, alignmentReference);
+  await writeFile(referenceFile, `# Local CLI fallback\n\nRun the installed CLI with Node. Use an input JSON file to avoid shell quoting problems.\n\n- Node executable: ${process.execPath}\n- CLI script: ${cliPath}\n- Project: ${root}\n\nCommands: check, inspect, assess, decide, report, doctor. Use --input <absolute-json-file> --project <project> for tool arguments. Run --help for command syntax. The --project option binds every command to this project.\n\nMCP and CLI use the same check/evidence IDs and local records. Pass the hook-provided binding in check input when applicable. Follow [whole-task alignment](alignment.md) for substantive changes.\n`);
   if (hookFile) await writeFile(hookFile, JSON.stringify(hookConfig, null, 2) + '\n');
   const ignoreFile = await writable(root, '.gitignore');
   const ignore = await optional(ignoreFile);
@@ -102,6 +105,10 @@ export async function uninstallCodex(project: string): Promise<Record<string, un
     changed.push(skill);
     const reference = '.agents/skills/reuse-first/references/local-cli.md';
     if (await optional(path.join(root, reference))) { await unlink(await confined(root, reference)); changed.push(reference); }
+    const alignmentReference = '.agents/skills/reuse-first/references/alignment.md';
+    if ((await optional(path.join(root, alignmentReference))).includes('<!-- reuse-assistant-managed -->')) {
+      await unlink(await confined(root, alignmentReference)); changed.push(alignmentReference);
+    }
   }
   const hooksPath = '.codex/hooks.json';
   const text = await optional(path.join(root, hooksPath));

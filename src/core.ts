@@ -9,10 +9,12 @@ import { searchPages, type SearchJob } from './pagination.js';
 import { inspectCandidate } from './inspect.js';
 import { Store } from './store.js';
 import { decisionNextAction } from './format.js';
-import type { CheckInput, CheckReport, Decision, DecisionInput, Inspection, SourceResult } from './types.js';
+import { analyzeCode } from './segments.js';
+import { alignmentContractSchema, alignmentPrompt, assessAlignment, validateAlignmentDecision } from './alignment.js';
+import type { AlignmentInput, AlignmentReport, CheckInput, CheckReport, Decision, DecisionInput, Inspection, SourceResult } from './types.js';
 import { ECOSYSTEMS } from './types.js';
 
-const context = (input: CheckInput, fingerprint: string) => digest({ task: input.task, queries: input.queries, constraints: input.constraints ?? [], scope: input.scope, ecosystem: input.ecosystem, packages: input.packageNames ?? [], ...(input.sources ? { sources: input.sources } : {}), ...(input.maxPages !== undefined ? { maxPages: input.maxPages } : {}), fingerprint });
+const context = (input: CheckInput, fingerprint: string) => digest({ task: input.task, queries: input.queries, constraints: input.constraints ?? [], scope: input.scope, ecosystem: input.ecosystem, packages: input.packageNames ?? [], ...(input.sources ? { sources: input.sources } : {}), ...(input.maxPages !== undefined ? { maxPages: input.maxPages } : {}), ...(input.alignment ? { alignment: input.alignment } : {}), fingerprint });
 
 export class ReuseAssistant {
   readonly store: Store;
@@ -20,6 +22,7 @@ export class ReuseAssistant {
   constructor(readonly projectRoot: string, readonly http = new Http()) { this.store = new Store(projectRoot); }
 
   async check(input: CheckInput): Promise<CheckReport> {
+    if (input.alignment) input = { ...input, alignment: alignmentContractSchema.parse(input.alignment) };
     if (!input.task.trim() || !input.queries.length || input.queries.length > 3 || input.queries.some(q => !q.trim() || q.length > 300)) throw new Error('Provide a task and 1–3 nonempty queries (up to 300 characters each)');
     if (input.task.length > 4000 || (input.constraints?.length ?? 0) > 20 || (input.packageNames?.length ?? 0) > 3) throw new Error('Request exceeds the supported task/constraint/package limits');
     if (input.ecosystem && !ECOSYSTEMS.includes(input.ecosystem)) throw new Error('Unsupported ecosystem');
@@ -66,6 +69,7 @@ export class ReuseAssistant {
       sourcePlan: SOURCE_CATALOG.map(s => ({ ...s, selected: normalized.sources!.includes(s.source) })),
       notes: ['Complete means the bounded query plan finished, not exhaustive ecosystem or all-platform coverage.', `Searches fetch at most ${normalized.maxPages} pages per source/query, sharing the total budget; all first-page jobs run before continuations. Pagination exposes remaining results and stop reasons. Full pages without a reported total may have more results; totals and offset rankings can change between requests.`, 'At most 8 local matches appear in the merged shortlist; source results retain additional matches. Each returning remote source keeps a representative when possible.', 'Exact scoped npm names are routed to npm unless explicit sources override routing.', 'Go currently uses repository search; no Go registry full-text adapter is implemented.', 'Host must inspect relevant evidence and judge requirement fit; health signals do not authorize adoption.', ...(normalized.queries.some(q => /\p{Script=Han}/u.test(q)) ? ['Chinese queries are preserved. Add English technical synonyms when useful; this tool does not translate or invent them.'] : [])],
     };
+    if (normalized.alignment) report.alignmentPrompt = alignmentPrompt(report);
     if (normalized.binding) {
       const gate = await this.store.gate(normalized.binding.sessionId);
       if (!gate || gate.binding.turnId !== normalized.binding.turnId) throw new Error('Session/turn binding is stale or was not initialized by the client hook');
@@ -91,9 +95,28 @@ export class ReuseAssistant {
       const requestedPackage = candidate.packages?.find(p => `${p.source}:${p.name}` === candidateId);
       const target = requestedPackage ? { ...candidate, source: requestedPackage.source, name: requestedPackage.name, version: requestedPackage.version, packages: [requestedPackage] } : candidate;
       const inspection = await inspectCandidate(this.http, this.projectRoot, target, paths, budgetMs);
+      inspection.analysis = analyzeCode(inspection);
       check.inspections.push(inspection);
       await this.store.saveCheck(check);
       return inspection;
+    } finally { release(); }
+  }
+
+  async assess(input: AlignmentInput): Promise<AlignmentReport> {
+    // Share the inspection queue: appending assessments must not lose new evidence.
+    const previous = this.inspectionQueue;
+    let release!: () => void;
+    this.inspectionQueue = new Promise<void>(resolve => { release = resolve; });
+    await previous;
+    try {
+      const check = await this.store.check(input.checkId);
+      if (!check) throw new Error('Unknown check');
+      const report = assessAlignment(check, input);
+      check.alignments ??= [];
+      if (check.alignments.length >= 30) throw new Error('Alignment report budget reached; start a fresh check');
+      check.alignments.push(report);
+      await this.store.saveCheck(check);
+      return report;
     } finally { release(); }
   }
 
@@ -109,6 +132,7 @@ export class ReuseAssistant {
       if (!previous || previous.checkId !== check.id || previous.status !== expectedStatus || previous.choice !== input.choice || JSON.stringify(previous.candidateIds ?? []) !== JSON.stringify(input.candidateIds ?? [])) {
         throw new Error(`Link the preceding ${expectedStatus} decision for this same choice and candidates`);
       }
+      if (check.input.alignment && previous.alignmentId !== input.alignmentId) throw new Error('Keep the planned alignment report throughout this decision chain');
     }
     if (Date.now() - Date.parse(check.createdAt) > 6 * 60 * 60 * 1000) throw new Error('Check expired; run a fresh check');
     if ((check.coverage === 'partial' || input.choice === 'incomplete_continue') && !input.acknowledgeIncomplete) throw new Error('Acknowledge the incomplete check explicitly before proceeding');
@@ -135,6 +159,7 @@ export class ReuseAssistant {
       }
     }
     if (input.status === 'verified' && (!input.validation || input.validation.trim().length < 12)) throw new Error('Verified decisions require a host-reported validation command and outcome');
+    await validateAlignmentDecision(this.projectRoot, check, input);
     const nextAction = decisionNextAction(input.status);
     const decision: Decision = { ...input, id: randomUUID(), createdAt: new Date().toISOString(), contextHash: check.contextHash, binding: check.input.binding, resultingFingerprint: await projectFingerprint(this.projectRoot), nextAction };
     await this.store.saveDecision(decision);

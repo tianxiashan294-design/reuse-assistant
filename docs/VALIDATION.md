@@ -1,5 +1,29 @@
 # Validation record
 
+## v0.4 local verification — 2026-11-03 (Asia/Shanghai)
+
+Environment: Windows PowerShell, Node v24.15.0. This update adds code segmentation and whole-task alignment; it adds no language registry or hosting platform. Existing v0.3 work and the RSS example are preserved.
+
+### Offline public-interface checks
+
+`npm run check`, `npm test` and `git diff --check` pass. The suite has **72/72** passing tests (58 existing, 14 new), including the actual compiled CLI and MCP SDK client/server over stdio. The new cases cover exact AST/hash/CRLF ranges and parent chains; comments/strings/regex not becoming declarations; controls/imports and no source execution; unsupported languages, parse failures, partial ranges, same-length excerpt identities, dynamic imports and bounded analysis; every original task/constraint requirement; missing/conflicting global requirements despite locally supported code; deterministic forbidden dependencies; invented/mismatched references; context hashes, local evidence staleness, preserved lifecycle assessment IDs and serialized assessment persistence. The installed skill's referenced files are also read during the existing installation test. Semantic supported claims and final validation statements in these fixtures are host reports, not independent proofs.
+
+`python -X utf8 C:/Users/16219/.codex/skills/.system/skill-creator/scripts/quick_validate.py C:/reuse_assistant/skills/reuse-first` passes. This checks skill structure, not actual model behavior.
+
+### Packaging and production-only installation
+
+`npm pack --dry-run --json` succeeds and includes the new source, compiled modules/declarations, alignment documentation and skill reference. An actual 0.4.0 tarball was installed in `.reuse-assistant/package-v4-smoke/consumer` using `--omit=dev --ignore-scripts`. Running `node .reuse-assistant/package-v4-smoke/smoke.mjs` succeeds: the packaged core performs local check -> inspect (two AST segments) -> assess (ready) -> planned decision, then installs the skill including its alignment reference. The development TypeScript compiler is absent from that consumer; the runtime parser is 7.28.5. This is a local fixture/installation observation, not live desktop MCP activation. Smoke check ID: `20d2bebe-b229-4d20-b3ba-451754c6f33e`; planned decision: `0137ebe9-9794-4497-8273-e707c7eb3c5a`.
+
+### Live endpoint evidence and remaining limits
+
+Reuse discovery queried GitHub/npm/GitLab. GitLab returned an unavailable error, earlier local discovery reached a match limit, and GitHub candidate source reads returned HTTP 403; these failures remain in the original check/inspection records and were explicitly acknowledged. The official Babel parser documentation and npm metadata were read. `npm view @babel/parser@7.28.5 ... --json` confirmed the fixed version, MIT license, Node compatibility and artifact integrity; installation supplied the original license. The discovered latest parser 8.1.0 was rejected for its narrower Node minor requirements. No successful pinned GitHub code read is claimed. Attribution and modifications (none) are in `THIRD_PARTY_NOTICES.md`.
+
+No new registry-adapter live smoke, remote CI matrix, npm publication, macOS execution or desktop MCP reload is claimed. A running older MCP server must reload the compiled 0.4 server to expose `alignment` and `assess_alignment`. The 72 tests demonstrate deterministic checks through the public interfaces; they do not establish a model's semantic reliability, resolved cross-file call graph, end-to-end system performance improvement or global optimality. JS/TS structural analysis and explicit other-language fallback are distinct from the seven language ecosystems' discovery coverage. Historical calls without alignment contracts retain their old behavior; the updated skill supplies contracts for substantial work.
+
+The Codex hook's task prompt now requests the alignment contract/assessment for substantial work and points older MCP processes to the CLI fallback. `node dist/src/cli.js init --project C:/reuse_assistant --hooks` refreshed this checkout's existing managed configuration/skill/hooks; the installed skill also passes quick validation. This is a filesystem installation result, not a claim that the running desktop MCP reloaded. The final 72-test run passed after that hook prompt change.
+
+Reuse records: original local-core evidence `4d8d0f18-9548-448b-8969-f727c6a21e6e`; parser-selection check `587293f1-d4f6-4724-bc53-65a5041c72e0`; candidate metadata evidence `3a54ad50-45f8-4863-9b6c-1c141ee6f18f`; planned decision `fc81075a-9334-4479-bf9a-104c173c4430`. Applied/verified records are linked in `.reuse-assistant/`; their validation statements are host-reported. No new upstream implementation was copied.
+
 ## v0.3 local verification — 2026-10-29 (Asia/Shanghai)
 
 Environment: Windows PowerShell, Node v24.15.0, npm 11.12.1. This update adds bounded pagination to the existing eight discovery sources; it does not add a language registry or hosting platform.

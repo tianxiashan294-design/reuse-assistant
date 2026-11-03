@@ -15,6 +15,8 @@ export function markdown(report: CheckReport, decision?: Decision): string {
     '', '## Candidates requiring review', '', '| ID | Candidate | Source | Version | Description |', '|---|---|---|---|---|',
     ...report.candidates.map(c => `| ${esc(c.id)} | ${esc(c.name)} | ${(c.sources ?? [c.source]).join(', ')} | ${esc(c.packages?.map(p => `${p.source}:${p.name}@${p.version ?? '?'}`).join('; ') || c.version || '')} | ${esc(c.description)} |`),
     '', ...report.notes.map(n => `- ${n}`), '',
+    ...(report.alignmentPrompt ? ['## Whole-task alignment', '', report.alignmentPrompt, '',
+      ...(report.alignments ?? []).flatMap(a => [`- ${a.id}: ${a.status}; coverage: ${a.coverage}; semantic judgment: ${a.judgment}`, ...a.blockers.map(b => `  - Blocker: ${esc(b)}`), ...a.gaps.map(g => `  - Gap: ${esc(g)}`)]), ''] : []),
     ...(decision ? [`## Decision: ${decision.status}`, '', `Choice: ${decision.choice} | ID: ${decision.id}`, '', esc(decision.rationale), '', ...(decision.validation ? [`Host-reported validation: ${esc(decision.validation)}`, ''] : []), `Next: ${decision.nextAction ?? decisionNextAction(decision.status)}`] : ['Next: inspect relevant evidence, compare constraints, and record a planned decision before implementation.']), '',
   ].join('\n');
 }

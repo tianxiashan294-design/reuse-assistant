@@ -51,6 +51,10 @@ test('project initialization preserves other MCP and hook entries and is idempot
   const result = await doctor(root);
   assert.equal(result.serverConfigured, true);
   assert.equal(result.skillInstalled, true);
+  const installedSkill = await readFile(path.join(root, '.agents/skills/reuse-first/SKILL.md'), 'utf8');
+  for (const link of installedSkill.matchAll(/\]\((references\/[^)]+)\)/g)) {
+    assert((await readFile(path.join(root, '.agents/skills/reuse-first', link[1]!), 'utf8')).trim().length > 0, `Missing installed skill reference: ${link[1]}`);
+  }
   assert.match(String(result.hooksTrusted), /unknown/);
   await uninstallCodex(root);
   const remaining = parse(await readFile(path.join(root, '.codex/config.toml'), 'utf8')) as any;

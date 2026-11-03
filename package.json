@@ -1,6 +1,6 @@
 {
   "name": "reuse-assistant-local",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "description": "Evidence-based reuse checks for coding agents: discover, inspect, decide, and verify.",
   "repository": {
@@ -46,6 +46,7 @@
     "smoke:v3": "npm run build && node dist/test/live-smoke-v3.js"
   },
   "dependencies": {
+    "@babel/parser": "7.28.5",
     "@modelcontextprotocol/server": "2.4.0",
     "smol-toml": "1.9.1",
     "zod": "4.6.7"

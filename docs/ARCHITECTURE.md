@@ -4,12 +4,14 @@ The shared core implements discovery, evidence retrieval and decisions. CLI and 
 
 ```mermaid
 flowchart TD
-  Agent[Codex / other MCP agents] --> MCP[Three MCP tools]
+  Agent[Codex / other MCP agents] --> MCP[Four MCP tools]
   CLI[CLI] --> Core[ReuseAssistant]
   MCP --> Core
   Core --> Local[Local bounded search]
   Core --> Sources[GitHub / GitLab / seven package registries]
   Core --> Evidence[Pinned evidence reader]
+  Evidence --> Segments[Bounded AST segments and context facts]
+  Core --> Alignment[Whole-task alignment checks and prompts]
   Core --> Store[Project records / remote cache]
   Hooks[Codex lifecycle adapter] --> Store
 ```
@@ -19,7 +21,9 @@ flowchart TD
 - `check(input)` normalizes the bounded query plan, searches fresh local code, queries/caches relevant public sources and merges repository/package identities. It preserves per-source failures. Up to eight local matches enter the merged shortlist so external candidates remain visible.
 - `inspect(checkId, candidateId, paths)` resolves an existing candidate/alias, fetches fixed evidence and saves an inspection. It accepts up to five explicit paths and at most three distinct candidates per check. Inspection updates are serialized inside one core instance.
 - `decide(input)` validates check/evidence identity, expiry, incomplete coverage acknowledgment and lifecycle transitions. Planned decisions require the original dependency context. Applied/verified decisions may include expected integration changes when linked to the correct preceding stage. Validation text is host-reported.
+- `assess(input)` binds exact inspected segments to every task/constraint requirement, checks parent context and forbidden import rules, and requires baseline alternatives plus an integration plan. Its immutable report gates decisions for checks with an alignment contract; semantic claims are explicitly host-reported. Local evidence hashes are rechecked before a planned decision. Inspection/assessment updates share a serialized queue.
 
+`segments.ts` owns static parsing; `alignment.ts` owns the contract, deterministic checks and task-specific prompt. CLI/MCP and the installed skill consume this shared behavior. Source code is never executed. JS/TS family files use the pinned Babel parser; other languages, clipped/invalid code and analysis budgets have explicit gaps. See [alignment details](ALIGNMENT.md).
 
 `Http` concentrates cancellation, response limits, public-host restrictions, selective authorization and bounded throttling retries. `Store` confines records to the configured project and writes JSON atomically. Source adapters and tests consume these interfaces rather than duplicating transport logic.
 
@@ -43,4 +47,4 @@ The adapter guards declared patch paths only. Arbitrary shell writes and existin
 
 `catalog.ts` describes source capabilities and ecosystem routing; `sources.ts` handles repository adapters/merging and `registries.ts` handles registry discovery/evidence. `core.ts` owns selection, failures and cache context, using `pagination.ts` for bounded scheduling. CLI/MCP consume the same semantics. Add client-specific configuration beside `codex-hook.ts` and `install.ts`. See [current source limits](SOURCES.md) and the [long-term goal](ROADMAP.md).
 
-Current limits include UTF-8 lexical local search, root-only dependency fingerprints, at most three offset/numbered search pages, mutable upstream totals/rankings, no exhaustive recall guarantee, in-process inspection update serialization, and host-reported semantic/validation claims. This is a local v0.3 implementation. Cursor traversal, automatic query translation, official fallback endpoints and selective failed-source retries inside an existing check remain future work. All-language/all-platform collection remains the long-term direction, with per-source progress made explicit.
+Current limits include UTF-8 lexical local discovery, root-only dependency fingerprints, at most three offset/numbered search pages, mutable upstream totals/rankings, no exhaustive recall guarantee, in-process record-update serialization, JS/TS-only structural parsing, syntactic rather than resolved call graphs, optional alignment contracts for backward compatibility, and host-reported semantic/validation claims. This is a local v0.4 implementation. Cursor traversal, more structural parsers, runtime whole-system checks, automatic query translation, official fallback endpoints and selective failed-source retries remain future work. All-language/all-platform collection remains the long-term direction, with per-source progress made explicit.

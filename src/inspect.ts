@@ -39,12 +39,16 @@ export async function inspectCandidate(http: Http, root: string, candidate: Cand
     }
   }
   if (candidate.source === 'local' && candidate.localPath) {
-    await attempt('local file', async () => {
-      const file = await confined(root, candidate.localPath!);
-      const text = await readFile(file, 'utf8');
-      if (Buffer.byteLength(text) > 180_000) throw new Error('Local evidence file exceeds the byte limit');
-      result.files.push(evidence(candidate.localPath!, candidate.url, text));
-    });
+    for (const p of [...new Set([candidate.localPath, ...paths])]) {
+      await attempt(`local file ${p}`, async () => {
+        const { name, range } = pathSpec(p);
+        const file = await confined(root, name);
+        const text = await readFile(file, 'utf8');
+        if (Buffer.byteLength(text) > 180_000 || text.includes('\0')) throw new Error('Local evidence must be text within the byte limit');
+        result.files.push(evidence(name, `local:${name}`, text, undefined, range));
+      });
+    }
+    if (result.files.some(f => f.truncated)) result.notes.push('Some local files are excerpted; hashes cover their full text.');
     return result;
   }
 

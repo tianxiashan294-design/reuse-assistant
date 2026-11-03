@@ -14,6 +14,14 @@ The v0.2 GitLab/crates.io/Maven/NuGet/RubyGems/Packagist adapters are new integr
 
 The v0.3 pagination scheduler and adapter changes reuse this project's existing core/transport and official API protocols (see `docs/SOURCES.md`); no additional upstream code was copied and no dependency was added. `algoliasearch-helper@3.30.1` / `algolia/instantsearch` at `3d258cf58b621da1347809e06282b83d4aab8ca2` was inspected and rejected because its Algolia-specific search model does not fit these independent public registries; none of its code is incorporated. Existing upstream notices and modifications above remain applicable.
 
+## v0.4 structural parser dependency
+
+The code-segment analyzer adopts unmodified **@babel/parser 7.28.5** (MIT) from the fixed published artifact `https://registry.npmjs.org/@babel/parser/-/parser-7.28.5.tgz`, integrity `sha512-KKBU1VGYR7ORr3At5HAtUQ+TV3SzRCXmA/8OdDZiLDBIZxVyzXuztPjfLd3BV1PRAQGCMWWSHYhL0F8d5uHBDQ==`. No upstream implementation is copied or modified. The original parser notice is **Copyright (C) 2012-2014 by various contributors (see AUTHORS)**, followed by the MIT permission/warranty terms preserved below and shipped in the installed package's LICENSE.
+
+The lockfile also fixes its unmodified MIT dependencies: **@babel/types 7.29.11**, **@babel/helper-string-parser 7.29.11**, and **@babel/helper-validator-identifier 7.29.7**, each with its npm artifact integrity. Their original notice is **Copyright (c) 2014-present Sebastian McKenzie and other contributors**, with the same MIT terms preserved below; each package ships its LICENSE. The segmentation, evidence linkage, architecture checks and prompt integration are original project code.
+
+Discovery inspected `@babel/parser@8.1.0` metadata but rejected that version's narrower Node minor requirements; exact 7.28.5 registry metadata and its installed license were checked separately. `ast-types@0.16.3` was inspected and rejected as an AST abstraction rather than the required parser. GitHub source reads returned HTTP 403; no commit/source-code inspection is claimed for either candidate. Existing TypeScript 7.0.2 exposes unstable native interfaces unsuitable for this bounded in-process parser use.
+
 ## Upstream MIT notices
 
 wheel-hub: Copyright (c) 2026 wheelhub contributors
@@ -22,7 +30,7 @@ reuse-before-generate: Copyright (c) 2026 Aradar46
 
 scout-mcp: Copyright (c) 2026 bartonguestier1725-collab
 
-The following permission and disclaimer are preserved for portions derived from each of these three MIT-licensed projects:
+The following permission and disclaimer are preserved for the MIT-licensed upstream portions and Babel dependency notices described above:
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

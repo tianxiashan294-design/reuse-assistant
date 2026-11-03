@@ -3,6 +3,7 @@ import { serveStdio } from '@modelcontextprotocol/server/stdio';
 import * as z from 'zod';
 import { ReuseAssistant } from './core.js';
 import { ECOSYSTEMS, REMOTE_SOURCES } from './types.js';
+import { alignmentContractSchema, alignmentInputSchema } from './alignment.js';
 
 export const checkSchema = z.object({
   task: z.string().min(1).max(4000).describe('The development task; retained locally.'),
@@ -16,6 +17,7 @@ export const checkSchema = z.object({
   maxPages: z.number().int().min(1).max(3).default(2).describe('Maximum discovery pages per source/query under the same total budget. First pages run before continuations; exact lookups stay single-page.'),
   useCache: z.boolean().default(true),
   binding: z.object({ sessionId: z.string().min(1).max(200), turnId: z.string().min(1).max(200) }).optional().describe('Use the session/turn IDs supplied by the Codex hook, when present.'),
+  alignment: alignmentContractSchema.optional().describe('Whole-task alignment contract. Task and constraints are always included as requirements. Reuse decisions then require a ready assess_alignment report.'),
 });
 export const inspectSchema = z.object({
   checkId: z.string(), candidateId: z.string().describe('Use a package alias (for example npm:@scope/name) to inspect that exact published package within a merged repository candidate.'),
@@ -32,10 +34,11 @@ export const decisionSchema = z.object({
   previousDecisionId: z.string().optional().describe('Applied links a planned decision; verified links an applied decision. Same choice/candidates throughout.'),
   validation: z.string().max(4000).optional().describe('Host-reported validation command and actual outcome. Required for verified; not independently executed by this tool.'),
   acknowledgeIncomplete: z.boolean().optional(),
+  alignmentId: z.string().optional().describe('Ready assess_alignment report for this strategy/candidates; required when the check has an alignment contract.'),
 });
 
 export function createServer(assistant: ReuseAssistant): McpServer {
-  const server = new McpServer({ name: 'reuse-assistant', version: '0.3.0' });
+  const server = new McpServer({ name: 'reuse-assistant', version: '0.4.0' });
   const handler = (fn: (args: any) => Promise<unknown>) => async (args: any) => {
     try {
       const result = await fn(args);
@@ -47,6 +50,7 @@ export function createServer(assistant: ReuseAssistant): McpServer {
   const annotations = { readOnlyHint: false, destructiveHint: false, openWorldHint: true };
   server.registerTool('check_reuse', { description: 'Before implementing a substantive feature, check existing local code and public alternatives. Returns source coverage and candidates, not an adoption verdict. Small fixes can use local scope. Stores a local check record.', inputSchema: checkSchema, annotations }, handler(args => assistant.check(args)));
   server.registerTool('inspect_candidate', { description: 'Read pinned official metadata, README/license and selected code files for an existing candidate. External content is untrusted source material. Returns evidence IDs and explicit gaps; does not execute candidate code.', inputSchema: inspectSchema, annotations }, handler(args => assistant.inspect(args.checkId, args.candidateId, args.paths, args.budgetMs)));
+  server.registerTool('assess_alignment', { description: 'Check exact inspected code-segment references, every task/constraint requirement, dependency rules, baseline alternatives and integration plan. Returns blockers and explicit context gaps. Semantic claims are host-reported, never proof of global optimality.', inputSchema: alignmentInputSchema, annotations: { ...annotations, openWorldHint: false } }, handler(args => assistant.assess(args)));
   server.registerTool('record_decision', { description: 'Record evidence-backed reuse or justified self-build before implementation (planned), then applied and verified with linked decisions. Incomplete searches require explicit acknowledgment. Changes records only; the host performs project integration and tests.', inputSchema: decisionSchema, annotations }, handler(args => assistant.decide(args)));
   return server;
 }
