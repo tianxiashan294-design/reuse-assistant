@@ -166,6 +166,27 @@ export interface ImportEdge {
   resolvedPath?: string;
   line: number;
   kind: 'import' | 'export' | 'require' | 'dynamic';
+  resolution?: 'resolved' | 'missing' | 'ambiguous' | 'external' | 'unsupported';
+  targetPath?: string;
+  targetModuleId?: string;
+  reason?: string;
+}
+export interface CallEdge {
+  fromSegmentId: string;
+  from: string;
+  line: number;
+  callee: string;
+  status: 'resolved' | 'unresolved';
+  targetSegmentId?: string;
+  // Modules traversed by an import/re-export, including the defining module.
+  viaModuleIds?: string[];
+  reason?: string;
+}
+export interface CodeLinkage {
+  resolver: 'inspection-relative-v1';
+  coverage: 'complete' | 'partial';
+  calls: CallEdge[];
+  gaps: string[];
 }
 export interface CodeAnalysis {
   parser: string;
@@ -174,6 +195,7 @@ export interface CodeAnalysis {
   imports: ImportEdge[];
   gaps: string[];
   notes: string[];
+  linkage?: CodeLinkage;
 }
 export interface AlignmentInput {
   checkId: string;
@@ -195,4 +217,5 @@ export interface AlignmentReport extends AlignmentInput {
   localSnapshots: { path: string; sha256: string }[];
   prompt: string;
   judgment: 'host_reported';
+  callContext?: { evidenceId: string; edge: CallEdge }[];
 }

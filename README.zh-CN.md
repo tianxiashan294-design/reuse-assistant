@@ -4,11 +4,13 @@
 
 目标是减少 AI 不必要的重复实现：先查当前项目，再找已有依赖、代码和设计；阅读证据后选择复用或自建，最后记录实际集成与验证结果。
 
-当前为 v0.4.0 预览版，官方源码仓库是 [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant)。项目尚未发布到 npm，请使用本仓库源码，不要仅凭同名 `npx` 包安装。
+当前为 v0.5.0 预览版，官方源码仓库是 [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant)。项目尚未发布到 npm，请使用本仓库源码，不要仅凭同名 `npx` 包安装。
 
 最终目标是**全代码语言、全平台搜集**。第二版增加 6 个搜索源；第三版增加有预算的分页召回，后续页失败时保留已有候选。长期方向和后续顺序保存在[路线图](docs/ROADMAP.md)，当前实际能力见[来源矩阵](docs/SOURCES.md)。
 
 第四版增加**代码语段与整体任务对齐**：JS/TS 家族按 AST 切分函数、类和方法，记录父级、哈希、调用和依赖事实；开启 `alignment` 契约后，新增 `assess_alignment` 核验全部任务/约束、语段引用、架构依赖规则和替代方案。缺项或冲突会阻止决策，语义判断仍明确标记为宿主报告。提示词、接口示例和语言限制见[对齐说明](docs/ALIGNMENT.md)。本次没有新增语言检索源。
+
+第五版增加**跨文件定义关联与调用上下文确认**：在同一份 inspection 内，关联相对导入、显式重导出和稳定顶层函数的直接调用。`analysis.linkage` 给出目标语段及未解析原因；选择调用方时必须同时选择已确认的被调用语段和经过的模块，对齐提示返回已读调用方和缺口。遮蔽、赋值、歧义、截断、外部包及动态调用保守降级；部分覆盖须明确承认，unknown/conflict 要求继续阻止采用。语言源数量保持原有范围。
 
 ## 启动
 

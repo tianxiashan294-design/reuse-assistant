@@ -70,7 +70,7 @@ test('public inspection yields exact AST boundaries, parent context and control/
 
 test('whole-task gate rejects a locally supported optimization with unknown global requirements, then links all lifecycle stages', async t => {
   const { assistant, check, candidate, evidence, input, root } = await setup(t);
-  const base = { checkId: check.id, choice: 'reuse_local' as const, candidateIds: [candidate.id], evidenceIds: [evidence.id], rationale: 'Reuse the existing function while preserving the shared cancellation contract' };
+  const base = { checkId: check.id, choice: 'reuse_local' as const, candidateIds: [candidate.id], evidenceIds: [evidence.id], acknowledgeIncomplete: true, rationale: 'Reuse the existing function while preserving the shared cancellation contract; the callback and Error constructor are unresolved static targets' };
   await assert.rejects(assistant.decide({ ...base, status: 'planned' }), /ready assess_alignment/);
   const incomplete = await assistant.assess({ ...input, claims: input.claims.map(c => c.requirementId === 'shared-budget' ? { ...c, verdict: 'unknown' } : c) });
   assert.equal(incomplete.status, 'blocked');
@@ -79,7 +79,8 @@ test('whole-task gate rejects a locally supported optimization with unknown glob
   const ready = await assistant.assess(input);
   assert.equal(ready.status, 'ready');
   assert.equal(ready.judgment, 'host_reported');
-  assert.equal(ready.coverage, 'complete');
+  assert.equal(ready.coverage, 'partial');
+  assert(ready.gaps.some(g => g.includes('run:')));
   const planned = await assistant.decide({ ...base, alignmentId: ready.id, status: 'planned' });
   const alternativeReport = await assistant.assess(input);
   await assert.rejects(assistant.decide({ ...base, alignmentId: alternativeReport.id, status: 'applied', previousDecisionId: planned.id }), /Keep the planned alignment/);
@@ -124,7 +125,7 @@ test('stale context and swapping strategies/evidence/assessment IDs cannot autho
   const { assistant, input, check, root } = await setup(t);
   const ready = await assistant.assess(input);
   const decision = { checkId: check.id, choice: input.choice, candidateIds: input.candidateIds, evidenceIds: input.evidenceIds,
-    alignmentId: ready.id, rationale: 'Use the inspected shared implementation with the verified references', status: 'planned' as const };
+    alignmentId: ready.id, acknowledgeIncomplete: true, rationale: 'Use the inspected shared implementation with the verified references; unresolved callback behavior remains host-reviewed', status: 'planned' as const };
   await assert.rejects(assistant.decide({ ...decision, choice: 'reference_design' }), /match the decision strategy/);
   await assert.rejects(assistant.decide({ ...decision, evidenceIds: [] }), /Inspect each/);
   await writeFile(path.join(root, 'budget.js'), 'export const budget = 999;');
@@ -186,7 +187,8 @@ test('new alignment contracts isolate cache/decision context and concurrent asse
 });
 
 test('compiled CLI exposes alignment contracts, AST inspection, assessment and the decision gate', { timeout: 20000 }, async t => {
-  const { root } = await setup(t);
+  const { root } = await setup(t, request, 'import { getBudget } from "./budget.js"; export function retryRequest() { return getBudget(); }');
+  await writeFile(path.join(root, 'budget.js'), 'export function getBudget() { return 3; }');
   const exec = promisify(execFile);
   const call = async (command: string, data: unknown) => {
     const file = path.join(root, 'request.json');
@@ -197,8 +199,12 @@ test('compiled CLI exposes alignment contracts, AST inspection, assessment and t
   const check = await call('check', request);
   const candidate = check.candidates.find((c: any) => c.localPath === 'retry.ts');
   const evidence = await call('inspect', { checkId: check.id, candidateId: candidate.id, paths: ['budget.js'] });
+  const edge = evidence.analysis.linkage.calls.find((c: any) => c.callee === 'getBudget');
+  assert.equal(edge.status, 'resolved');
+  assert.equal(evidence.analysis.segments.find((s: any) => s.id === edge.targetSegmentId).path, 'budget.js');
   const report = await call('assess', assessment(check, evidence));
   assert.equal(report.status, 'ready');
+  assert(report.callContext.some((c: any) => c.edge.targetSegmentId === edge.targetSegmentId));
   const decision = await call('decide', { checkId: check.id, choice: 'reuse_local', candidateIds: [candidate.id], evidenceIds: [evidence.id], alignmentId: report.id, rationale: 'CLI confirms the shared deadline strategy with exact code references' });
   assert.equal(decision.alignmentId, report.id);
   const persisted = JSON.parse(await readFile(path.join(root, '.reuse-assistant/checks', `${check.id}.json`), 'utf8'));
@@ -206,7 +212,8 @@ test('compiled CLI exposes alignment contracts, AST inspection, assessment and t
 });
 
 test('real MCP stdio rejects missing alignment and completes the new check/inspect/assess/decide protocol', { timeout: 20000 }, async t => {
-  const { root } = await setup(t);
+  const { root } = await setup(t, request, 'import { getBudget } from "./budget.js"; export function retryRequest() { return getBudget(); }');
+  await writeFile(path.join(root, 'budget.js'), 'export function getBudget() { return 3; }');
   const client = new Client({ name: 'alignment-acceptance', version: '0.4.0' });
   t.after(() => client.close());
   await client.connect(new StdioClientTransport({ command: process.execPath, args: [cliPath, 'mcp', '--project', root], stderr: 'pipe' }));
@@ -219,9 +226,15 @@ test('real MCP stdio rejects missing alignment and completes the new check/inspe
   assert.match(check.alignmentPrompt, /EVERY requirement/);
   const candidate = check.candidates.find((c: any) => c.localPath === 'retry.ts');
   const evidence = await call('inspect_candidate', { checkId: check.id, candidateId: candidate.id, paths: ['budget.js'] });
+  const edge = evidence.analysis.linkage.calls.find((c: any) => c.callee === 'getBudget');
+  assert.equal(edge.status, 'resolved');
   const input = { checkId: check.id, choice: 'reuse_local', candidateIds: [candidate.id], evidenceIds: [evidence.id], rationale: 'MCP confirms the shared deadline and cancellation requirements' };
   const rejected: any = await client.callTool({ name: 'record_decision', arguments: input });
   assert.equal(rejected.isError, true);
+  const incompleteInput = assessment(check, evidence);
+  const blocked = await call('assess_alignment', { ...incompleteInput, segmentIds: incompleteInput.segmentIds.filter(id => id !== edge.targetSegmentId) });
+  assert.equal(blocked.status, 'blocked');
+  assert(blocked.blockers.some((b: string) => b.includes('resolved callee/import context')));
   const report = await call('assess_alignment', assessment(check, evidence));
   assert.equal(report.status, 'ready');
   assert.equal((await call('record_decision', { ...input, alignmentId: report.id })).alignmentId, report.id);

@@ -11,6 +11,8 @@ flowchart TD
   Core --> Sources[GitHub / GitLab / seven package registries]
   Core --> Evidence[Pinned evidence reader]
   Evidence --> Segments[Bounded AST segments and context facts]
+  Segments --> Links[Inspection-only definition links]
+  Links --> Alignment
   Core --> Alignment[Whole-task alignment checks and prompts]
   Core --> Store[Project records / remote cache]
   Hooks[Codex lifecycle adapter] --> Store
@@ -23,7 +25,7 @@ flowchart TD
 - `decide(input)` validates check/evidence identity, expiry, incomplete coverage acknowledgment and lifecycle transitions. Planned decisions require the original dependency context. Applied/verified decisions may include expected integration changes when linked to the correct preceding stage. Validation text is host-reported.
 - `assess(input)` binds exact inspected segments to every task/constraint requirement, checks parent context and forbidden import rules, and requires baseline alternatives plus an integration plan. Its immutable report gates decisions for checks with an alignment contract; semantic claims are explicitly host-reported. Local evidence hashes are rechecked before a planned decision. Inspection/assessment updates share a serialized queue.
 
-`segments.ts` owns static parsing; `alignment.ts` owns the contract, deterministic checks and task-specific prompt. CLI/MCP and the installed skill consume this shared behavior. Source code is never executed. JS/TS family files use the pinned Babel parser; other languages, clipped/invalid code and analysis budgets have explicit gaps. See [alignment details](ALIGNMENT.md).
+`segments.ts` owns static parsing; `linking.ts` consumes fully traversed AST evidence to associate relative imports, explicit exports and stable top-level direct calls inside one inspection. It never reads additional files or executes source. `alignment.ts` owns the contract, parent/callee/module closure, deterministic checks and task-specific prompt. CLI/MCP and the installed skill consume this shared behavior. Structural and linkage coverage are separate; unresolved links and budgets flow into alignment gaps. JS/TS family files use the existing pinned Babel parser; other languages, clipped/invalid code and analysis budgets have explicit gaps. See [alignment details](ALIGNMENT.md).
 
 `Http` concentrates cancellation, response limits, public-host restrictions, selective authorization and bounded throttling retries. `Store` confines records to the configured project and writes JSON atomically. Source adapters and tests consume these interfaces rather than duplicating transport logic.
 
@@ -47,4 +49,4 @@ The adapter guards declared patch paths only. Arbitrary shell writes and existin
 
 `catalog.ts` describes source capabilities and ecosystem routing; `sources.ts` handles repository adapters/merging and `registries.ts` handles registry discovery/evidence. `core.ts` owns selection, failures and cache context, using `pagination.ts` for bounded scheduling. CLI/MCP consume the same semantics. Add client-specific configuration beside `codex-hook.ts` and `install.ts`. See [current source limits](SOURCES.md) and the [long-term goal](ROADMAP.md).
 
-Current limits include UTF-8 lexical local discovery, root-only dependency fingerprints, at most three offset/numbered search pages, mutable upstream totals/rankings, no exhaustive recall guarantee, in-process record-update serialization, JS/TS-only structural parsing, syntactic rather than resolved call graphs, optional alignment contracts for backward compatibility, and host-reported semantic/validation claims. This is a local v0.4 implementation. Cursor traversal, more structural parsers, runtime whole-system checks, automatic query translation, official fallback endpoints and selective failed-source retries remain future work. All-language/all-platform collection remains the long-term direction, with per-source progress made explicit.
+Current limits include UTF-8 lexical local discovery, root-only dependency fingerprints, at most three offset/numbered search pages, mutable upstream totals/rankings, no exhaustive recall guarantee, in-process record-update serialization, JS/TS-only structural parsing, conservative module-level definition links rather than a runtime call graph, optional alignment contracts for backward compatibility, and host-reported semantic/validation claims. This is a local v0.5 implementation. Cursor traversal, more structural parsers, precise lexical/project resolution, runtime whole-system checks, automatic query translation, official fallback endpoints and selective failed-source retries remain future work. All-language/all-platform collection remains the long-term direction, with per-source progress made explicit.

@@ -1,5 +1,27 @@
 # Validation record
 
+## v0.5 local verification — 2026-11-04 (Asia/Shanghai)
+
+Environment: Windows PowerShell, Node v24.15.0. This update extends v0.4 with conservative, inspection-only cross-file definition links and callee-context confirmation. It adds no language source, hosting platform or runtime dependency. The existing fixed `@babel/parser@7.28.5`, core interfaces, syntax hashes and unrelated RSS example changes are retained.
+
+### Offline public-interface checks
+
+`npm run check`, `npm test` and `git diff --check` pass. **90/90** tests pass (72 previous, 18 new). The added public-core cases cover named/default import aliases, explicit reexports, extension substitution and index files; callee and intervening-module closure; incoming caller context; actual target-path forbidden-import rules; dependency hash staleness; parameter/block/destructuring/catch/loop/name shadowing; direct/destructured/loop writes; mutable declarations; dynamic eval scope; recursion; type-only, namespace, member, external and export-star unknowns; missing/ambiguous/invalid/excerpted/duplicate evidence; reexport cycles; and AST/call budgets. The existing compiled CLI and real MCP SDK stdio workflows now also assert a resolved cross-file call; the MCP workflow rejects missing callee selection before completing assessment and decision.
+
+Unresolved calls and the 300-call cap propagate from linkage into assessment gaps and the acknowledgment gate. An acknowledgment never overrides missing known callees or unknown/conflicting requirements. Structural coverage and linkage coverage are distinct. Supported requirement claims in fixtures remain host reports; no model semantic benchmark, complete lexical resolver or runtime call graph is claimed.
+
+### Packaging
+
+`npm pack --dry-run --json` includes `src/linking.ts`, its compiled runtime and declarations; the package has 90 entries. A real 0.5.0 tarball was installed into `.reuse-assistant/package-v5-smoke/consumer` with `--omit=dev --ignore-scripts`. `node .reuse-assistant/package-v5-smoke/smoke.mjs` passes the installed public core check -> inspect -> blocked incomplete callee selection -> ready complete selection -> planned decision. The consumer has no development TypeScript compiler. This validates the locally installed package, not remote publication or desktop activation.
+
+### Discovery evidence and host boundaries
+
+The current hook binding was included in both full reuse checks. Initial check `f060a60b-5e56-44b8-9453-0bbec9b3a307` retained a local search limit. Refined check `1ac52e46-137f-4061-900b-f50cff49ed31` retained GitHub HTTP 422 for the scoped package query; npm and the other GitHub query returned results. Only the selected bounded GitHub/npm plans were queried; this was not an ecosystem-wide recall test or a new registry live smoke.
+
+Inspected existing segments/types/alignment/core/package evidence `1665bb83-9bcc-42da-bc6f-ed3dcb53a4cf` and Babel Traverse candidate evidence `baa00dfa-e2c4-4281-8726-b5388488ed7e`, including binding code, scope context and metadata. The large upstream scope file was excerpted and downstream local context was incomplete; those limits were explicitly acknowledged. Traverse 8.1.0 was rejected because its narrower Node minor requirement conflicts with this project's `>=22` contract and full scope machinery exceeds the selected bounded approach. The selected implementation extends local core code; no upstream implementation was copied and no new notice is required. The official [Babel Traverse documentation](https://babeljs.io/docs/babel-traverse) was read as reference, not executed instructions.
+
+Ready alignment `11d00a63-a686-433e-a782-3b16a8dcd235` preceded planned decision `ce8ef7ae-493e-489a-a127-b7ff5f917a67`. Linked applied/verified records remain in `.reuse-assistant/`; verification statements there are host-reported. No v0.5 remote CI, GitHub push/release, macOS/Linux execution or live desktop MCP reload is claimed. A running v0.4 server must restart to load the new core; the stdio tests start v0.5 directly. Shell writes remain outside the hook's declared patch guard.
+
 ## GitHub publication checks - 2026-11-04 (Asia/Shanghai)
 
 Initial publication exposed a Node 22 test-fixture failure on both Windows and Linux: a deliberately never-settling transport left no live event-loop handle for the unref'ed AbortSignal deadline. The existing core deadline fixture already handles this case. Both pagination hang fixtures now use the same scoped keep-alive timer with cleanup and a bounded test timeout. Production code and all deadline/candidate-retention assertions are unchanged.

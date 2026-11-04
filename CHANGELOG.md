@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0 — 2026-11-04
+
+- Add bounded, inspection-only JS/TS definition links for relative imports, explicit named/default reexports and stable top-level direct calls, reusing the existing fixed parser without new dependencies.
+- Preserve unresolved reasons for module ambiguity, partial/duplicate evidence, shadowing, reassignment, dynamic scope/dispatch, packages and reexport cycles. Limit links to 300 calls and 10 reexport hops; never expand file/network reads automatically.
+- Require selected resolved callees and intervening modules during alignment. Return incoming/outgoing call context in the shared prompt; propagate incomplete linkage into assessment gaps and the existing acknowledgment gate. Unknown/conflicting requirements remain blockers.
+- Retain old records without linkage, method names, source behavior and syntax hashes. Reinspecting old evidence supplies linkage; old evidence assessed anew reports the missing context. No language registry, hosting platform or runtime dependency was added.
+
 ## 0.4.0 — 2026-11-03
 
 - Add bounded, static JS/TS/JSX/TSX AST segments, exact hashes/ranges, parent context, syntactic calls/control/write facts and import edges to inspection. Other languages and incomplete reads retain explicit gaps.

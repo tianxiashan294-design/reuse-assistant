@@ -4,7 +4,7 @@
 
 Check what already exists before a coding agent implements a feature. Reuse Assistant finds local implementations and public alternatives, retrieves pinned evidence, and records why the agent chose to reuse, adapt, learn from a design, or build a small implementation itself.
 
-**v0.4.0 preview.** The official source repository is [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant). This project is not published on npm; use this source checkout rather than a similarly named `npx` package.
+**v0.5.0 preview.** The official source repository is [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant). This project is not published on npm; use this source checkout rather than a similarly named `npx` package.
 
 The long-term target is **all programming languages and platforms**. v0.2 added six sources; v0.3 adds bounded pagination and retains candidates when a later page fails. See the [roadmap](docs/ROADMAP.md) and [source matrix](docs/SOURCES.md).
 
@@ -38,6 +38,8 @@ For structured constraints, client bindings, or decisions, put arguments in a JS
 The host performs semantic judgment and project edits. These tools store evidence and decisions; they do not execute candidate code, install dependencies, or independently run the validation command reported by the host.
 
 For substantial changes, supply a check `alignment` contract. Inspections now expose bounded JS/TS AST segments, parent context, import edges and syntactic control/write facts. `assess_alignment` requires every task/constraint requirement, exact segment references, baseline alternatives and an integration/validation plan. Unknown/conflicting requirements and forbidden dependencies block a decision; local evidence hashes are rechecked before planning. Semantic judgments remain host-reported. See [the alignment workflow and limits](docs/ALIGNMENT.md).
+
+v0.5 adds conservative cross-file definition links inside one inspection: relative imports, explicit reexports and stable top-level direct calls. `analysis.linkage` exposes resolved segment IDs and unresolved reasons. Selecting a caller requires its known callees and intervening modules; the assessment prompt includes incoming callers and gaps. Shadowing, writes, ambiguous or partial files, external packages and dynamic dispatch stay unresolved. Partial linkage requires explicit acknowledgment, and unknown/conflicting requirements still block. This does not add language sources or a complete runtime call graph.
 
 ## MCP and Codex
 
