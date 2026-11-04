@@ -1,20 +1,32 @@
 # Reuse Assistant
 
-[中文说明](README.zh-CN.md)
+[简体中文](README.zh-CN.md)
 
-Check what already exists before a coding agent implements a feature. Reuse Assistant finds local implementations and public alternatives, retrieves pinned evidence, and records why the agent chose to reuse, adapt, learn from a design, or build a small implementation itself.
+Help coding agents check what already exists before writing new code.
 
-**v1.0.0.** The official source repository is [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant). This project is not published on npm; use this source checkout rather than a similarly named `npx` package.
+Reuse Assistant searches the current project and public repositories or package registries, reads evidence from fixed revisions, and records why an agent chose to reuse a dependency, adapt code, follow a design, or build an implementation. It works with **Codex, Claude Code, OpenCode and DeepSeek Harness**, through a shared MCP server and CLI.
 
-v1.0 adds project setup, diagnostics and selective uninstall for **Claude Code, OpenCode and DeepSeek Harness**, alongside Codex. All clients share the core and four MCP tools. New clients receive native MCP configuration, a skill and project workflow instructions; automatic patch guards remain Codex-only. See [client setup and limits](docs/CLIENTS.md).
+## What it does
 
-The long-term target is **all programming languages and platforms**. v0.2 added six sources; v0.3 adds bounded pagination and retains candidates when a later page fails. See the [roadmap](docs/ROADMAP.md) and [source matrix](docs/SOURCES.md).
+- Finds relevant local code and public alternatives, including GitHub, GitLab and package registries.
+- Retrieves documentation, license information and selected source files, with structural context for supported languages.
+- Helps compare candidates against the whole task, integration cost and existing architecture.
+- Records the decision, implementation and validation result. Source failures and coverage limits remain visible.
 
-v0.8 adds **PHP, Ruby, Kotlin, Swift, Bash and Lua** structural evidence, bringing coverage to the JS/TS family plus thirteen fixed WASM grammars. Six upstream release assets ship with pinned revisions, hashes and original licenses. The shared core/CLI/MCP preserve existing budgets and text fallback; foreign imports/calls remain unsupported/unresolved. Dart remains text evidence and registry-source coverage is unchanged. See [language coverage and limits](docs/ALIGNMENT.md).
+Your coding agent makes the judgment, edits your project and runs its tests. Reuse Assistant supplies evidence and keeps the decision trail. See [source coverage](docs/SOURCES.md) and [evidence and alignment](docs/ALIGNMENT.md) for details.
 
-## Quick start
+## Requirements and setup
 
-Node.js 22+ is required. Development has been verified with Node 24 on Windows. The Node 22/24 Windows/Linux matrix runs in [GitHub Actions](https://github.com/tianxiashan294-design/reuse-assistant/actions).
+| Requirement | Purpose |
+|---|---|
+| Git | Clone the source repository |
+| Node.js 22 or later, with npm | Install dependencies, build and run the server |
+| A supported coding agent | Use the MCP tools and `reuse-first` skill; the CLI also works on its own |
+| Internet access | Install dependencies and search public sources; use `--scope local` for offline project checks after setup |
+
+Reuse Assistant needs no additional model API key. Configure your coding agent's own account or model provider as usual.
+
+### Install from source
 
 ```sh
 git clone https://github.com/tianxiashan294-design/reuse-assistant.git
@@ -24,122 +36,108 @@ npm run build
 node dist/src/cli.js --help
 ```
 
-Check a project:
+Run the commands below from this checkout. Replace `/absolute/project` with the absolute path to the project you want the agent to work on. On Windows, a quoted path such as `"C:\projects\my-app"` works too.
 
-```sh
-node dist/src/cli.js check --project /absolute/project --task "Add background scheduling" --query "in-process task scheduler" --ecosystem python --json
+### Optional credentials
+
+Public searches work without tokens, subject to each service's access and rate limits. To use a GitHub or GitLab token, set `GITHUB_TOKEN` or `GITLAB_TOKEN` in the environment that launches your agent or the CLI.
+
+For example, in PowerShell:
+
+```powershell
+$env:GITHUB_TOKEN = "your-token"
 ```
 
-For structured constraints, client bindings, or decisions, put arguments in a JSON file and use `--input request.json`. This also avoids shell quoting problems on Windows. `--input -` reads JSON from stdin.
-
-## Workflow
-
-1. **Check** existing project code and relevant public sources. Small fixes can use `--scope local`.
-2. **Inspect** up to three promising candidates. Read actual documentation, licensing evidence and relevant code, not only popularity metadata.
-3. **Decide** with evidence and a short requirement/cost rationale. Record `planned` before implementation.
-4. **Integrate and validate** in the host agent. Record `applied`, then `verified`, linking each preceding decision and supplying the actual validation command/outcome.
-
-The host performs semantic judgment and project edits. These tools store evidence and decisions; they do not execute candidate code, install dependencies, or independently run the validation command reported by the host.
-
-For substantial changes, supply a check `alignment` contract. Inspections now expose bounded JS/TS AST segments, parent context, import edges and syntactic control/write facts. `assess_alignment` requires every task/constraint requirement, exact segment references, baseline alternatives and an integration/validation plan. Unknown/conflicting requirements and forbidden dependencies block a decision; local evidence hashes are rechecked before planning. Semantic judgments remain host-reported. See [the alignment workflow and limits](docs/ALIGNMENT.md).
-
-v0.5 adds conservative cross-file definition links inside one inspection: relative imports, explicit reexports and stable top-level direct calls. `analysis.linkage` exposes resolved segment IDs and unresolved reasons. Selecting a caller requires its known callees and intervening modules; the assessment prompt includes incoming callers and gaps. Shadowing, writes, ambiguous or partial files, external packages and dynamic dispatch stay unresolved. Partial linkage requires explicit acknowledgment, and unknown/conflicting requirements still block. This does not add language sources or a complete runtime call graph.
-
-v0.6 adds **Python, Go and Rust structural analysis** with fixed Tree-sitter WASM grammars: declarations, parent modules, exact UTF-16 ranges/hashes, import statements and bounded syntactic call/control/write facts. Assets ship with the package; no language toolchain, native build or runtime download is required. JS/TS keeps Babel and its existing links. New-language module and call targets remain explicitly unresolved, while parse errors and clipped evidence fall back to text. Shared budgets and alignment gates still apply. This expands code evidence, without adding registry search sources. See [language coverage](docs/ALIGNMENT.md).
-
-v0.7 adds **Java, C#, C and C++ structure evidence**, plus **Hex** keyword search and **pub.dev** limited official name-corpus matching. Both sources retain fixed published-version metadata and expose code/version gaps; pub is explicitly `name_search`, not description/full-text discovery. Use `--ecosystem dart|flutter|elixir|erlang` or `--source pub --source hex`. Four additional official WASM assets ship with licenses and hashes. Preprocessing, ambiguous `.h` headers and all non-JS/TS definition targets remain explicit limitations. See [source coverage](docs/SOURCES.md).
-
-## MCP and agent clients
-
-Run the standard stdio MCP server in any compatible host:
+Or in a POSIX shell:
 
 ```sh
-node dist/src/cli.js mcp --project /absolute/project
+export GITHUB_TOKEN="your-token"
 ```
 
-It exposes four tools:
+Set `GITLAB_TOKEN` the same way if needed. Generated configuration references the environment variables; it does not save token values.
 
-| Tool | Responsibility |
+## Connect your coding agent
+
+Choose your client, then run `init`. For example, for Claude Code:
+
+```sh
+node dist/src/cli.js init --project "/absolute/project" --client claude-code
+```
+
+| Client | `--client` value | After initialization |
+|---|---|---|
+| Codex | `codex` | Open and trust the target project, then start a new session |
+| Claude Code | `claude-code` | Restart in the target project, approve the MCP server as needed, and check `/mcp` |
+| OpenCode | `opencode` | Restart in the target project and check MCP status and the skill catalog |
+| DeepSeek Harness | `deepseek-harness` | Launch with the generated Cordis overlay, as shown below |
+
+Initialization writes project-level MCP configuration and a `reuse-first` skill. Claude Code, OpenCode and DeepSeek also receive a project instruction pointer. Unrelated configuration is preserved, and same-name unmanaged entries are reported for review. Multiple clients can share one project's records.
+
+For **DeepSeek Harness**, launch from the target project using the overlay returned by `init`:
+
+```sh
+dsh --profile web --patch "/absolute/project/.dsh/reuse-assistant.cordis.patch.yml"
+```
+
+Select that project as the session workspace. This server stays bound to the same project throughout the process; use a separate process and overlay for another project.
+
+For **OpenCode JSONC** configurations, follow the [manual setup instructions](docs/CLIENTS.md#manual-opencode-jsonc). Automatic setup merges strict `opencode.json` only.
+
+For **Codex**, optional hooks can supply a current-turn binding and guard supported patch tools:
+
+```sh
+node dist/src/cli.js init --project "/absolute/project" --client codex --hooks
+```
+
+Review and trust the generated hooks in Codex. This guard covers declared patch tools, while shell writes remain outside its coverage. The other clients use MCP, skills and project instructions without an automatic patch guard.
+
+### Check or remove the integration
+
+Use your chosen client's value in both commands:
+
+```sh
+node dist/src/cli.js doctor --project "/absolute/project" --client claude-code
+node dist/src/cli.js uninstall --project "/absolute/project" --client claude-code
+```
+
+`doctor` checks files and expected configuration. Confirm server loading in the actual agent by finding the four tools below and the `reuse-first` skill. Uninstall removes generated integration while retaining project records; handling of edited files depends on the client and is described in the [client guide](docs/CLIENTS.md). Restart the agent after configuration changes; after DeepSeek uninstall, omit its `--patch` argument. Rerun `init` if you move the Reuse Assistant checkout.
+
+For other MCP hosts, configure a stdio server with your Node executable and the arguments `/absolute/reuse-assistant/dist/src/cli.js mcp --project /absolute/project`. Use separate argument-array entries for each argument. See the [client guide](docs/CLIENTS.md) for configuration paths and details.
+
+## Use it
+
+After connecting, ask your agent to follow the reuse workflow. For example:
+
+> Add background scheduling. First check this project and existing libraries, read the promising candidates, and record the choice before implementing it.
+
+The `reuse-first` skill guides the agent through checking, inspection, whole-task alignment and a planned decision. The agent then implements and tests the change, recording `applied` and `verified` results. Small fixes can start with a local check.
+
+| MCP tool | Purpose |
 |---|---|
-| `check_reuse` | Local matches, registry/repository candidates, source status and coverage |
-| `inspect_candidate` | Fixed commit/version metadata, official README/license, selected code or directories |
-| `assess_alignment` | Segment/parent confirmation, whole-task requirements, architecture rules, alternatives and integration plan |
-| `record_decision` | Evidence-backed choice and planned/applied/verified lifecycle |
+| `check_reuse` | Search local code and selected public sources |
+| `inspect_candidate` | Read pinned documentation, license and code evidence |
+| `assess_alignment` | Check evidence references, task requirements and the integration plan |
+| `record_decision` | Record the choice and its planned, applied or verified stage |
 
-For Codex project setup:
-
-```sh
-node dist/src/cli.js init --project /absolute/project --hooks
-node dist/src/cli.js doctor --project /absolute/project
-```
-
-Initialization writes a project-scoped `.codex/config.toml`, a discoverable `.agents/skills/reuse-first` skill, optional `.codex/hooks.json`, and a state-directory ignore rule. It preserves unrelated MCP/config/hook entries and refuses an unmanaged same-name skill/server. Generated files contain checkout-specific paths; rerun initialization after moving the checkout. The hook launcher also needs Node on the host's PATH.
-
-Open/trust that project in Codex, start a new session, and review/trust the hook definitions in the host. Codex skips project-local config and hooks for untrusted projects; generated files alone do not activate the integration. A `UserPromptSubmit` hook supplies the session/turn binding; include it in `check_reuse`. The patch guard permits declared `apply_patch`/`Edit`/`Write` paths after a current-turn planned decision. Missing records cause a supported denial with instructions for completing the check.
-
-**Coverage is explicit:** shell writes, existing interactive sessions, unsupported tool paths and hosts without an adapter are outside this patch guard. Host callback timeouts and trust policies remain host behavior. `doctor` reports configuration presence, not proof that hooks are trusted or active. See [Codex hooks](https://learn.chatgpt.com/docs/hooks).
-
-Remove generated integration while retaining records:
+You can also use the CLI directly:
 
 ```sh
-node dist/src/cli.js uninstall --project /absolute/project
+node dist/src/cli.js check --project "/absolute/project" --task "Add background scheduling" --query "in-process task scheduler" --ecosystem javascript --json
 ```
 
-Set up other clients with `init --project /absolute/project --client claude-code`, `--client opencode`, or `--client deepseek-harness`. The same selector works with `doctor` and `uninstall`. Claude/OpenCode load native project configuration; DeepSeek requires the generated `dsh --profile web --patch <absolute-overlay-path>` launch arguments. OpenCode JSONC configurations require manual merging. See [the client guide](docs/CLIENTS.md) for activation, ownership and capability boundaries.
+Add `--scope local` to search only the project. Use `--input request.json` for structured constraints, alignment contracts and decisions; `--input -` reads JSON from stdin. Run `--help` for the command list.
 
-## Discovery and evidence
+Records live in the target project's `.reuse-assistant/` directory, which initialization adds to `.gitignore`. Keep these task records local and use public technical terms in external queries. Reports distinguish failed searches, empty results and incomplete coverage; they do not promise exhaustive discovery.
 
-- **Local:** bounded UTF-8 lexical search without a programming-language extension allowlist. Up to 1,200 scanned files, 180 KB per file and 30 raw matches; the shortlist includes at most eight local matches. Binary/non-UTF-8 files, symlinks and generated/dependency/state directories are skipped. Root dependency fingerprints cover additional language ecosystems; nested workspace manifests are not all covered.
-- **GitHub:** repository/README discovery, including small projects; no minimum-star filter or automatic adopt threshold. Exact scoped npm queries are routed to npm.
-- **GitLab.com:** public project substring search or exact public project URL lookup, with nested groups and commit-pinned file/directory evidence.
-- **npm:** registry search plus exact published-version metadata. Multiple packages in one repository keep distinct names and versions.
-- **Rust, JVM, .NET, Ruby and PHP:** crates.io, Maven Central, NuGet.org, RubyGems and Packagist discovery plus published metadata evidence. Maven POM interpretation and unsupported source associations remain explicit gaps.
-- **Python:** GitHub discovery, then installation/`pyproject.toml` evidence to identify a real distribution and PyPI JSON verification. Known names may be supplied with `packageNames`. This is **not PyPI full-text search**. Repository, import and distribution names are not assumed equal.
+## Open source and contribution
 
-`--ecosystem auto` searches every implemented source. Select an ecosystem (`javascript`, `python`, `rust`, `java`, `dotnet`, `ruby`, `php`, `go`) or repeat `--source gitlab --source crates` to override routing. Go currently has repository search only. JSON/MCP use `sources: ["gitlab", "crates"]`. Reports expose selected and unselected capabilities in `sourcePlan`; source selection invalidates remote caches. Existing MCP processes need to reload the new build for the expanded schema. See [source limits and examples](docs/SOURCES.md).
+Reuse Assistant is released under the [MIT License](LICENSE). You may use, modify, redistribute and commercially use it under those terms. When distributing copies or substantial portions, retain the copyright and license notices, along with applicable [third-party notices](THIRD_PARTY_NOTICES.md).
 
-`inspect_candidate` accepts repository-relative paths, including `src/file.ts#L100-L180`. Inspect a package alias such as `npm:@scope/name` when a merged repository publishes several packages. Code is pinned to a commit. An npm `gitHead`, when supplied and associated with the repository, can link that commit to the published package; otherwise the report explicitly marks that association unverified. Registry metadata and repository HEAD are distinct evidence.
-
-Source outcomes distinguish success, zero results, partial coverage, throttling, timeout, unavailability and intentionally skipped operations. A completed bounded query plan is not an exhaustive ecosystem search. Incomplete searches/evidence require acknowledgment before the corresponding decision. Unknown licenses and requirement fit remain review work for the host.
-
-Queries are adapted to registry limits (npm 64 characters; GitHub 256 including qualifiers). Shortened queries expose the actual request and mark coverage partial instead of silently dropping terms or returning an avoidable HTTP error.
-
-Ordinary discovery defaults to a 60-second budget with up to four workers, bounded retry/response sizes and cancellation. Deep inspection has a separate per-call budget and a three-distinct-candidate limit. Remote results may be cached for six hours and are labeled; local code is searched freshly. Changed tasks, constraints or dependency manifests invalidate the relevant context. Expected manifest changes during integration are tracked through linked decision stages.
-
-Discovery reads up to **two pages per source/query** by default. Use `--max-pages 1`, `2` or `3` (JSON/MCP: `maxPages`) to choose the cap under the same total deadline. All first-page jobs finish before continuations. Most sources return six items per page; RubyGems uses its fixed 30-item pages, retained in full. Exact GitLab URL and PyPI name checks remain single lookups. The merged shortlist stays capped at 30 while source results retain all fetched candidates.
-
-Successful search reads expose `pagination`: page size, successful pages, raw items fetched, optional upstream total, `hasMore` and a stop reason. Reaching the page cap completes the finite plan and may still report `hasMore: true`. A later-page error retains previous candidates, its failure and page number, marks coverage partial and prevents remote caching. Repeated pages stop with explicit partial coverage. Totals and offset rankings can change between requests; this is bounded discovery, not a snapshot or exhaustive search.
-
-## Configuration and local records
-
-No additional model API key is required. Optional `GITHUB_TOKEN` and `GITLAB_TOKEN` are forwarded by environment variable name and sent only to their corresponding platform. Network reads use supported public API hosts; only bounded redirects between supported official NuGet global/regional endpoints are followed. Other redirects and unsupported hosts are rejected.
-
-Project records live in `.reuse-assistant/`:
-
-```text
-checks/       candidates, coverage, inspections
-decisions/    choices and host-reported validation
-decision-index/ latest lifecycle stage per check
-cache/        labeled remote results
-sessions/     current client turn state
-```
-
-Use public functional terms for external queries. Local source files are inspected locally; credentials are not stored by the tool. Records may contain project/task information and should remain outside version control. Uninstall retains these records and their ignore rule.
-
-## Verification and contribution
+To contribute, fork the repository, create a branch, make your changes and open a pull request. Before submitting, run:
 
 ```sh
 npm run check
 npm test
-npm run smoke
-npm run smoke:v2
-npm run smoke:v3
 ```
 
-`npm test` is deterministic and includes real stdio SDK-client workflows. `npm run smoke` observes v0.1 sources; `npm run smoke:v2` observes the six v0.2 sources. `npm run smoke:v3` checks two-page discovery on all eight search sources and preserves runs in `docs/live-smoke-v3.json`; after building, `node dist/test/live-smoke-v3.js github` checks only that source. These are network-dependent observations, not recall benchmarks. See [validation notes](docs/VALIDATION.md), [contribution guide](CONTRIBUTING.md), and [architecture](docs/ARCHITECTURE.md).
-
-The core is shared by CLI and MCP. Source adapters and client adapters extend separate seams; candidate/evidence/decision semantics stay common. npm distribution and automatic guards for the new clients remain future work.
-
-## License and upstream work
-
-MIT. Selected code/designs from wheel-hub, reuse-before-generate and scout-mcp are adapted with attribution. See [third-party notices](THIRD_PARTY_NOTICES.md) for fixed revisions, modifications and retained MIT notices. Official MCP SDK and TOML parsing are dependencies, not reimplemented protocols/parsers.
+Describe the problem, the change and how you validated it. When incorporating upstream code, record its fixed revision, original notice and modifications. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [architecture guide](docs/ARCHITECTURE.md) for project conventions. Report problems or suggest improvements through [GitHub Issues](https://github.com/tianxiashan294-design/reuse-assistant/issues).
