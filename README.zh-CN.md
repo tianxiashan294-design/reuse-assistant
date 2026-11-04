@@ -4,7 +4,9 @@
 
 目标是减少 AI 不必要的重复实现：先查当前项目，再找已有依赖、代码和设计；阅读证据后选择复用或自建，最后记录实际集成与验证结果。
 
-当前为 v0.8.0 预览版，官方源码仓库是 [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant)。项目尚未发布到 npm，请使用本仓库源码，不要仅凭同名 `npx` 包安装。
+当前为 v1.0.0，官方源码仓库是 [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant)。项目尚未发布到 npm，请使用本仓库源码，不要仅凭同名 `npx` 包安装。
+
+v1.0 新增 **Claude Code、OpenCode、DeepSeek Harness** 的项目安装、诊断和选择性卸载，保留 Codex 默认行为。全部客户端共享核心和 MCP 四个工具；新接入提供原生 MCP、技能和项目指令，自动补丁守卫目前仍为 Codex 专属。详见[客户端接入与限制](docs/CLIENTS.md)。
 
 最终目标是**全代码语言、全平台搜集**。第二版增加 6 个搜索源；第三版增加有预算的分页召回，后续页失败时保留已有候选。长期方向和后续顺序保存在[路线图](docs/ROADMAP.md)，当前实际能力见[来源矩阵](docs/SOURCES.md)。
 
@@ -36,7 +38,7 @@ node dist/src/cli.js check --project 'C:\你的项目' --task '加入后台任�
 
 复杂参数放在 JSON 文件里，用 `--input request.json` 传入。CLI 与 MCP 共用相同的核心与记录。
 
-## 接入 Codex
+## 接入 Codex 与其他 Agent
 
 ```powershell
 node dist/src/cli.js init --project 'C:\你的项目' --hooks
@@ -53,7 +55,15 @@ Codex 的写入检查使用当前会话/回合绑定和决策记录，覆盖声�
 node dist/src/cli.js uninstall --project 'C:\你的项目'
 ```
 
-卸载保留检索、证据和决策记录，仅移除生成的接入项。其他 Agent 可先通过标准 MCP 和技能使用核心能力，专属自动触发与检查适配会逐步补充。
+卸载保留检索、证据和决策记录，仅移除生成的接入项。新增客户端使用以下命令；`doctor` 和 `uninstall` 同样接受 `--client`：
+
+```powershell
+node dist/src/cli.js init --project 'C:\你的项目' --client claude-code
+node dist/src/cli.js init --project 'C:\你的项目' --client opencode
+node dist/src/cli.js init --project 'C:\你的项目' --client deepseek-harness
+```
+
+Claude Code/OpenCode 重启后检查原生项目配置；DeepSeek Harness 需按安装输出使用 `dsh --profile web --patch <配置绝对路径>`，不会自动读取项目 MCP JSON。OpenCode JSONC 配置需手动合并，自动安装不会覆盖它。新客户端暂不支持 `--hooks`；配置生成和离线 MCP 测试不等于真实宿主激活验收。[详细指南](docs/CLIENTS.md)包含手动配置、独立卸载和能力边界。
 
 ## 已实现的复用流程
 

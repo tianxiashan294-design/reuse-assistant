@@ -4,7 +4,9 @@
 
 Check what already exists before a coding agent implements a feature. Reuse Assistant finds local implementations and public alternatives, retrieves pinned evidence, and records why the agent chose to reuse, adapt, learn from a design, or build a small implementation itself.
 
-**v0.8.0 preview.** The official source repository is [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant). This project is not published on npm; use this source checkout rather than a similarly named `npx` package.
+**v1.0.0.** The official source repository is [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant). This project is not published on npm; use this source checkout rather than a similarly named `npx` package.
+
+v1.0 adds project setup, diagnostics and selective uninstall for **Claude Code, OpenCode and DeepSeek Harness**, alongside Codex. All clients share the core and four MCP tools. New clients receive native MCP configuration, a skill and project workflow instructions; automatic patch guards remain Codex-only. See [client setup and limits](docs/CLIENTS.md).
 
 The long-term target is **all programming languages and platforms**. v0.2 added six sources; v0.3 adds bounded pagination and retains candidates when a later page fails. See the [roadmap](docs/ROADMAP.md) and [source matrix](docs/SOURCES.md).
 
@@ -47,7 +49,7 @@ v0.6 adds **Python, Go and Rust structural analysis** with fixed Tree-sitter WAS
 
 v0.7 adds **Java, C#, C and C++ structure evidence**, plus **Hex** keyword search and **pub.dev** limited official name-corpus matching. Both sources retain fixed published-version metadata and expose code/version gaps; pub is explicitly `name_search`, not description/full-text discovery. Use `--ecosystem dart|flutter|elixir|erlang` or `--source pub --source hex`. Four additional official WASM assets ship with licenses and hashes. Preprocessing, ambiguous `.h` headers and all non-JS/TS definition targets remain explicit limitations. See [source coverage](docs/SOURCES.md).
 
-## MCP and Codex
+## MCP and agent clients
 
 Run the standard stdio MCP server in any compatible host:
 
@@ -83,7 +85,7 @@ Remove generated integration while retaining records:
 node dist/src/cli.js uninstall --project /absolute/project
 ```
 
-Other agents can use the standard MCP tools and workflow skill now; client-specific automatic triggers/guards are currently implemented for Codex only.
+Set up other clients with `init --project /absolute/project --client claude-code`, `--client opencode`, or `--client deepseek-harness`. The same selector works with `doctor` and `uninstall`. Claude/OpenCode load native project configuration; DeepSeek requires the generated `dsh --profile web --patch <absolute-overlay-path>` launch arguments. OpenCode JSONC configurations require manual merging. See [the client guide](docs/CLIENTS.md) for activation, ownership and capability boundaries.
 
 ## Discovery and evidence
 
@@ -136,7 +138,7 @@ npm run smoke:v3
 
 `npm test` is deterministic and includes real stdio SDK-client workflows. `npm run smoke` observes v0.1 sources; `npm run smoke:v2` observes the six v0.2 sources. `npm run smoke:v3` checks two-page discovery on all eight search sources and preserves runs in `docs/live-smoke-v3.json`; after building, `node dist/test/live-smoke-v3.js github` checks only that source. These are network-dependent observations, not recall benchmarks. See [validation notes](docs/VALIDATION.md), [contribution guide](CONTRIBUTING.md), and [architecture](docs/ARCHITECTURE.md).
 
-The core is shared by CLI and MCP. Source adapters and future client adapters extend separate seams; candidate/evidence/decision semantics stay common. npm distribution and additional client adapters are future work.
+The core is shared by CLI and MCP. Source adapters and client adapters extend separate seams; candidate/evidence/decision semantics stay common. npm distribution and automatic guards for the new clients remain future work.
 
 ## License and upstream work
 

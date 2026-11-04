@@ -1,10 +1,10 @@
 # Architecture
 
-The shared core implements discovery, evidence retrieval and decisions. CLI and MCP are adapters to that interface; Codex lifecycle hooks read the same local records. The host agent supplies semantic judgment and performs actual integration and tests.
+The shared core implements discovery, evidence retrieval and decisions. CLI and MCP are adapters to that interface; Codex lifecycle hooks read the same local records. Native setup adapters support Codex, Claude Code, OpenCode and DeepSeek Harness. The host agent supplies semantic judgment and performs actual integration and tests.
 
 ```mermaid
 flowchart TD
-  Agent[Codex / other MCP agents] --> MCP[Four MCP tools]
+  Agent[Codex / Claude Code / OpenCode / DeepSeek Harness] --> MCP[Four MCP tools]
   CLI[CLI] --> Core[ReuseAssistant]
   MCP --> Core
   Core --> Local[Local bounded search]
@@ -43,12 +43,16 @@ Source success means the finite query plan completed, not exhaustive recall. Loc
 
 ## Client state
 
+`clients.ts` owns explicit client selection, new native configuration/skill/instruction installation, receipts, filesystem diagnostics and selective removal. It delegates existing Codex behavior to `install.ts`. It does not discover candidates or decide reuse. New clients use standard MCP and the shared skill without turn bindings or automatic write guards. Independent skill directories prevent cross-client uninstall. New installer paths reject symlinks/junctions before creating directories, preflight content conflicts, and retain user-modified generated content. Multi-file writes are not transactional. OpenCode JSONC remains a documented manual configuration boundary.
+
+DeepSeek uses a generated Cordis `--patch` overlay with an `@deepseek-ai/dsh-mcp-client` row. Activation is explicit and process-scoped: its server always uses the configured project's records. No DSH home/profile files are edited. Filesystem `doctor` results never establish host loading, trust, or actual model compliance. See [client contracts](CLIENTS.md).
+
 Codex `UserPromptSubmit` prepares a session/turn binding. The agent includes this binding in its check. A planned decision associates the check with that turn; `PreToolUse` on declared patch tool names reads that association. A new turn invalidates the old permit. Concurrent sessions have separate state files.
 
 The adapter guards declared patch paths only. Arbitrary shell writes and existing interactive sessions are outside its enforcement. Host trust, callback coverage and callback timeout behavior remain host-owned. Tests can verify hook payloads and generated launcher behavior without proving activation in a live desktop session.
 
 ## Extension seams and limits
 
-`catalog.ts` describes source capabilities and ecosystem routing; `sources.ts` handles repository adapters/merging and `registries.ts` handles registry discovery/evidence. `core.ts` owns selection, failures and cache context, using `pagination.ts` for bounded scheduling. CLI/MCP consume the same semantics. Add client-specific configuration beside `codex-hook.ts` and `install.ts`. See [current source limits](SOURCES.md) and the [long-term goal](ROADMAP.md).
+`catalog.ts` describes source capabilities and ecosystem routing; `sources.ts` handles repository adapters/merging and `registries.ts` handles registry discovery/evidence. `core.ts` owns selection, failures and cache context, using `pagination.ts` for bounded scheduling. CLI/MCP consume the same semantics. Client setup lives in `clients.ts`/`install.ts`, separately from the `codex-hook.ts` lifecycle adapter. See [current source limits](SOURCES.md) and the [long-term goal](ROADMAP.md).
 
-Current limits include UTF-8 lexical local discovery, root-only dependency fingerprints, at most three offset/numbered search pages, mutable upstream totals/rankings, no exhaustive recall guarantee, pub discovery restricted to an official limited name corpus, in-process record-update serialization, structural parsing limited to JS/TS and thirteen WASM grammars, conservative JS/TS module-level definition links rather than a runtime call graph, optional alignment contracts for backward compatibility, and host-reported semantic/validation claims. This is a local v0.8 implementation. New-language project/module/call resolution, preprocessing/compiler configuration, cursor traversal, more structural parsers, precise lexical/project resolution, runtime whole-system checks, automatic query translation, official fallback endpoints and selective failed-source retries remain future work. All-language/all-platform collection remains the long-term direction, with per-source progress made explicit.
+Current limits include UTF-8 lexical local discovery, root-only dependency fingerprints, at most three offset/numbered search pages, mutable upstream totals/rankings, no exhaustive recall guarantee, pub discovery restricted to an official limited name corpus, in-process record-update serialization, structural parsing limited to JS/TS and thirteen WASM grammars, conservative JS/TS module-level definition links rather than a runtime call graph, optional alignment contracts for backward compatibility, and host-reported semantic/validation claims. This is a local v1.0 implementation. New-language project/module/call resolution, preprocessing/compiler configuration, cursor traversal, more structural parsers, precise lexical/project resolution, runtime whole-system checks, automatic query translation, official fallback endpoints and selective failed-source retries remain future work. All-language/all-platform collection remains the long-term direction, with per-source progress made explicit.

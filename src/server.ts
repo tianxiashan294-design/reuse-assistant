@@ -38,7 +38,7 @@ export const decisionSchema = z.object({
 });
 
 export function createServer(assistant: ReuseAssistant): McpServer {
-  const server = new McpServer({ name: 'reuse-assistant', version: '0.8.0' });
+  const server = new McpServer({ name: 'reuse-assistant', version: '1.0.0' });
   const handler = (fn: (args: any) => Promise<unknown>) => async (args: any) => {
     try {
       const result = await fn(args);

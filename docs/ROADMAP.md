@@ -71,6 +71,15 @@ v0.7 的结构语言后续在 v0.8 扩展如下。包生态继续补充下列范
 
 后续结构语言优先补 Dart、Scala、SQL、PowerShell 等，再扩展 R、Julia、Haskell 等；Dart 的已检查上游没有 release WASM，本轮继续文本证据，不用其他包的未核实二进制代替。十三种 WASM 语言仍需项目配置和定义关联。
 
+## v1.0：多 Agent 接入（本地实现）
+
+- CLI 的 `init`、`doctor`、`uninstall` 增加 Claude Code、OpenCode 和官方 DeepSeek Harness，默认继续为 Codex。
+- 原生 MCP 配置、独立技能目录和项目指令；DeepSeek 使用显式 Cordis overlay，不改动全局 profile。OpenCode JSONC 当前手动配置，自动安装保留原文件。
+- 按客户端记录文件归属，保留无关配置和用户修改；发现、取证、对齐和决策继续共享核心。
+- 新客户端暂不提供自动补丁守卫。公共 CLI/SDK stdio 测试与真实宿主激活分开报告，详见[接入指南](CLIENTS.md)和[验证记录](VALIDATION.md)。
+
+后续接入工作包括 JSONC 注释保留合并、三种新客户端的原生自动触发/守卫，以及各宿主的实际会话验收。
+
 ## 后续扩展顺序
 
 1. **可靠性与召回**：游标遍历、官方备用端点、失败来源重查、跨语言查询策略、来源间排序公平性和可复现召回样例集；页号/偏移分页已在 v0.3 实现，当前使用固定离线样例验证第二页候选召回。

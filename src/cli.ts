@@ -5,12 +5,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ReuseAssistant } from './core.js';
 import { checkSchema, decisionSchema, inspectSchema, startMcp } from './server.js';
-import { doctor, installCodex, uninstallCodex } from './install.js';
+import { agentClient, doctorClient, installClient, uninstallClient } from './clients.js';
 import { evaluateHook, readStdin } from './codex-hook.js';
 import { markdown } from './format.js';
 import { alignmentInputSchema } from './alignment.js';
 
-const HELP = `Reuse Assistant 0.8.0 — evidence-based reuse checks
+const HELP = `Reuse Assistant 1.0.0 — evidence-based reuse checks
 
   node dist/src/cli.js check --project PATH --task TEXT --query TERMS [--query TERMS] [--scope local|full] [--ecosystem NAME] [--source NAME] [--json]
   node dist/src/cli.js check --project PATH --input request.json
@@ -18,9 +18,9 @@ const HELP = `Reuse Assistant 0.8.0 — evidence-based reuse checks
   node dist/src/cli.js decide --project PATH --input decision.json
   node dist/src/cli.js assess --project PATH --input alignment.json
   node dist/src/cli.js report --project PATH --check ID [--json]
-  node dist/src/cli.js init --project PATH [--hooks]
-  node dist/src/cli.js uninstall --project PATH
-  node dist/src/cli.js doctor --project PATH
+  node dist/src/cli.js init --project PATH [--client NAME] [--hooks]
+  node dist/src/cli.js uninstall --project PATH [--client NAME]
+  node dist/src/cli.js doctor --project PATH [--client NAME]
   node dist/src/cli.js mcp --project PATH
 
 --input - reads JSON from stdin. Commands keep records in PROJECT/.reuse-assistant/.
@@ -30,8 +30,11 @@ pub searches the official limited name-completion corpus, not package descriptio
 auto searches all implemented sources; --source overrides ecosystem selection.
 --max-pages 1..3 (default 2) bounds discovery pages per source/query under the total budget.
 No candidate code is executed. The host performs integration and validation.
-init writes project-scoped Codex config and skill; --hooks adds a patch guard
-requiring host trust. Shell writes are outside this guard's coverage.
+Clients: codex (default), claude-code, opencode, deepseek-harness.
+init writes native MCP configuration, a skill and project workflow guidance.
+DeepSeek requires launching dsh with the generated --patch overlay.
+OpenCode automatic merging supports strict opencode.json; JSONC needs manual setup.
+--hooks is Codex-only and requires host trust. Shell writes are outside its coverage.
 `;
 
 export async function main(args = process.argv.slice(2)): Promise<void> {
@@ -40,18 +43,21 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
     scope: { type: 'string' }, ecosystem: { type: 'string' }, check: { type: 'string' }, candidate: { type: 'string' },
     path: { type: 'string', multiple: true }, json: { type: 'boolean' }, hooks: { type: 'boolean' }, help: { type: 'boolean' },
     'no-cache': { type: 'boolean' }, budget: { type: 'string' }, package: { type: 'string', multiple: true }, source: { type: 'string', multiple: true },
-    'max-pages': { type: 'string' },
+    'max-pages': { type: 'string' }, client: { type: 'string' },
   } });
   if (values.help || !positionals[0]) { process.stdout.write(HELP); return; }
   const command = positionals[0];
+  const client = agentClient(values.client);
+  if (values.client && !['init', 'uninstall', 'doctor'].includes(command)) throw new Error('--client applies only to init, uninstall and doctor.');
+  if (values.hooks && command !== 'init') throw new Error('--hooks applies only to init.');
   const root = await realpath(path.resolve(values.project ?? process.cwd()));
   const assistant = new ReuseAssistant(root);
   const data = async () => JSON.parse(values.input === '-' ? await readStdin() : await readFile(path.resolve(values.input ?? ''), 'utf8'));
   const print = (value: unknown) => process.stdout.write(JSON.stringify(value, null, 2) + '\n');
   if (command === 'mcp') { startMcp(assistant); return; }
-  if (command === 'init') { print(await installCodex(root, Boolean(values.hooks))); return; }
-  if (command === 'uninstall') { print(await uninstallCodex(root)); return; }
-  if (command === 'doctor') { print(await doctor(root)); return; }
+  if (command === 'init') { print(await installClient(root, client, Boolean(values.hooks))); return; }
+  if (command === 'uninstall') { print(await uninstallClient(root, client)); return; }
+  if (command === 'doctor') { print(await doctorClient(root, client)); return; }
   if (command === 'hook') { print(await evaluateHook(root, JSON.parse(await readStdin()))); return; }
   if (command === 'check') {
     const input = checkSchema.parse(values.input ? await data() : { task: values.task, queries: values.query ?? [], scope: values.scope, ecosystem: values.ecosystem, sources: values.source, packageNames: values.package, useCache: !values['no-cache'], ...(values.budget ? { budgetMs: Number(values.budget) } : {}), ...(values['max-pages'] !== undefined ? { maxPages: Number(values['max-pages']) } : {}) });

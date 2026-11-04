@@ -1,5 +1,27 @@
 # Validation record
 
+## v1.0 local verification — 2026-11-04 (Asia/Shanghai)
+
+Environment: Windows PowerShell, Node v24.15.0. Added Claude Code, OpenCode and official DeepSeek Harness setup/doctor/uninstall through explicit CLI client selection; default Codex and shared discovery/evidence/alignment/decision behavior remain. Package, lockfile, CLI help and MCP server identity report `1.0.0`. No new dependency or copied upstream implementation was incorporated.
+
+### Offline public-interface checks
+
+`npm run check`, `npm test` and `git diff --check` pass. **123/123** tests pass: 108 existing and 15 new client cases. New tests invoke the compiled public CLI to cover native config/skill/reference/instruction generation, idempotence, unrelated config preservation, unmanaged collisions, malformed config, modified managed content, selective uninstall, coexistence with Codex, invalid client/options/hooks, JSONC refusal, runtime token references without credential snapshots and junction confinement before writes. Paths include Chinese characters, spaces and shell metacharacters.
+
+For each new client, tests read its generated native server command and start the actual server with the official SDK stdio transport. They list the four tools, run check/inspect/assess/decide, link planned → applied → verified, and read the same latest decision through CLI. These are offline SDK/configuration tests, not executions inside Claude Code, OpenCode or DeepSeek Harness. A focused test run initially failed during Windows fixture cleanup because the MCP process still held its working directory. Closing it in `finally` before fixture cleanup corrected the test lifecycle; the subsequent full suite passes without forcing process exit.
+
+`npm pack --ignore-scripts --dry-run --json` reports `reuse-assistant-local-1.0.0.tgz`, 127 entries, with the new adapter source/build outputs, client guide and installed skill references. This is a package-content check, not npm publication or an installed production-host run.
+
+### Official compatibility reads and discovery limits
+
+Official Claude/OpenCode configuration and skill docs were read. DeepSeek's explicit overlay, MCP entry and filesystem-skill contracts were checked against revision `8bd073392eef6f54e921a093b95076248eb08cbb`; links and process/project scope limits are retained in [CLIENTS.md](CLIENTS.md). These are live documentation reads, not model compliance or host activation tests. No new search-endpoint smoke was run because discovery sources and transport behavior are unchanged; prior endpoint observations below remain historical.
+
+Reuse check `125c5ba4-9cd0-4625-8b96-91625bf0d4a2` inspected existing installer, CLI, hook, core and project context. Ready alignment `a84045f1-6298-48f5-bd10-3bb3808c1dd6` preceded planned decision `aad566ba-0d80-4f86-92ad-d81494921436`. Bounded local/npm coverage and unresolved static dependencies were acknowledged rather than treated as complete. `agent-install@0.0.8` had only registry metadata and no supported source association, so it was not adopted. A separate attempted JSONC-parser evaluation encountered unavailable npm discovery and GitHub pinned-evidence HTTP 403, including the CLI retry; no dependency was adopted on incomplete source context. OpenCode JSONC is explicitly manual, preserving user files on automatic setup refusal.
+
+### Host and release boundaries
+
+New clients provide MCP, skill and project workflow instructions; they do not implement automatic patch guards or turn bindings. DeepSeek requires an explicit `--patch` launch and binds one server/project across its process. `doctor` reports filesystem/expected-command state, not runtime activation. Actual Claude Code/OpenCode/DeepSeek sessions, Codex desktop reload, host trust, Node 22/Linux/macOS runs, remote CI, push/tag/release and npm publication were not performed. Existing unrelated RSS example and notice changes were preserved.
+
 ## v0.8 local verification — 2026-11-04 (Asia/Shanghai)
 
 Environment: Windows PowerShell, Node v24.15.0. Add PHP/Ruby/Kotlin/Swift/Bash/Lua syntax mappings and six fixed upstream WASM release assets in the existing shared core. No runtime dependency or target-language toolchain is added; registry retrieval behavior is unchanged.

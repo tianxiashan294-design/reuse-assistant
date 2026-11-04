@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.0 — 2026-11-04
+
+- Add explicit `--client codex|claude-code|opencode|deepseek-harness` to project init, doctor and uninstall; preserve Codex as the default.
+- Generate native Claude/OpenCode MCP configuration, independent skill bundles and project workflow pointers. Generate an explicit DeepSeek Cordis MCP overlay without modifying global profiles.
+- Preserve unrelated configuration and instructions; preflight malformed/conflicting inputs, track per-client ownership and retain user-modified content on uninstall. Automatic OpenCode setup supports strict JSON; JSONC remains manual.
+- Keep discovery, evidence, alignment and decision records in the shared core. New clients use MCP/skills/instructions; automatic patch guards remain Codex-only. Publish capabilities and host validation limits explicitly.
+- Test native launch commands through the public CLI and actual stdio MCP SDK, including all four tools and linked decision stages. No new runtime dependency or copied upstream code.
+
 ## 0.8.0 — 2026-11-04
 
 - Add PHP, Ruby, Kotlin, Swift, Bash and Lua structural evidence through the existing shared core, with six unmodified upstream release WASM assets, fixed revisions/hashes and original MIT licenses. No runtime dependency or toolchain is added.
