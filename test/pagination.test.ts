@@ -12,8 +12,9 @@ import { REMOTE_SOURCES, type CheckInput } from '../src/types.js';
 import { fixture, fakeFetch, json } from './support.js';
 import { pagedResponse, searchPage, searchSource } from './pagination-support.js';
 
-const sources = REMOTE_SOURCES.filter(s => s !== 'pypi');
-const request: CheckInput = { task: 'Find second_page_target', queries: ['second_page_target'], useCache: false };
+// pub pages locally over one cached official corpus; covered separately in v7.
+const sources = REMOTE_SOURCES.filter(s => s !== 'pypi' && s !== 'pub');
+const request: CheckInput = { task: 'Find second_page_target', queries: ['second_page_target'], useCache: false, sources };
 
 for (const source of sources) test(`${source} pages through the public core with source-specific offsets and bounded recall`, async t => {
   const seen: URL[] = [];

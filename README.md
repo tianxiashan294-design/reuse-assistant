@@ -4,9 +4,11 @@
 
 Check what already exists before a coding agent implements a feature. Reuse Assistant finds local implementations and public alternatives, retrieves pinned evidence, and records why the agent chose to reuse, adapt, learn from a design, or build a small implementation itself.
 
-**v0.5.0 preview.** The official source repository is [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant). This project is not published on npm; use this source checkout rather than a similarly named `npx` package.
+**v0.8.0 preview.** The official source repository is [tianxiashan294-design/reuse-assistant](https://github.com/tianxiashan294-design/reuse-assistant). This project is not published on npm; use this source checkout rather than a similarly named `npx` package.
 
 The long-term target is **all programming languages and platforms**. v0.2 added six sources; v0.3 adds bounded pagination and retains candidates when a later page fails. See the [roadmap](docs/ROADMAP.md) and [source matrix](docs/SOURCES.md).
+
+v0.8 adds **PHP, Ruby, Kotlin, Swift, Bash and Lua** structural evidence, bringing coverage to the JS/TS family plus thirteen fixed WASM grammars. Six upstream release assets ship with pinned revisions, hashes and original licenses. The shared core/CLI/MCP preserve existing budgets and text fallback; foreign imports/calls remain unsupported/unresolved. Dart remains text evidence and registry-source coverage is unchanged. See [language coverage and limits](docs/ALIGNMENT.md).
 
 ## Quick start
 
@@ -40,6 +42,10 @@ The host performs semantic judgment and project edits. These tools store evidenc
 For substantial changes, supply a check `alignment` contract. Inspections now expose bounded JS/TS AST segments, parent context, import edges and syntactic control/write facts. `assess_alignment` requires every task/constraint requirement, exact segment references, baseline alternatives and an integration/validation plan. Unknown/conflicting requirements and forbidden dependencies block a decision; local evidence hashes are rechecked before planning. Semantic judgments remain host-reported. See [the alignment workflow and limits](docs/ALIGNMENT.md).
 
 v0.5 adds conservative cross-file definition links inside one inspection: relative imports, explicit reexports and stable top-level direct calls. `analysis.linkage` exposes resolved segment IDs and unresolved reasons. Selecting a caller requires its known callees and intervening modules; the assessment prompt includes incoming callers and gaps. Shadowing, writes, ambiguous or partial files, external packages and dynamic dispatch stay unresolved. Partial linkage requires explicit acknowledgment, and unknown/conflicting requirements still block. This does not add language sources or a complete runtime call graph.
+
+v0.6 adds **Python, Go and Rust structural analysis** with fixed Tree-sitter WASM grammars: declarations, parent modules, exact UTF-16 ranges/hashes, import statements and bounded syntactic call/control/write facts. Assets ship with the package; no language toolchain, native build or runtime download is required. JS/TS keeps Babel and its existing links. New-language module and call targets remain explicitly unresolved, while parse errors and clipped evidence fall back to text. Shared budgets and alignment gates still apply. This expands code evidence, without adding registry search sources. See [language coverage](docs/ALIGNMENT.md).
+
+v0.7 adds **Java, C#, C and C++ structure evidence**, plus **Hex** keyword search and **pub.dev** limited official name-corpus matching. Both sources retain fixed published-version metadata and expose code/version gaps; pub is explicitly `name_search`, not description/full-text discovery. Use `--ecosystem dart|flutter|elixir|erlang` or `--source pub --source hex`. Four additional official WASM assets ship with licenses and hashes. Preprocessing, ambiguous `.h` headers and all non-JS/TS definition targets remain explicit limitations. See [source coverage](docs/SOURCES.md).
 
 ## MCP and Codex
 

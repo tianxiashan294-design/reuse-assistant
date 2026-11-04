@@ -109,7 +109,7 @@ export async function inspectCandidate(http: Http, root: string, candidate: Cand
       result.metadata.license = published.license ?? null;
       result.notes.push(...published.notes);
       result.files.push(evidence(`${pkg.source.toUpperCase()}-PUBLISHED-METADATA.json`, published.url, JSON.stringify(published.document, null, 2), published.version));
-      if (published.extra) result.files.push(evidence(published.extra.path, published.extra.url, published.extra.content, published.version));
+      if (published.extra) result.files.push(evidence(published.extra.path, published.extra.url, published.extra.content, published.extra.mutable ? undefined : published.version));
     });
   }
 

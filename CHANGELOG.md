@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.8.0 — 2026-11-04
+
+- Add PHP, Ruby, Kotlin, Swift, Bash and Lua structural evidence through the existing shared core, with six unmodified upstream release WASM assets, fixed revisions/hashes and original MIT licenses. No runtime dependency or toolchain is added.
+- Preserve declaration/parent ranges, Unicode hashes, bounded calls/control/write facts and unsupported imports. Handle grouped PHP use, literal/dynamic loads, Kotlin/Swift imports and Bash source; all foreign call targets remain unresolved. Invalid/excerpted code and budgets retain public gaps.
+- Share code-path recognition between inspection and adaptation decisions, including new extensions and previously omitted C/C++/Swift code. Add public core, actual MCP stdio, CLI, failure/limit and adaptation-gate tests. Dart remains text evidence; registry-source coverage is unchanged.
+
+## 0.7.0 — 2026-11-04
+
+- Add Java, C#, C and C++ structural evidence using four fixed official WASM assets: declarations/parents, precise hashes/ranges, imports/includes and bounded syntax facts. Retain explicit header ambiguity, preprocessor and unresolved-target gaps.
+- Add Hex package name/description search, bounded pagination and fixed release metadata/checksum inspection. Preserve mutable package links/licenses as separate hashed evidence.
+- Add pub.dev official limited name-corpus matching and fixed-version pubspec/archive-hash metadata. Expose `name_search` limits and an independent persistent eight-hour corpus cache; no undocumented full-text search or archive execution.
+- Expose pub/hex sources and dart/flutter/elixir/erlang routing through shared core, CLI and MCP. Retain all previous source behavior, failures/budgets and existing grammar versions. Add public-interface tests and a separate `smoke:v7` live observation with retained history.
+
+## 0.6.0 — 2026-11-04
+
+- Add Python, Go and Rust structure evidence in the shared inspection core: declarations/parents, UTF-16 ranges and hashes, imports and bounded syntactic calls, control counts and write targets.
+- Adopt unmodified `web-tree-sitter@0.27.1` and three pinned official WASM release assets with original MIT notices, commit references and SHA-256 manifests. No native toolchain or runtime network fetch is required.
+- Keep JS/TS Babel segment identities and definition links. New-language imports/calls retain unsupported/unresolved reasons; dynamic Python loading, Rust macro/attribute expansion and out-of-line modules expose gaps. Errors and excerpts fall back to text.
+- Share the existing byte/node/segment/call budgets, preserve alignment blockers and incomplete-context acknowledgment, and add public core, CLI and real stdio MCP regression coverage. Registry and hosting-platform coverage is unchanged.
+
 ## 0.5.0 — 2026-11-04
 
 - Add bounded, inspection-only JS/TS definition links for relative imports, explicit named/default reexports and stable top-level direct calls, reusing the existing fixed parser without new dependencies.

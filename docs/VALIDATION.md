@@ -1,5 +1,71 @@
 # Validation record
 
+## v0.8 local verification — 2026-11-04 (Asia/Shanghai)
+
+Environment: Windows PowerShell, Node v24.15.0. Add PHP/Ruby/Kotlin/Swift/Bash/Lua syntax mappings and six fixed upstream WASM release assets in the existing shared core. No runtime dependency or target-language toolchain is added; registry retrieval behavior is unchanged.
+
+### Offline public-interface checks
+
+`npm run check`, `npm test` and `git diff --check` pass; **108/108** tests pass (103 previous plus five new public-interface cases). New cases cover all six languages through public core inspection, compiled CLI and actual SDK stdio MCP: exact Unicode/emoji/CRLF offsets and hashes, nearest declaration/module parents, calls/writes/branches/returns, import/load facts, forbidden dependencies, unknown requirement and missing parent blockers, acknowledged partial-context decisions, invalid/excerpted syntax, dynamic loading, segment/call limits, nested functions/closures, grouped PHP use, Kotlin wildcard imports, Swift member imports and Bash heredocs. Fixed licensed remote fixtures verify that Swift/Bash/Lua code evidence passes the public adaptation gate using shared code-path recognition. These remote fixtures use injected transport and are offline tests.
+
+The initial focused run caught a missing `planned` status in the test decision. A nested Kotlin fixture also exposed the fixed upstream grammar's missing class-member separator for a compact same-line layout; a multiline fixture verifies supported syntax, while unsupported layouts remain conservative text fallback. The first full regression run passed 107/108: a historical fallback case still expected Lua to be unsupported. That case now uses Haskell, and the existing Kotlin fallback fixture now uses Dart. The corrected full suite passes; neither fallback expectation was removed.
+
+### Live asset retrieval and provenance
+
+All six upstream release WASM files were downloaded, hashed and loaded with the existing runtime. PHP/Swift/Bash/Lua hashes match the GitHub release metadata digests observed during retrieval; Ruby/Kotlin have no published digests. Revisions were resolved directly at fixed Git tags; original licenses and node-type descriptions were read from those pinned revisions using partial Git clones. API/raw/CDN retrieval attempts encountered connection resets/timeouts and later HTTP 403 responses; fixed-tag Git reads and completed release downloads supplied the final evidence. Interrupted downloads were never accepted as valid assets. The manifest records all final URLs/revisions/hashes/ABIs; original full MIT licenses ship beside the files. Published tag/binary identity is not an independent reproducible-build proof.
+
+No new registry endpoint smoke was necessary for this structural-only change, and no exhaustive language/version conformance or model semantic behavior is claimed. Dart's inspected upstream returned no latest release artifact; it remains text evidence, rather than adopting the inspected third-party bundle with broader provenance. Structural complete and foreign linkage partial remain distinct.
+
+### Installed artifact and host boundaries
+
+`npm pack --ignore-scripts --pack-destination .reuse-assistant/package-v8-smoke --json` produced a 122-entry archive, including all thirteen WASM grammars, their licenses and the manifest (27 grammar-directory entries). Installing it with `--omit=dev --ignore-scripts` and running `node .reuse-assistant/package-v8-smoke/smoke.mjs` passes all thirteen grammars plus Babel through the installed public core; no development TypeScript compiler is present. Installed CLI reports `0.8.0`. Installation fetched normal npm dependencies; the grammar smoke itself runs offline.
+
+The existing dirty workspace changes and earlier validation histories remain intact. This record reports local code, CLI/MCP subprocess and installed-artifact outcomes. It does not claim npm publication, remote CI, other operating systems, desktop MCP restart/reload, full project module resolution or a runtime call graph. An already-running MCP process must reload the new build to expose the added structural support.
+
+## v0.7 local verification — 2026-11-04 (Asia/Shanghai)
+
+Environment: Windows PowerShell, Node v24.15.0. This update extends v0.6 in two directions: Java/C#/C/C++ structural evidence and pub.dev/Hex registry retrieval. All logic remains in shared core modules with CLI/MCP adapters. Existing Babel and Python/Go/Rust versions and the unrelated RSS example are retained.
+
+### Offline public-interface checks
+
+`npm run check`, `npm test` and `git diff --check` pass. **103/103** tests pass (96 previous, 6 new v0.7 cases and the existing pagination matrix expanded to Hex). Public core cases cover four-language declarations/parent chains, Unicode/emoji/CRLF ranges and hashes, calls/updates/branches/imports/includes, no false declarations in comments/strings, C# nested calls under unary operators, new-language unresolved links and forbidden dependency rules, invalid/excerpted syntax, `.h` ambiguity, preprocessing and shared segment budgets. Existing three-language and JS/TS suites still pass.
+
+Registry cases verify Hex three-page recall and later-page failure retention; pub local corpus pages/totals/exhaustion and explicit limited-name scope; persistent eight-hour corpus caching across core instances, expiry and independence from `useCache: false`; underscore-prefixed pub names; stable version preservation when latest changes; fixed name/version/URL checks; separate mutable Hex package metadata without a version ref; malformed results, Retry-After, untrusted archive URLs and credential isolation. Actual compiled CLI and SDK stdio MCP tests expose the new source/ecosystem schema, four-language structure evidence, both registry inspections and acknowledged partial-evidence decisions. No model behavior or complete compiler/call-graph conformance is claimed.
+
+### Real public endpoints and retained failures
+
+`node dist/test/live-smoke-v7.js` ran **15:48:30–15:48:35** (Asia/Shanghai). Hex search returned 12 candidates over two pages and selected fixed `jason@1.4.5`; release metadata/checksum plus separate package metadata and associated repository documents were read. Repository HEAD is pinned but its correspondence to that release remains unverified. pub's first name-corpus validation rejected legitimate underscore-prefixed names, so the run exited 1. The original `invalid_response` remains in [live-smoke-v7.json](live-smoke-v7.json).
+
+The validator and cache guard were corrected to accept leading underscores, and a regression corpus includes `_flutterfire_internals`. `node dist/test/live-smoke-v7.js pub` ran **15:49:21–15:49:23**, exited 0, returned 12 bounded name matches over two local slices and read fixed `http@1.6.0` metadata/archive hash. Its repository URL points into a monorepo path unsupported by the current association parser, and no archive/license extraction was performed; that inspection is explicitly partial. Both new sources therefore have successful individual observations across the retained runs. These are finite endpoint samples, not exhaustive corpus/description search, a recall benchmark or an archive/release source equivalence proof. pub uses only the official limited completion corpus; no undocumented full-text search endpoint is used.
+
+### Assets, packaging and host boundaries
+
+Four fixed official WASM release assets were loaded: Java/C++ ABI 14, C#/C ABI 15. Their release tags match recorded npm gitHead revisions; C# also matches the published GitHub SHA-256 digest. The other three releases lack published digests, so downloaded artifact hashes are retained in the manifest. API asset/body timeouts were encountered during retrieval; an interrupted C# artifact caused the first structural test failure and the manifest test initially lacked the final entries. Resuming the official download completed it, then digest/load/manifest checks and the full suite passed. Those intermediate failures are not claimed as valid grammar coverage. Complete original MIT licenses ship beside every asset; no upstream grammar/native build scripts were executed or added as dependencies.
+
+A real `npm pack --ignore-scripts --pack-destination .reuse-assistant/upstream-v7 --json` archive has 110 entries and was installed in `.reuse-assistant/package-v7-smoke/consumer` with `--omit=dev --ignore-scripts`. `node .reuse-assistant/package-v7-smoke/smoke.mjs` passes all seven installed WASM grammars through public core inspection, plus pub/Hex discovery and pinned-version evidence with deterministic injected transport. No development TypeScript compiler is present. This production-only installation test is offline and separate from the real endpoint observations above.
+
+Reuse check `be9530a0-c54c-4b4c-9a5e-734793c965dd` read existing analyzer/core/registry/transport/pagination/inspection context and pinned official Java grammar evidence. The earlier task wording was refined after official pub documentation showed no supported full-text search API. Final ready alignment `3d0d39cf-aae2-4bcb-bed5-1de63a3af96d` precedes planned decision `0895c80d-1392-4d3e-b965-bec76865bc61`; applied `468b550f-ab53-40b4-80d6-5f4c37631fb0` and its linked verified record preserve incomplete local/search/dependency coverage. Judgment and validation records are host-reported. No v0.7 remote CI, push/publication, Node 22/Linux/macOS execution or current desktop MCP reload is claimed. Running services must restart to load the new schema and implementation; stdio tests launch the new build directly. Shell writes remain outside the declared patch guard.
+
+## v0.6 local verification — 2026-11-04 (Asia/Shanghai)
+
+Environment: Windows PowerShell, Node v24.15.0. This update adds Python/Go/Rust structural evidence to the shared core with fixed WASM grammars. JS/TS keeps its Babel parser and definition linker. Package registries and hosting coverage are unchanged; the existing RSS example edits are retained.
+
+### Offline public-interface checks
+
+`npm run check`, `npm test` and `git diff --check` pass. **96/96** tests pass (90 previous and 6 new). Added tests use public `ReuseAssistant.check/inspect/assess/decide`, the compiled CLI and an actual MCP SDK stdio client/server. They cover three-language declarations and nesting, decorated Python ranges, Go methods/types/aliases, Rust traits/impl/union/closures, exact Unicode/emoji/CRLF offsets/line ranges/hashes, false declarations in strings/comments, import and call/control/write facts, stable inspection IDs, unknown foreign module/call targets, parent-context and unknown-requirement blockers, forbidden import prefixes in all three languages, acknowledgment gating, invalid syntax, excerpts, shared byte/node/segment/call budgets, dynamic Python loading and Rust macro/out-of-line module gaps. Assets are checked against the shipped SHA-256 manifest and original licenses.
+
+These are bounded syntax/evidence tests, not compiler execution, a complete call graph, exhaustive language conformance or a model semantic benchmark. New-language structural completeness is distinct from its deliberately partial definition linkage. Supported claims and decision validation statements remain host-reported.
+
+### Packaging and production-only consumption
+
+A real `npm pack --ignore-scripts --pack-destination .reuse-assistant/upstream --json` archive has 101 entries, including the new source/compiled module and all three WASM files, manifest and licenses. The built 0.6.0 archive was installed in `.reuse-assistant/package-v6-smoke/consumer` with `--omit=dev --ignore-scripts`. `node .reuse-assistant/package-v6-smoke/smoke.mjs` passes the installed public core check → three-language inspect → ready assessment → planned decision. The consumer has no TypeScript development compiler. A fresh subprocess with its installed Go grammar temporarily absent returns text evidence and a visible ENOENT gap; the asset is restored afterward. No runtime network fetch or language/native toolchain is involved.
+
+### Real artifact retrieval and host boundaries
+
+GitHub/npm bounded discovery returned results; local match limits and incomplete dependency/linkage evidence were explicitly acknowledged. Initial check `2358e75f-0159-4bbf-b3a8-aa2bb755bdaf` inspected local architecture, `web-tree-sitter` and `tree-sitter-wasms`. The latter's 0.1.13 prebuilt assets failed to load with the new runtime due to the old dylink format and were rejected. Official 0.25.0 Python/Go and 0.24.0 Rust release WASMs replaced them. Direct github.com downloads encountered ECONNRESET/connect/body timeouts; the GitHub release-assets API subsequently supplied the missing artifacts. The final three assets load successfully with ABI 15. Python/Go hashes match official release digests; Rust's release has no published digest and its locally computed hash is retained. Official release tag commits match the recorded fixed revisions; no independent binary rebuild is claimed. This was artifact retrieval, not a new registry recall/live-smoke check.
+
+After installing the dependency, check `9e9795e2-dd58-4716-8270-c47c4c3707a3` refreshed the dependency fingerprint and re-read local/core, runtime source/module context and official Python grammar evidence. Ready alignment `e6763d97-4d50-4f51-8966-7c1ec8fec497` precedes planned decision `e972ace1-5c12-4498-8620-c089c732aaa6`; linked applied/verified records remain in `.reuse-assistant/`. Only the selected bounded sources were queried. No v0.6 remote CI, publication, Linux/macOS or Node 22 execution, model behavior benchmark, or live desktop MCP reload is claimed. Running MCP processes must restart to load the new build; stdio tests launch the new build directly. Shell writes remain outside the patch guard.
+
 ## v0.5 local verification — 2026-11-04 (Asia/Shanghai)
 
 Environment: Windows PowerShell, Node v24.15.0. This update extends v0.4 with conservative, inspection-only cross-file definition links and callee-context confirmation. It adds no language source, hosting platform or runtime dependency. The existing fixed `@babel/parser@7.28.5`, core interfaces, syntax hashes and unrelated RSS example changes are retained.

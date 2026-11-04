@@ -147,11 +147,11 @@ test('missing dependency context stays partial and requires explicit acknowledge
 
 test('unsupported languages, invalid syntax, excerpts and segment budgets remain visible through public inspection', async t => {
   const { assistant, check, candidate, root } = await setup(t);
-  await writeFile(path.join(root, 'other.py'), 'def retryRequest():\n    return "text evidence"\n');
+  await writeFile(path.join(root, 'other.hs'), 'retryRequest = "text evidence"\n');
   await writeFile(path.join(root, 'invalid.js'), 'export function broken(');
   await writeFile(path.join(root, 'many.js'), Array.from({ length: 120 }, (_, i) => `function f${i}() { return ${i}; }`).join('\n'));
-  const other = await assistant.inspect(check.id, candidate.id, ['other.py', 'invalid.js']);
-  assert(other.analysis!.segments.filter(s => ['other.py', 'invalid.js'].includes(s.path)).every(s => s.kind === 'text'));
+  const other = await assistant.inspect(check.id, candidate.id, ['other.hs', 'invalid.js']);
+  assert(other.analysis!.segments.filter(s => ['other.hs', 'invalid.js'].includes(s.path)).every(s => s.kind === 'text'));
   assert(other.analysis!.gaps.some(g => g.includes('no structural parser')));
   assert(other.analysis!.gaps.some(g => g.includes('parse failed')));
   const excerpt = await assistant.inspect(check.id, candidate.id, ['budget.js#L1-L1']);

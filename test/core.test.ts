@@ -72,7 +72,7 @@ test('global deadline bounds a transport that ignores AbortSignal', { timeout: 5
   try {
     const report = await assistant.check({ task: 'Find bounded requests', queries: ['request retry'], budgetMs: 100, useCache: false });
     assert(performance.now() - start < 2000);
-    assert.equal(report.sources.filter(s => s.status === 'timeout').length, 8);
+    assert.equal(report.sources.filter(s => s.status === 'timeout').length, 10);
     assert.equal(report.coverage, 'partial');
   } finally { clearInterval(keepAlive); }
 });

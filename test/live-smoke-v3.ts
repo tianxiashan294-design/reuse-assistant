@@ -5,8 +5,8 @@ import { REMOTE_SOURCES, type RemoteSource } from '../src/types.js';
 
 // Real public core/HTTP requests. No injected fixtures and no candidate execution.
 const selected = process.argv.slice(2);
-if (selected.some(s => !REMOTE_SOURCES.includes(s as RemoteSource) || s === 'pypi')) throw new Error('Select supported discovery sources (PyPI is known-name verification only)');
-const sources = (selected.length ? selected : REMOTE_SOURCES.filter(s => s !== 'pypi')) as RemoteSource[];
+if (selected.some(s => !REMOTE_SOURCES.includes(s as RemoteSource) || s === 'pypi' || s === 'pub')) throw new Error('Select numbered remote discovery sources; use smoke:v7 for the pub name corpus');
+const sources = (selected.length ? selected : REMOTE_SOURCES.filter(s => s !== 'pypi' && s !== 'pub')) as RemoteSource[];
 const assistant = new ReuseAssistant(process.cwd());
 const startedAt = new Date().toISOString();
 const observations = [];

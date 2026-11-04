@@ -33,7 +33,7 @@ export function retryAfter(value: string | null, now = Date.now()): number | und
   return Number.isFinite(date) ? Math.max(0, date - now) : undefined;
 }
 
-const HOSTS = new Set(['api.github.com', 'gitlab.com', 'registry.npmjs.org', 'pypi.org', 'crates.io', 'search.maven.org', 'repo.maven.apache.org', 'api.nuget.org', 'azuresearch-usnc.nuget.org', 'azuresearch-ussc.nuget.org', 'rubygems.org', 'packagist.org', 'repo.packagist.org']);
+const HOSTS = new Set(['api.github.com', 'gitlab.com', 'registry.npmjs.org', 'pypi.org', 'crates.io', 'search.maven.org', 'repo.maven.apache.org', 'api.nuget.org', 'azuresearch-usnc.nuget.org', 'azuresearch-ussc.nuget.org', 'rubygems.org', 'packagist.org', 'repo.packagist.org', 'pub.dev', 'hex.pm']);
 const nugetHost = (host: string) => host === 'api.nuget.org' || /^azuresearch-[a-z0-9-]+\.nuget\.org$/.test(host) || ['nuget.azure.cn', 'nuget.cdn.azure.cn'].includes(host);
 export class Http {
   constructor(private fetcher: typeof fetch = fetch, private token = process.env.GITHUB_TOKEN, private gitlabToken = process.env.GITLAB_TOKEN) {}
@@ -50,7 +50,7 @@ export class Http {
       throw new SourceError('invalid_url', 'Only supported public registry endpoints are readable');
     }
     const signal = AbortSignal.any([parent, AbortSignal.timeout(12_000)]);
-    const headers: Record<string, string> = { 'User-Agent': 'reuse-assistant/0.3 (+https://github.com/tianxiashan294-design/reuse-assistant)', Accept: 'application/json, text/plain, application/xml' };
+    const headers: Record<string, string> = { 'User-Agent': 'reuse-assistant/0.7 (+https://github.com/tianxiashan294-design/reuse-assistant)', Accept: 'application/json, text/plain, application/xml' };
     if (target.hostname === 'api.github.com') {
       headers.Accept = 'application/vnd.github+json';
       headers['X-GitHub-Api-Version'] = '2022-11-28';

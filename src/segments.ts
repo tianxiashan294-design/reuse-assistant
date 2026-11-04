@@ -2,7 +2,8 @@ import { parse } from '@babel/parser';
 import path from 'node:path';
 import { digest } from './project.js';
 import { linkCode, type LinkModule, type SyntaxEntry, type SyntaxNode } from './linking.js';
-import type { CodeAnalysis, CodeSegment, EvidenceFile, Inspection } from './types.js';
+import type { CallEdge, CodeAnalysis, CodeSegment, EvidenceFile, Inspection } from './types.js';
+import { analyzePolyglot, structuralLanguage } from './polyglot.js';
 
 // Syntax facts are collected here; linking.ts adds conservative evidence links.
 const FUNCTIONS = new Set(['FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression', 'ClassMethod', 'ClassPrivateMethod', 'ObjectMethod']);
@@ -10,7 +11,11 @@ const BOUNDARIES = new Set([...FUNCTIONS, 'ClassDeclaration', 'ClassExpression',
 const MAX_SEGMENTS = 100;
 const MAX_NODES = 30000;
 
-export function analyzeCode(inspection: Inspection): CodeAnalysis {
+export function isCodePath(file: string): boolean {
+  return !!structuralLanguage(file) || /\.(?:[cm]?[jt]sx?|dart|ex|exs|hs|r|jl|clj|pl|ml)$/i.test(file);
+}
+
+export async function analyzeCode(inspection: Inspection): Promise<CodeAnalysis> {
   const result: CodeAnalysis = { parser: '@babel/parser@7.28.5', coverage: 'complete', segments: [], imports: [], gaps: [], notes: [
     'Segments identify syntax boundaries, not proven semantic independence. Parent segments and module imports must be reviewed together.',
     'Calls are syntactic names, not a resolved call graph. Aliases, reflection, runtime dispatch, external behavior and uninspected callers remain host review work.',
@@ -21,6 +26,7 @@ export function analyzeCode(inspection: Inspection): CodeAnalysis {
   let nodes = 0;
   let bytes = 0;
   const syntax: LinkModule[] = [];
+  const foreignCalls: CallEdge[] = [];
   function segment(file: EvidenceFile, node: SyntaxNode, kind: string, symbol: string, parentId?: string): CodeSegment | undefined {
     if (result.segments.length >= MAX_SEGMENTS) return undefined;
     const start = node.start ?? 0;
@@ -39,16 +45,21 @@ export function analyzeCode(inspection: Inspection): CodeAnalysis {
   }
   for (const file of inspection.files) {
     // Metadata/README are evidence, but cannot stand in for a code declaration.
-    if (!/\.(?:[cm]?[jt]sx?|py|go|rs|java|kt|cs|rb|php|c|cc|cpp|h|hpp|swift|dart|ex|exs|hs|r|jl|lua|clj|pl|ml)$/i.test(file.path)) continue;
+    if (!isCodePath(file.path)) continue;
     bytes += Buffer.byteLength(file.content);
     if (bytes > 180000 || result.segments.length >= MAX_SEGMENTS) { gap('Analysis reached its 180 KB / 100 segment budget; remaining files are unanalysed.'); break; }
     const whole: SyntaxNode = { type: 'Program', start: 0, end: file.content.length };
-    if (file.truncated || !/\.[cm]?[jt]sx?$/i.test(file.path)) {
+    const language = structuralLanguage(file.path);
+    if (file.truncated || !language && !/\.[cm]?[jt]sx?$/i.test(file.path)) {
       segment(file, whole, 'text', file.path);
       gap(`${file.path}: ${file.truncated ? 'excerpted evidence; full declaration/context boundaries are unknown' : 'no structural parser for this language; text evidence only'}.`);
       continue;
     }
     try {
+      if (language) {
+        await analyzePolyglot(file, language, result, segment, () => ++nodes <= MAX_NODES && result.segments.length < MAX_SEGMENTS, gap, foreignCalls);
+        continue;
+      }
       const ast = parse(file.content, { sourceType: 'unambiguous', attachComment: false, createImportExpressions: true,
         plugins: [...(/\.[cm]?tsx?$/i.test(file.path) ? ['typescript' as const] : []), ...(/\.[jt]sx$/i.test(file.path) ? ['jsx' as const] : [])] });
       const module = segment(file, ast.program as unknown as SyntaxNode, 'module', file.path)!;
@@ -109,11 +120,12 @@ export function analyzeCode(inspection: Inspection): CodeAnalysis {
       // A partial or invalid AST never supplies confirmed declaration boundaries.
       result.segments = result.segments.filter(s => s.path !== file.path);
       result.imports = result.imports.filter(e => e.from !== file.path);
+      for (let i = foreignCalls.length - 1; i >= 0; i--) if (foreignCalls[i]!.from === file.path) foreignCalls.splice(i, 1);
       segment(file, whole, 'text', file.path);
       gap(`${file.path}: parse failed (${error instanceof Error ? error.message.slice(0, 200) : 'unknown error'}); text evidence only.`);
     }
   }
   if (!result.segments.length) gap('No code-file evidence was inspected; metadata/README cannot confirm code segments.');
-  linkCode(inspection, result, syntax);
+  linkCode(inspection, result, syntax, foreignCalls);
   return result;
 }

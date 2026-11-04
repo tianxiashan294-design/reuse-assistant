@@ -30,7 +30,7 @@ function patternNames(node: SyntaxNode | undefined): string[] {
   return names;
 }
 
-export function linkCode(inspection: Inspection, analysis: CodeAnalysis, syntax: LinkModule[]): void {
+export function linkCode(inspection: Inspection, analysis: CodeAnalysis, syntax: LinkModule[], foreignCalls: CallEdge[] = []): void {
   const linkage = analysis.linkage = { resolver: 'inspection-relative-v1' as const, coverage: 'complete' as 'complete' | 'partial', calls: [] as CallEdge[], gaps: [] as string[] };
   const gap = (message: string) => { linkage.coverage = 'partial'; if (!linkage.gaps.includes(message)) linkage.gaps.push(message); };
   if (analysis.coverage === 'partial') gap('Structural analysis is incomplete; only fully traversed, unique file evidence can supply links.');
@@ -58,6 +58,8 @@ export function linkCode(inspection: Inspection, analysis: CodeAnalysis, syntax:
   }
 
   for (const edge of analysis.imports) {
+    // Foreign-language specifiers must never enter JS/TS path resolution.
+    if (edge.resolution === 'unsupported') { gap(`${edge.from}:${edge.line}: ${edge.specifier}: ${edge.reason}`); continue; }
     const resolved = resolveModule(edge.from, edge.specifier);
     edge.resolution = resolved.status;
     edge.reason = resolved.reason;
@@ -70,6 +72,8 @@ export function linkCode(inspection: Inspection, analysis: CodeAnalysis, syntax:
       }
     }
   }
+
+  for (const parser of analysis.parsers ?? []) gap(`${parser.path}: ${parser.language} definition/call linkage is not implemented; syntactic facts only.`);
 
   for (const m of modules.values()) {
     const allowed = new Set<SyntaxNode>();
@@ -156,5 +160,10 @@ export function linkCode(inspection: Inspection, analysis: CodeAnalysis, syntax:
       status: r.target ? 'resolved' : 'unresolved', ...(r.target ? { targetSegmentId: r.target, viaModuleIds: r.via } : { reason: r.reason }) };
     linkage.calls.push(edge);
     if (!r.target) gap(`${edge.from}:${edge.line}: ${edge.callee}: ${edge.reason}`);
+  }
+  for (const edge of foreignCalls) {
+    if (linkage.calls.length >= MAX_CALLS) { gap('Call-link budget reached (300); remaining calls are unreported.'); break; }
+    linkage.calls.push(edge);
+    gap(`${edge.from}:${edge.line}: ${edge.callee}: ${edge.reason}`);
   }
 }

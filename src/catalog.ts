@@ -10,6 +10,8 @@ export const SOURCE_CATALOG: SourceCapability[] = [
   { source: 'nuget', ecosystems: ['dotnet'], mode: 'package_search', limitations: ['NuGet.org listed stable packages; 6 results per page within maxPages. Metadata endpoints discovered through the service index; inspect up to 4 registration pages.'] },
   { source: 'rubygems', ecosystems: ['ruby'], mode: 'package_search', limitations: ['RubyGems package search; up to 30 results per page within maxPages (fixed upstream page size). Published metadata does not establish a source commit.'] },
   { source: 'packagist', ecosystems: ['php'], mode: 'package_search', limitations: ['Packagist package search; 6 results per page within maxPages. Inspection selects a stable version from the full package API (2 MB cap; upstream cache may be 12 hours).'] },
+  { source: 'pub', ecosystems: ['dart', 'flutter'], mode: 'name_search', limitations: ['Official top-name completion corpus only: literal substring matching, not description/full-text or all pub.dev packages. The corpus is cached for 8 hours; pages of 6 and reported totals refer only to matches in that corpus. Inspection pins a version; archives are not read and repository correspondence is unverified.'] },
+  { source: 'hex', ecosystems: ['elixir', 'erlang'], mode: 'package_search', limitations: ['Public hex.pm package name/description search, 6 results per page within maxPages. Fixed release metadata/checksum is retained; package archives and non-GitHub/GitLab code are not read. Repository links and license metadata may change independently of a release.'] },
 ];
 
 export function selectedSources(input: CheckInput): RemoteSource[] {

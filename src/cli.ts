@@ -10,7 +10,7 @@ import { evaluateHook, readStdin } from './codex-hook.js';
 import { markdown } from './format.js';
 import { alignmentInputSchema } from './alignment.js';
 
-const HELP = `Reuse Assistant 0.5.0 — evidence-based reuse checks
+const HELP = `Reuse Assistant 0.8.0 — evidence-based reuse checks
 
   node dist/src/cli.js check --project PATH --task TEXT --query TERMS [--query TERMS] [--scope local|full] [--ecosystem NAME] [--source NAME] [--json]
   node dist/src/cli.js check --project PATH --input request.json
@@ -24,8 +24,9 @@ const HELP = `Reuse Assistant 0.5.0 — evidence-based reuse checks
   node dist/src/cli.js mcp --project PATH
 
 --input - reads JSON from stdin. Commands keep records in PROJECT/.reuse-assistant/.
-Ecosystems: auto, javascript, python, rust, java, dotnet, ruby, php, go.
-Sources (repeat --source): github, gitlab, npm, pypi, crates, maven, nuget, rubygems, packagist.
+Ecosystems: auto, javascript, python, rust, java, dotnet, ruby, php, go, dart, flutter, elixir, erlang.
+Sources (repeat --source): github, gitlab, npm, pypi, crates, maven, nuget, rubygems, packagist, pub, hex.
+pub searches the official limited name-completion corpus, not package descriptions.
 auto searches all implemented sources; --source overrides ecosystem selection.
 --max-pages 1..3 (default 2) bounds discovery pages per source/query under the total budget.
 No candidate code is executed. The host performs integration and validation.

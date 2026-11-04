@@ -1,5 +1,5 @@
-export const REMOTE_SOURCES = ['github', 'gitlab', 'npm', 'pypi', 'crates', 'maven', 'nuget', 'rubygems', 'packagist'] as const;
-export const ECOSYSTEMS = ['auto', 'javascript', 'python', 'rust', 'java', 'dotnet', 'ruby', 'php', 'go'] as const;
+export const REMOTE_SOURCES = ['github', 'gitlab', 'npm', 'pypi', 'crates', 'maven', 'nuget', 'rubygems', 'packagist', 'pub', 'hex'] as const;
+export const ECOSYSTEMS = ['auto', 'javascript', 'python', 'rust', 'java', 'dotnet', 'ruby', 'php', 'go', 'dart', 'flutter', 'elixir', 'erlang'] as const;
 export type RemoteSource = typeof REMOTE_SOURCES[number];
 export type Ecosystem = typeof ECOSYSTEMS[number];
 export type Source = 'local' | RemoteSource;
@@ -16,7 +16,7 @@ export interface PackageIdentity {
 export interface SourceCapability {
   source: RemoteSource;
   ecosystems: string[];
-  mode: 'repository_search' | 'package_search' | 'name_verification';
+  mode: 'repository_search' | 'package_search' | 'name_search' | 'name_verification';
   limitations: string[];
 }
 export type SourceStatus = 'ok' | 'empty' | 'partial' | 'rate_limited' | 'timeout' | 'unavailable' | 'skipped';
@@ -190,6 +190,7 @@ export interface CodeLinkage {
 }
 export interface CodeAnalysis {
   parser: string;
+  parsers?: { path: string; language: string; parser: string }[];
   coverage: 'complete' | 'partial';
   segments: CodeSegment[];
   imports: ImportEdge[];

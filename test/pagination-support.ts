@@ -5,6 +5,7 @@ export const searchSource = (url: URL): RemoteSource => ({
   'api.github.com': 'github', 'gitlab.com': 'gitlab', 'registry.npmjs.org': 'npm',
   'crates.io': 'crates', 'search.maven.org': 'maven', 'azuresearch-usnc.nuget.org': 'nuget',
   'rubygems.org': 'rubygems', 'packagist.org': 'packagist',
+  'hex.pm': 'hex',
 }[url.hostname] as RemoteSource);
 
 export function searchPage(url: URL): number {
@@ -32,5 +33,6 @@ export function pagedResponse(url: URL, overridePage?: number): Response {
   if (source === 'nuget') return json({ totalHits: total, data: rows.map(p => ({ ...p, id: p.name })) });
   if (source === 'rubygems') return json(rows.map(p => ({ ...p, info: p.description, platform: 'ruby' })));
   if (source === 'packagist') return json({ total, results: rows.map(p => ({ ...p, name: `example/${p.name}` })), next: `https://packagist.org/search.json?page=${page + 1}` });
+  if (source === 'hex') return json(rows.map(p => ({ name: p.name.replace('-', '_'), latest_stable_version: p.version, meta: { description: p.description } })));
   throw new Error(`Unexpected pagination fixture URL ${url.href}`);
 }

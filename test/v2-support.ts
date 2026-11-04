@@ -7,6 +7,8 @@ export function v2Response(url: URL): Response {
   if (host === 'api.github.com' && p === '/search/repositories') return json({ items: [], incomplete_results: false });
   if (host === 'registry.npmjs.org') return json({ objects: [] });
   if (host === 'pypi.org') return json({ info: { name: 'APScheduler', version: '3.0.0', summary: 'scheduler' } });
+  if (host === 'pub.dev') return json({ packages: ['scheduler'] });
+  if (host === 'hex.pm') return json([{ name: 'scheduler', latest_stable_version: '1.2.3', meta: { description: 'scheduler' } }]);
   if (host === 'gitlab.com') {
     if (p === '/api/v4/projects') return json([{ path_with_namespace: GL, web_url: `https://gitlab.com/${GL}`, description: 'scheduler', star_count: 0 }]);
     const base = `/api/v4/projects/${GL}`;

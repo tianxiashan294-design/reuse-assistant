@@ -57,14 +57,41 @@ export function searchRegistry(http: Http, source: Exclude<RegistrySource, 'npm'
       const url = new URL('https://rubygems.org/api/v1/search.json');
       url.search = new URLSearchParams({ query, page: String(page) }).toString();
       candidates = array(await http.json(url.href, signal), 'RubyGems search').map(p => candidate(source, query, p.name, `https://rubygems.org/gems/${encodeURIComponent(p.name)}`, p.info, p.version, repo(p.source_code_uri, p.metadata?.source_code_uri), undefined, string(p.platform)));
-    } else {
+    } else if (source === 'hex') {
+      const url = new URL('https://hex.pm/api/packages');
+      url.search = new URLSearchParams({ search: query, page: String(page), per_page: '6', sort: 'downloads' }).toString();
+      candidates = array(await http.json(url.href, signal), 'Hex search').map(p => {
+        if (!/^[a-z][a-z0-9_]*$/.test(p.name)) throw new SourceError('invalid_response', 'Invalid Hex package name');
+        return candidate(source, query, p.name, `https://hex.pm/packages/${p.name}`, p.meta?.description, p.latest_stable_version || undefined, repo(...Object.values(p.meta?.links ?? {})));
+      });
+    } else if (source === 'packagist') {
       const url = new URL('https://packagist.org/search.json');
       url.search = new URLSearchParams({ q: query, per_page: '6', page: String(page) }).toString();
       const data = await http.json(url.href, signal);
       total = data.total;
       candidates = array(data.results, 'Packagist search').map(p => candidate(source, query, p.name, `https://packagist.org/packages/${encodeURIComponent(p.name).replace('%2F', '/')}`, p.description, undefined, p.repository));
-    }
+    } else throw new SourceError('invalid_response', 'Use the dedicated pub name-corpus reader');
     return { candidates, effectiveQuery: query, pagination: pageProgress(page, source === 'rubygems' ? 30 : 6, candidates.length, total), notes: ['Bounded package metadata discovery; not exhaustive recall or global source-code search.', ...(source === 'maven' ? ['Maven query syntax searches artifact coordinates; natural-language needs may require shorter technical terms.'] : [])] };
+  });
+}
+
+export interface PubCatalog { createdAt: string; names: string[] }
+export async function readPubCatalog(http: Http, signal: AbortSignal): Promise<PubCatalog> {
+  const data = await http.json('https://pub.dev/api/package-name-completion-data', signal);
+  const names = array(data.packages, 'pub.dev name completion');
+  if (names.length > 100000 || names.some(n => typeof n !== 'string' || !/^[a-z_][a-z0-9_]*$/.test(n))) throw new SourceError('invalid_response', 'Invalid pub.dev completion names');
+  return { createdAt: new Date().toISOString(), names: [...new Set(names)] };
+}
+
+export function searchPub(query: string, signal: AbortSignal, page: number, catalog: () => Promise<PubCatalog & { cached: boolean }>): Promise<SourceResult> {
+  return outcome('pub', query, signal, async () => {
+    const data = await catalog();
+    const names = data.names.filter(n => n.includes(query.toLowerCase()));
+    const candidates = names.slice((page - 1) * 6, page * 6).map(name => candidate('pub', query, name, `https://pub.dev/packages/${name}`, 'Official limited name-completion match; inspect for published metadata.'));
+    return { candidates, effectiveQuery: query, pagination: pageProgress(page, 6, candidates.length, names.length), notes: [
+      'Name search in the official top-name completion corpus only; not description/full-text search or complete pub.dev coverage. Page totals/exhaustion refer only to this corpus.',
+      `Corpus timestamp: ${data.createdAt}; corpus cache: ${data.cached}; 8-hour per-project corpus TTL, independent of query-result cache. Concurrent cold checks may fetch independently.`,
+    ] };
   });
 }
 
@@ -77,7 +104,7 @@ export interface PublishedPackage {
   ref?: string;
   license?: string;
   notes: string[];
-  extra?: { path: string; url: string; content: string };
+  extra?: { path: string; url: string; content: string; mutable?: boolean };
 }
 
 export async function readPublishedPackage(http: Http, pkg: PackageIdentity, signal: AbortSignal): Promise<PublishedPackage> {
@@ -90,7 +117,36 @@ export async function readPublishedPackage(http: Http, pkg: PackageIdentity, sig
   let license: string | undefined;
   let extra: PublishedPackage['extra'];
   const notes: string[] = [];
-  if (pkg.source === 'crates') {
+  if (pkg.source === 'pub') {
+    if (!/^[a-z_][a-z0-9_]*$/.test(name)) throw new Error('Invalid pub.dev package name');
+    if (!version) {
+      const data = await http.json(`https://pub.dev/api/packages/${name}`, signal);
+      if (data.name !== name || !string(data.latest?.version)) throw new Error('pub.dev package identity/latest version missing or disagrees');
+      version = data.latest.version;
+    }
+    url = `https://pub.dev/api/packages/${name}/versions/${encodeURIComponent(version!)}`;
+    p = await http.json(url, signal);
+    if (p.version !== version || p.pubspec?.name !== name || p.pubspec?.version !== version) throw new Error('Published pub.dev identity disagrees with selected name/version');
+    repository = repo(p.pubspec?.repository, p.pubspec?.homepage);
+    notes.push('Fixed pub.dev version metadata retained, including archive SHA-256 when supplied. Archive code/license files are not read; repository HEAD correspondence is unverified.');
+  } else if (pkg.source === 'hex') {
+    if (!/^[a-z][a-z0-9_]*$/.test(name)) throw new Error('Invalid Hex package name');
+    const metadataUrl = `https://hex.pm/api/packages/${name}`;
+    const data = await http.json(metadataUrl, signal);
+    if (data.name !== name) throw new Error('Hex package name disagrees with search');
+    version ??= string(data.latest_stable_version);
+    if (!version) throw new Error('No stable Hex version supplied by package metadata');
+    url = `${metadataUrl}/releases/${encodeURIComponent(version)}`;
+    const release = await http.json(url, signal);
+    if (release.version !== version) throw new Error('Hex release version disagrees with search');
+    if (release.url !== url) throw new Error('Hex release package URL disagrees with selected identity');
+    // Package metadata is mutable; preserve it separately from the release URL/hash.
+    p = release;
+    extra = { path: 'HEX-PACKAGE-METADATA.json', url: metadataUrl, content: JSON.stringify(data, null, 2), mutable: true };
+    repository = repo(...Object.values(data.meta?.links ?? {}));
+    license = licenses(data.meta?.licenses);
+    notes.push('Fixed Hex release metadata/checksum retained; separate package links/licenses are mutable publisher metadata. Archives are not read and repository HEAD correspondence is unverified.');
+  } else if (pkg.source === 'crates') {
     if (!/^[\w-]+$/.test(name) || !version) throw new Error('Missing fixed crates.io package identity');
     url = `https://crates.io/api/v1/crates/${encodeURIComponent(name)}/${encodeURIComponent(version)}`;
     p = (await http.json(url, signal)).version;

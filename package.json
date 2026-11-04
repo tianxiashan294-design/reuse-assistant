@@ -1,6 +1,6 @@
 {
   "name": "reuse-assistant-local",
-  "version": "0.5.0",
+  "version": "0.8.0",
   "private": true,
   "description": "Evidence-based reuse checks for coding agents: discover, inspect, decide, and verify.",
   "repository": {
@@ -24,6 +24,7 @@
   },
   "types": "./dist/src/core.d.ts",
   "files": [
+    "assets/grammars",
     "dist/src",
     "src",
     "skills",
@@ -43,12 +44,14 @@
     "start": "node dist/src/cli.js",
     "smoke": "npm run build && node dist/test/live-smoke.js",
     "smoke:v2": "npm run build && node dist/test/live-smoke-v2.js",
-    "smoke:v3": "npm run build && node dist/test/live-smoke-v3.js"
+    "smoke:v3": "npm run build && node dist/test/live-smoke-v3.js",
+    "smoke:v7": "npm run build && node dist/test/live-smoke-v7.js"
   },
   "dependencies": {
     "@babel/parser": "7.28.5",
     "@modelcontextprotocol/server": "2.4.0",
     "smol-toml": "1.9.1",
+    "web-tree-sitter": "0.27.1",
     "zod": "4.6.7"
   },
   "devDependencies": {

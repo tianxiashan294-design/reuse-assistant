@@ -1,6 +1,8 @@
-# Source coverage in v0.3
+# Source coverage in v0.8
 
 The long-term target is all programming languages and platforms; this release implements the finite source set below. `coverage: complete` means the selected bounded plan completed, not that every platform, language or suitable implementation was searched. `sourcePlan` lists supported capabilities, limitations and selection state; `sources` retains actual requests and failures.
+
+v0.8 expands structural inspection with PHP/Ruby/Kotlin/Swift/Bash/Lua; it adds no registry or repository discovery adapter. Structural language coverage and ecosystem search routing are separate capabilities. Kotlin/Swift/Bash/Lua code can be inspected through repository/local candidates without adding new ecosystem selector values; see [structural coverage](ALIGNMENT.md).
 
 | Source | Discovery | Inspection | Limits |
 |---|---|---|---|
@@ -13,6 +15,8 @@ The long-term target is all programming languages and platforms; this release im
 | NuGet.org | Listed stable package search | Selected version metadata from discovered registration index/pages; leaf/catalog compatibility fallback | 6 results/page; at most 4 inspection registration pages; dynamically discovered service addresses; no archive extraction |
 | RubyGems | Gem search | Version and platform metadata; associated repository evidence | Up to 30 results/page (fixed upstream size), retained in full; source/release association unverified |
 | Packagist | Composer package search | Stable version metadata and fixed `source.reference` when supplied | 6 results/page; full package API has a 2 MB limit and an upstream cache of up to 12 hours |
+| pub.dev | Official top-name completion corpus, literal substring matching (`name_search`) | Latest-version locator, then fixed version metadata/pubspec and supplied archive hash | Not full-text/description search or all-package discovery; 8-hour project corpus cache, 6 local matches/page; archives/licenses not extracted |
+| Hex | Public package name/description search for Elixir/Erlang | Fixed release metadata/checksum, separate mutable package links/license metadata | 6 results/page, no supplied total; archives not extracted, repository release correspondence unverified |
 
 Package evidence without a supported repository is explicitly partial. Missing README/license files, failed code reads, unknown SCM and unverified package/source correspondence remain visible. Packages in the same repository keep distinct aliases and versions. Repository identities include the hosting platform.
 
@@ -20,13 +24,19 @@ Package evidence without a supported repository is explicitly partial. Missing R
 
 `ecosystem: auto` (default) searches all implemented sources. `javascript`, `python`, `rust`, `java`, `dotnet`, `ruby`, and `php` select GitHub + GitLab and the matching registry. `java` includes the JVM package ecosystem used by Kotlin and Scala. `go` currently selects repository search only. Explicit `sources` override ecosystem routing. `scope: local` performs no network requests.
 
+`dart` / `flutter` select GitHub + GitLab + pub; `elixir` / `erlang` select GitHub + GitLab + Hex. These selections add retrieval ecosystems, not structural parsers for Dart or Elixir. Use `--source pub --source hex` or MCP `sources: ["pub", "hex"]` explicitly when desired.
+
+pub.dev's official API does not promise a description/full-text search endpoint. We fetch `/api/package-name-completion-data`, validate its finite list, preserve upstream order, and match the lowercased query as a literal name substring. Corpus cache timestamp/hit state is public, and its 8-hour project TTL is separate from the 6-hour query-result cache. `useCache: false` bypasses the latter only. Different queries/pages within one check share one corpus load; concurrent cold checks/processes may fetch independently. Totals and `exhausted` refer only to matches in that limited list, never all pub.dev packages. The API's undocumented search endpoint is not used. Fixed-version inspection retains `archive_sha256` if supplied but does not download archives. Missing names can still be found through repository search or a later supported discovery source.
+
+Hex uses `/api/packages?search=...&page=...&per_page=6&sort=downloads`. Search-selected stable versions stay fixed during inspection even if latest changes. The release's version and canonical package URL must match; separate package metadata is hashed at its mutable URL without a version ref. pub inspection selects latest only when discovery has no version, then checks the fixed endpoint's version and pubspec name/version. Neither reader follows publisher-supplied archive or arbitrary metadata URLs. GitHub/GitLab repository reads use fixed commits but keep release correspondence unverified without a proven source reference.
+
 ```powershell
 node dist/src/cli.js check --project . --task '查找 Rust JSON 库' --query serde_json --ecosystem rust --json
 node dist/src/cli.js check --project . --task '跨平台查找 JSON 实现' --query json --source gitlab --source crates --source maven --json
 node dist/src/cli.js check --project . --task '核查 Eigen 仓库' --query https://gitlab.com/libeigen/eigen --source gitlab --json
 ```
 
-The same MCP `check_reuse` input uses `sources: ["gitlab", "crates"]`. Existing MCP processes must reload the new build to expose the new schema. The three tool names and decision lifecycle are unchanged.
+The same MCP `check_reuse` input uses `sources: ["gitlab", "crates"]`. Existing MCP processes must reload the new build to expose the new schema. The four tool names and decision lifecycle are unchanged.
 
 Source selection is part of cache/decision context. Local code is always searched freshly. Automatic routing of exact scoped npm names applies unless explicit sources override it. Remote workers are bounded at four under one overall deadline; queued sources receive explicit timeout results if their budget expires.
 
@@ -48,6 +58,8 @@ node dist/src/cli.js check --project . --task '分页查找 JSON 实现' --query
 | NuGet | `skip=(page-1)*6`, `take=6` | `totalHits`, otherwise full-page inference |
 | RubyGems | `page`, fixed upstream size 30 | Full-page inference |
 | Packagist | `page`, `per_page=6` | `total`, otherwise full-page inference; URLs are reconstructed on the official endpoint |
+| Hex | `page`, `per_page=6`, `sort=downloads` | Full-page inference; no arbitrary continuation URL traversal |
+| pub | Local slices of 6 from one validated, cached official name corpus | Count of matching corpus names; not remote page requests or all-registry totals |
 
 After a successful page, `pagination` records `pageSize`, `pagesFetched` (successful reads), `itemsFetched` (before deduplication), optional `totalAvailable`, `hasMore` and `stopReason`. `hasMore` means reported or inferred remaining results, not a guarantee. Full pages without totals may require an empty terminal read. Totals/rankings are mutable, not a consistent snapshot; this implementation does not traverse upstream cursor or Link URLs. First-page failures retain their existing structured source error without successful-page progress.
 
@@ -60,6 +72,9 @@ Optional `GITHUB_TOKEN` and `GITLAB_TOKEN` stay on their own hosts. The Codex in
 Local discovery considers UTF-8 text with any file extension, including extensionless files. It excludes binary/non-UTF-8 files, symlinks, hidden/dependency/build directories and `.env` files. Limits are 1,200 scanned files, 180 KB per file, 30 raw matches, and 8 local shortlist entries. The root manifest fingerprint covers additional ecosystems and .NET project files; nested workspace manifests are not all fingerprinted.
 
 ## Official protocol references
+
+- pub.dev [supported APIs and search guidance](https://pub.dev/help/api), [Hosted Pub Repository V2 specification](https://github.com/dart-lang/pub/blob/master/doc/repository-spec-v2.md).
+- Hex [official API specification](https://github.com/hexpm/specifications/blob/main/apiary.apib), [search page/per_page implementation](https://github.com/hexpm/hexpm/blob/main/lib/hexpm_web/controllers/api/package_controller.ex).
 
 - GitHub repository search and result limits: [Search API](https://docs.github.com/en/rest/search/search?apiVersion=2022-11-28#search-repositories). npm size/offset search: [Registry API](https://github.com/npm/registry/blob/main/docs/REGISTRY-API.md#get-v1search).
 - GitLab project filtering, search ordering and exact project lookup: [Projects API](https://docs.gitlab.com/api/projects/), [pagination](https://docs.gitlab.com/api/rest/#pagination). File content and commit references: [Repository files API](https://docs.gitlab.com/api/repository_files/).

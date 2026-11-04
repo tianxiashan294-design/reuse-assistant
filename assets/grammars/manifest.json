@@ -1,0 +1,130 @@
+[
+  {
+    "language": "python",
+    "version": "0.25.0",
+    "revision": "293fdc02038ee2bf0e2e206711b69c90ac0d413f",
+    "url": "https://github.com/tree-sitter/tree-sitter-python/releases/download/v0.25.0/tree-sitter-python.wasm",
+    "sha256": "16108b50df4ee9a30168794252ab55e7c93bfc5765d7fa0aa3e335752c515f47",
+    "license": "python.LICENSE",
+    "abi": 15
+  },
+  {
+    "language": "go",
+    "version": "0.25.0",
+    "revision": "1547678a9da59885853f5f5cc8a99cc203fa2e2c",
+    "url": "https://github.com/tree-sitter/tree-sitter-go/releases/download/v0.25.0/tree-sitter-go.wasm",
+    "sha256": "9504573f352b20be7f2f1911754d710622aedc15afff16d5ed8fb5645681aee7",
+    "license": "go.LICENSE",
+    "abi": 15
+  },
+  {
+    "language": "rust",
+    "version": "0.24.0",
+    "revision": "18b0515fca567f5a10aee9978c6d2640e878671a",
+    "url": "https://github.com/tree-sitter/tree-sitter-rust/releases/download/v0.24.0/tree-sitter-rust.wasm",
+    "sha256": "44b8d1a2e307ee8933d7c0bcb6b0f30d56bc999999fd1d2d9608a7dcf6e8ce56",
+    "license": "rust.LICENSE",
+    "abi": 15
+  },
+  {
+    "language": "java",
+    "version": "0.23.5",
+    "revision": "94703d5a6bed02b98e438d7cad1136c01a60ba2c",
+    "url": "https://github.com/tree-sitter/tree-sitter-java/releases/download/v0.23.5/tree-sitter-java.wasm",
+    "sha256": "4fdeac4ca6ca089f06c6f7e562abcac1733cd465728cc7031ebb73c2019122c4",
+    "license": "java.LICENSE",
+    "abi": 14
+  },
+  {
+    "language": "c_sharp",
+    "version": "0.23.5",
+    "revision": "cac6d5fb595f5811a076336682d5d595ac1c9e85",
+    "url": "https://github.com/tree-sitter/tree-sitter-c-sharp/releases/download/v0.23.5/tree-sitter-c_sharp.wasm",
+    "sha256": "6f69e1cae44e1c32c1eccc170dc5a9778fb94ff716f71113fe1f8c4299aa2f40",
+    "license": "c_sharp.LICENSE",
+    "abi": 15,
+    "publishedDigest": "sha256:6f69e1cae44e1c32c1eccc170dc5a9778fb94ff716f71113fe1f8c4299aa2f40"
+  },
+  {
+    "language": "c",
+    "version": "0.24.1",
+    "revision": "7fa1be1b694b6e763686793d97da01f36a0e5c12",
+    "url": "https://github.com/tree-sitter/tree-sitter-c/releases/download/v0.24.1/tree-sitter-c.wasm",
+    "sha256": "c852c2a85ebf2beb636aa3b0ef7f7e70458684d74f6741b20dcb296885bed9f9",
+    "license": "c.LICENSE",
+    "abi": 15
+  },
+  {
+    "language": "cpp",
+    "version": "0.23.4",
+    "revision": "f41e1a044c8a84ea9fa8577fdd2eab92ec96de02",
+    "url": "https://github.com/tree-sitter/tree-sitter-cpp/releases/download/v0.23.4/tree-sitter-cpp.wasm",
+    "sha256": "174eb0deb75b2ec7881bcacda9f995648d8e683956e5c2267e69ab6dc503fcbf",
+    "license": "cpp.LICENSE",
+    "abi": 14
+  },
+  {
+    "language": "php",
+    "version": "0.25.1",
+    "revision": "58d5643086ae60e93a3746cca648363ee97c8761",
+    "url": "https://github.com/tree-sitter/tree-sitter-php/releases/download/v0.25.1/tree-sitter-php.wasm",
+    "sha256": "bd5e2bf8d42306b7aa32e6b7e39ae9fd9543c62a875ad8b2bc3d488242f72817",
+    "license": "php.LICENSE",
+    "abi": 15,
+    "repository": "https://github.com/tree-sitter/tree-sitter-php",
+    "publishedDigest": "sha256:bd5e2bf8d42306b7aa32e6b7e39ae9fd9543c62a875ad8b2bc3d488242f72817"
+  },
+  {
+    "language": "ruby",
+    "version": "0.23.1",
+    "revision": "71bd32fb7607035768799732addba884a37a6210",
+    "url": "https://github.com/tree-sitter/tree-sitter-ruby/releases/download/v0.23.1/tree-sitter-ruby.wasm",
+    "sha256": "09a96427d7c72f0613ed470cd9812223fc4a91d6a9c025c0235cc6bd59ff96f4",
+    "license": "ruby.LICENSE",
+    "abi": 14,
+    "repository": "https://github.com/tree-sitter/tree-sitter-ruby"
+  },
+  {
+    "language": "kotlin",
+    "version": "1.1.0",
+    "revision": "77dd60ea0a9003ce062c9728a513ffe1aaff8c82",
+    "url": "https://github.com/tree-sitter-grammars/tree-sitter-kotlin/releases/download/v1.1.0/tree-sitter-kotlin.wasm",
+    "sha256": "7009d69453bc8735e438b2818a633efb21c88f99782769abba60dffedfab73f7",
+    "license": "kotlin.LICENSE",
+    "abi": 14,
+    "repository": "https://github.com/tree-sitter-grammars/tree-sitter-kotlin"
+  },
+  {
+    "language": "swift",
+    "version": "0.7.3",
+    "revision": "b8b22bffbb3441780e6471665bacfb263741c86a",
+    "url": "https://github.com/alex-pinkus/tree-sitter-swift/releases/download/0.7.3/tree-sitter-swift.wasm",
+    "sha256": "0258a7ef17303a8079ffe0748b3583d59656b5c3e8653fca7b6451b3e6689eb2",
+    "license": "swift.LICENSE",
+    "abi": 15,
+    "repository": "https://github.com/alex-pinkus/tree-sitter-swift",
+    "publishedDigest": "sha256:0258a7ef17303a8079ffe0748b3583d59656b5c3e8653fca7b6451b3e6689eb2"
+  },
+  {
+    "language": "bash",
+    "version": "0.25.1",
+    "revision": "a06c2e4415e9bc0346c6b86d401879ffb44058f7",
+    "url": "https://github.com/tree-sitter/tree-sitter-bash/releases/download/v0.25.1/tree-sitter-bash.wasm",
+    "sha256": "8292919c88a0f7d3fb31d0cd0253ca5a9531bc1ede82b0537f2c63dd8abe6a7a",
+    "license": "bash.LICENSE",
+    "abi": 15,
+    "repository": "https://github.com/tree-sitter/tree-sitter-bash",
+    "publishedDigest": "sha256:8292919c88a0f7d3fb31d0cd0253ca5a9531bc1ede82b0537f2c63dd8abe6a7a"
+  },
+  {
+    "language": "lua",
+    "version": "0.5.0",
+    "revision": "10fe0054734eec83049514ea2e718b2a56acd0c9",
+    "url": "https://github.com/tree-sitter-grammars/tree-sitter-lua/releases/download/v0.5.0/tree-sitter-lua.wasm",
+    "sha256": "df08a1704e504c70b8dba4a3e6f8e0c99a4fb94e1b1693d2969f53141d09f0d4",
+    "license": "lua.LICENSE",
+    "abi": 15,
+    "repository": "https://github.com/tree-sitter-grammars/tree-sitter-lua",
+    "publishedDigest": "sha256:df08a1704e504c70b8dba4a3e6f8e0c99a4fb94e1b1693d2969f53141d09f0d4"
+  }
+]

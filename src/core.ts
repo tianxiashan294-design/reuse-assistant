@@ -3,13 +3,13 @@ import { realpath } from 'node:fs/promises';
 import { Http } from './http.js';
 import { digest, projectFingerprint, searchLocal } from './project.js';
 import { mergeCandidates, searchGitHub, searchGitLab, searchNpm, verifyPypi } from './sources.js';
-import { searchRegistry } from './registries.js';
+import { readPubCatalog, searchPub, searchRegistry, type PubCatalog } from './registries.js';
 import { SOURCE_CATALOG, selectedSources } from './catalog.js';
 import { searchPages, type SearchJob } from './pagination.js';
 import { inspectCandidate } from './inspect.js';
 import { Store } from './store.js';
 import { decisionNextAction } from './format.js';
-import { analyzeCode } from './segments.js';
+import { analyzeCode, isCodePath } from './segments.js';
 import { alignmentContractSchema, alignmentPrompt, assessAlignment, validateAlignmentDecision } from './alignment.js';
 import type { AlignmentInput, AlignmentReport, CheckInput, CheckReport, Decision, DecisionInput, Inspection, SourceResult } from './types.js';
 import { ECOSYSTEMS } from './types.js';
@@ -42,6 +42,17 @@ export class ReuseAssistant {
     let remote: SourceResult[] = cached?.results ?? [];
     if (!cached && normalized.scope === 'full') {
       const jobs: SearchJob[] = [];
+      let pubCorpus: Promise<PubCatalog & { cached: boolean }> | undefined;
+      const pubCatalog = () => pubCorpus ??= (async () => {
+        const entry = await this.store.read<PubCatalog>('cache', 'pub-names-v1');
+        const age = entry ? Date.now() - Date.parse(entry.createdAt) : NaN;
+        // Respect the official name-completion API's minimum eight-hour cache,
+        // even when callers disable the separate six-hour query-result cache.
+        if (entry && age >= 0 && age < 8 * 60 * 60 * 1000 && Array.isArray(entry.names) && entry.names.length <= 100000 && entry.names.every(n => typeof n === 'string' && /^[a-z_][a-z0-9_]*$/.test(n))) return { ...entry, cached: true };
+        const fresh = await readPubCatalog(this.http, signal);
+        await this.store.write('cache', 'pub-names-v1', fresh);
+        return { ...fresh, cached: false };
+      })();
       for (const q of normalized.queries) {
         const scopedNpm = !input.sources && /^@[\w.-]+\/[\w.-]+$/.test(q);
         for (const source of selection) {
@@ -51,6 +62,7 @@ export class ReuseAssistant {
           } else if (source === 'github') jobs.push(page => searchGitHub(this.http, q, signal, page));
           else if (source === 'gitlab') jobs.push(page => searchGitLab(this.http, q, signal, page));
           else if (source === 'npm') jobs.push(page => searchNpm(this.http, q, signal, page));
+          else if (source === 'pub') jobs.push(page => searchPub(q, signal, page, pubCatalog));
           else jobs.push(page => searchRegistry(this.http, source, q, signal, page));
         }
       }
@@ -95,7 +107,7 @@ export class ReuseAssistant {
       const requestedPackage = candidate.packages?.find(p => `${p.source}:${p.name}` === candidateId);
       const target = requestedPackage ? { ...candidate, source: requestedPackage.source, name: requestedPackage.name, version: requestedPackage.version, packages: [requestedPackage] } : candidate;
       const inspection = await inspectCandidate(this.http, this.projectRoot, target, paths, budgetMs);
-      inspection.analysis = analyzeCode(inspection);
+      inspection.analysis = await analyzeCode(inspection);
       check.inspections.push(inspection);
       await this.store.saveCheck(check);
       return inspection;
@@ -155,7 +167,7 @@ export class ReuseAssistant {
       if (relevant.some(i => i.status === 'partial') && !input.acknowledgeIncomplete) throw new Error('Acknowledge incomplete candidate evidence explicitly before proceeding');
       if (input.choice === 'reuse_local' && candidate.source !== 'local') throw new Error('reuse_local requires a local candidate');
       if (input.choice === 'adapt_code') {
-        if (!relevant.some(i => i.metadata.license && i.files.some(f => /\.(?:[cm]?[jt]sx?|py|go|rs|java|kt|cs|rb|php)$/i.test(f.path)))) throw new Error('Code adaptation requires code-file evidence and an identified license');
+        if (!relevant.some(i => i.metadata.license && i.files.some(f => isCodePath(f.path)))) throw new Error('Code adaptation requires code-file evidence and an identified license');
       }
     }
     if (input.status === 'verified' && (!input.validation || input.validation.trim().length < 12)) throw new Error('Verified decisions require a host-reported validation command and outcome');
