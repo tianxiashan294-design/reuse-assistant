@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0 — 2026-11-05
+
+- Support automatic OpenCode setup, diagnosis and selective removal using a single existing `opencode.json` or `opencode.jsonc`, including comments and trailing commas. Default new projects to `opencode.json`.
+- Preserve unrelated settings and comments with structured edits; keep repeated initialization unchanged. Reject duplicate keys, ambiguous two-file configurations and receipt/path mismatches before writes. Retain modified managed entries and compatible v1 receipts.
+- Adopt unmodified MIT `jsonc-parser@3.3.1` with fixed artifact integrity and original notice. Keep discovery/evidence/decisions in the shared core and retain existing client and guard boundaries.
+- Add public CLI lifecycle/error/ownership tests and actual generated JSONC stdio MCP verification; distinguish offline checks from real host activation.
+
 ## 1.0.0 — 2026-11-04
 
 - Add explicit `--client codex|claude-code|opencode|deepseek-harness` to project init, doctor and uninstall; preserve Codex as the default.

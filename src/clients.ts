@@ -3,6 +3,7 @@ import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { cliPath, doctor, installCodex, uninstallCodex } from './install.js';
 import { digest } from './project.js';
+import { editJsonc, jsoncObject } from './jsonc.js';
 
 export const CLIENTS = ['codex', 'claude-code', 'opencode', 'deepseek-harness'] as const;
 export type AgentClient = typeof CLIENTS[number];
@@ -54,7 +55,7 @@ function object(value: unknown): value is Record<string, any> {
 function configObject(text: string | undefined, file: string): Record<string, any> {
   let value: unknown;
   try { value = text === undefined ? {} : JSON.parse(text); }
-  catch { throw new Error(`${file} is not valid JSON; left unchanged. Merge the MCP entry manually for JSONC configurations.`); }
+  catch { throw new Error(`${file} is not valid JSON; left unchanged.`); }
   if (!object(value)) throw new Error(`${file} must contain a JSON object; left unchanged.`);
   return value;
 }
@@ -79,13 +80,29 @@ async function receipt(root: string, client: NewClient): Promise<Receipt | undef
   if (text === undefined) return undefined;
   const value = configObject(text, receiptFile(client));
   const allowed = ownedPaths(client);
-  if (value.version !== 1 || value.config !== definitions[client].config || !object(value.files) ||
+  const validConfig = value.config === definitions[client].config || (client === 'opencode' && value.config === 'opencode.jsonc');
+  if (value.version !== 1 || !validConfig || !object(value.files) ||
       allowed.length !== Object.keys(value.files).length || allowed.some(p => typeof value.files[p] !== 'string') ||
       typeof value.instruction !== 'string' || (client !== 'deepseek-harness' && !object(value.server))) {
     throw new Error('Invalid integration receipt; left unchanged.');
   }
   return value as unknown as Receipt;
 }
+async function configFile(root: string, client: NewClient, saved?: Receipt): Promise<string> {
+  if (client !== 'opencode') return definitions[client].config;
+  const json = await optional(root, 'opencode.json');
+  const jsonc = await optional(root, 'opencode.jsonc');
+  if (json !== undefined && jsonc !== undefined) {
+    throw new Error('Both opencode.json and opencode.jsonc exist; left unchanged. Keep one project config before automatic setup or removal.');
+  }
+  const present = jsonc !== undefined ? 'opencode.jsonc' : json !== undefined ? 'opencode.json' : undefined;
+  if (saved && present && saved.config !== present) {
+    throw new Error(`OpenCode config path differs from managed receipt (${saved.config}); left unchanged. Reconcile the owned config before retrying.`);
+  }
+  return present ?? saved?.config ?? definitions[client].config;
+}
+const readConfig = (text: string | undefined, file: string, client: NewClient) =>
+  client === 'opencode' ? jsoncObject(text, file) : configObject(text, file);
 function serverConfig(root: string, client: NewClient): Record<string, unknown> {
   const args = [cliPath, 'mcp', '--project', root];
   if (client === 'opencode') return { type: 'local', command: [process.execPath, ...args], enabled: true, timeout: 120000,
@@ -111,15 +128,13 @@ export async function installClient(project: string, client: AgentClient, hooks 
   if (hooks) throw new Error(`--hooks is currently supported only for codex; ${client} supports MCP, skill and project instructions.`);
   const root = await realpath(project);
   const def = definitions[client];
-  if (client === 'opencode' && await optional(root, 'opencode.jsonc') !== undefined) {
-    throw new Error('opencode.jsonc exists; left unchanged. Merge the reuse_assistant MCP entry manually as documented in docs/CLIENTS.md; automatic setup supports strict opencode.json only.');
-  }
   const previous = await receipt(root, client);
-  const oldConfig = await optional(root, def.config);
+  const configPath = await configFile(root, client, previous);
+  const oldConfig = await optional(root, configPath);
   let config: Record<string, any> | undefined;
   const server = serverConfig(root, client);
   if (client !== 'deepseek-harness') {
-    config = configObject(oldConfig, def.config);
+    config = readConfig(oldConfig, configPath, client);
     if (config[def.section] !== undefined && !object(config[def.section])) throw new Error(`${def.section} must be an object; left unchanged.`);
     const existing = config[def.section]?.reuse_assistant;
     if (existing !== undefined && (!previous || !isDeepStrictEqual(existing, previous.server))) {
@@ -146,15 +161,17 @@ export async function installClient(project: string, client: AgentClient, hooks 
   const block = `${start(client)}\nBefore substantive feature work or a small fix, read ${def.skill}/SKILL.md and complete its reuse workflow. If MCP is disconnected, use the installed CLI reference beside that skill.\n${end(client)}`;
   const updatedInstructions = oldBlock ? instructions.replace(oldBlock, block) : `${instructions}${instructions && !instructions.endsWith('\n') ? '\n' : ''}${block}\n`;
   const ignore = await optional(root, '.gitignore') ?? '';
-  const writes: Record<string, string> = { ...files, ...(config ? { [def.config]: JSON.stringify(config, null, 2) + '\n' } : {}), [def.instruction]: updatedInstructions };
+  const writes: Record<string, string> = { ...files, ...(config ? { [configPath]: client === 'opencode'
+    ? editJsonc(oldConfig, configPath, [def.section, 'reuse_assistant'], server)
+    : JSON.stringify(config, null, 2) + '\n' } : {}), [def.instruction]: updatedInstructions };
   if (!ignore.split(/\r?\n/).includes('.reuse-assistant/')) writes['.gitignore'] = `${ignore}${ignore && !ignore.endsWith('\n') ? '\n' : ''}.reuse-assistant/\n`;
-  const nextReceipt: Receipt = { version: 1, config: def.config, ...(config ? { server } : {}), files: Object.fromEntries(Object.entries(files).map(([file, text]) => [file, digest(text)])), instruction: digest(block) };
+  const nextReceipt: Receipt = { version: 1, config: configPath, ...(config ? { server } : {}), files: Object.fromEntries(Object.entries(files).map(([file, text]) => [file, digest(text)])), instruction: digest(block) };
   writes[receiptFile(client)] = JSON.stringify(nextReceipt, null, 2) + '\n';
   // Finish all validation before mutating any file. Receipts are written last;
   // filesystem failure mid-write is reported, never claimed to be transactional.
   for (const file of Object.keys(writes)) await target(root, file);
   for (const [file, text] of Object.entries(writes)) await writeFile(await target(root, file, true), text);
-  return { project: root, client, mcpConfig: path.join(root, def.config), skill: path.join(root, def.skill, 'SKILL.md'), instructions: path.join(root, def.instruction), hooks: null, capability: capability(client), launch: launch(root, client) };
+  return { project: root, client, mcpConfig: path.join(root, configPath), skill: path.join(root, def.skill, 'SKILL.md'), instructions: path.join(root, def.instruction), hooks: null, capability: capability(client), launch: launch(root, client) };
 }
 
 export async function doctorClient(project: string, client: AgentClient): Promise<Record<string, unknown>> {
@@ -167,10 +184,12 @@ export async function doctorClient(project: string, client: AgentClient): Promis
   let instructionsInstalled = false;
   try {
     const saved = await receipt(root, client);
-    const configText = await optional(root, def.config);
+    const configPath = await configFile(root, client, saved);
+    const configText = await optional(root, configPath);
     if (client === 'deepseek-harness') serverConfigured = configText !== undefined && Boolean(saved && digest(configText) === saved.files[def.config]);
     else {
-      const config = configObject(configText, def.config);
+      const config = readConfig(configText, configPath, client);
+      if (config[def.section] !== undefined && !object(config[def.section])) throw new Error(`${def.section} must be an object; left unchanged.`);
       serverConfigured = isDeepStrictEqual(config[def.section]?.reuse_assistant, serverConfig(root, client));
       if (config[def.section]?.reuse_assistant !== undefined && !serverConfigured) issues.push('MCP entry differs from the expected project launch command.');
     }
@@ -183,7 +202,6 @@ export async function doctorClient(project: string, client: AgentClient): Promis
       const text = await optional(root, file);
       if (text === undefined || digest(text) !== hash) issues.push(`Missing or modified generated file: ${file}`);
     }
-    if (client === 'opencode' && await optional(root, 'opencode.jsonc') !== undefined) issues.push('opencode.jsonc exists: automatic setup does not resolve JSONC configuration precedence; review manually.');
   } catch (error) { issues.push(error instanceof Error ? error.message : 'Integration could not be inspected.'); }
   return { node: process.version, nodeSupported: Number(process.versions.node.split('.')[0]) >= 22, project: root, client,
     serverConfigured, skillInstalled, instructionsInstalled, hooksPresent: false, capability: capability(client), launch: launch(root, client),
@@ -196,20 +214,22 @@ export async function uninstallClient(project: string, client: AgentClient): Pro
   const def = definitions[client];
   const saved = await receipt(root, client);
   if (!saved) return { project: root, client, changed: [], retained: [], note: 'No managed receipt; existing files left unchanged.' };
+  const configPath = await configFile(root, client, saved);
   const changed: string[] = [];
   const retained: string[] = [];
   const writes: Record<string, string> = {};
   const removals: string[] = [];
   if (client !== 'deepseek-harness') {
-    const text = await optional(root, def.config);
+    const text = await optional(root, configPath);
     if (text !== undefined) {
-      const config = configObject(text, def.config);
+      const config = readConfig(text, configPath, client);
+      if (config[def.section] !== undefined && !object(config[def.section])) throw new Error(`${def.section} must be an object; left unchanged.`);
       const existing = config[def.section]?.reuse_assistant;
       if (existing !== undefined) {
         if (isDeepStrictEqual(existing, saved.server)) {
           delete config[def.section].reuse_assistant;
-          writes[def.config] = JSON.stringify(config, null, 2) + '\n';
-        } else retained.push(def.config);
+          writes[configPath] = client === 'opencode' ? editJsonc(text, configPath, [def.section, 'reuse_assistant'], undefined) : JSON.stringify(config, null, 2) + '\n';
+        } else retained.push(configPath);
       }
     }
   }

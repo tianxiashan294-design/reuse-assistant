@@ -83,7 +83,7 @@ for (const name of clients) {
     const transport = new StdioClientTransport({ command, args, cwd: root, stderr: 'pipe' });
     try {
     await client.connect(transport);
-    assert.equal(client.getServerVersion()?.version, '1.0.0');
+    assert.equal(client.getServerVersion()?.version, '1.1.0');
     assert.deepEqual((await client.listTools()).tools.map(x => x.name).sort(), ['assess_alignment', 'check_reuse', 'inspect_candidate', 'record_decision']);
     const call = async (tool: string, input: Record<string, unknown>) => {
       const result: any = await client.callTool({ name: tool, arguments: input });
@@ -135,7 +135,8 @@ test('new client setup rejects malformed config and collisions before content wr
   }
   const root = await fixture(t);
   await writeFile(path.join(root, 'opencode.jsonc'), '// user comment\n{}\n');
-  await assert.rejects(cli(root, 'init', '--client', 'opencode'), /opencode.jsonc exists/);
+  await writeFile(path.join(root, 'opencode.json'), '{}\n');
+  await assert.rejects(cli(root, 'init', '--client', 'opencode'), /Both opencode.json and opencode.jsonc/);
   assert.equal(await readFile(path.join(root, 'opencode.jsonc'), 'utf8'), '// user comment\n{}\n');
 });
 

@@ -70,6 +70,12 @@ PHP, Swift, Bash and Lua downloaded asset hashes match GitHub's published releas
 
 `@repomix/tree-sitter-wasms@0.1.17` at `1876d74fb86d4e45efade2176b71d776f430e7e6` (Unlicense) was inspected, including `build.ts` and package/dependency context, then rejected in favor of individual upstream release assets with narrower provenance. None of its code or binaries is incorporated. Dart's inspected upstream has no release asset and remains text evidence in this update.
 
+## v1.1 OpenCode JSONC dependency
+
+The native client installer adopts unmodified **jsonc-parser 3.3.1** (MIT), published artifact `https://registry.npmjs.org/jsonc-parser/-/jsonc-parser-3.3.1.tgz`, integrity `sha512-HUgH65KyejrUFPvHFPbqOY0rsFip3Bo5wb4ngvdi1EpCYWUQDC5V+Y7mZws+DLkr4M//zQJoanu1SP+87Dv1oQ==`. The official `v3.3.1` tag resolves to `3c9b4203d663061d87d4d34dd0004690aef94db5`; npm metadata has no gitHead, so this tag is not claimed as an independently proven source-to-artifact build correspondence. The fixed artifact, including parser/edit implementation and package context, was read separately from newer pinned repository HEAD `de0d2fd798a2341924c7abcc7d8a4afd745a8c9b`.
+
+Original LICENSE.md notice: **Copyright (c) Microsoft**. Source headers additionally state **Copyright (c) Microsoft Corporation. All rights reserved.** The original MIT permission/warranty terms are preserved below and ship in the dependency's LICENSE.md. Modifications to upstream: **none**; no source is copied into this project. The package has no runtime dependencies. Configuration-path/receipt ownership, duplicate-key validation and preservation of external trivia around library edits are original integration code in `src/clients.ts` and `src/jsonc.ts`.
+
 ## Upstream MIT notices
 
 wheel-hub: Copyright (c) 2026 wheelhub contributors
@@ -78,7 +84,7 @@ reuse-before-generate: Copyright (c) 2026 Aradar46
 
 scout-mcp: Copyright (c) 2026 bartonguestier1725-collab
 
-The following permission and disclaimer are preserved for the MIT-licensed upstream portions and Babel dependency notices described above:
+The following permission and disclaimer are preserved for the MIT-licensed upstream portions and dependency notices described above:
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

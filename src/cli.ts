@@ -10,7 +10,7 @@ import { evaluateHook, readStdin } from './codex-hook.js';
 import { markdown } from './format.js';
 import { alignmentInputSchema } from './alignment.js';
 
-const HELP = `Reuse Assistant 1.0.0 — evidence-based reuse checks
+const HELP = `Reuse Assistant 1.1.0 — evidence-based reuse checks
 
   node dist/src/cli.js check --project PATH --task TEXT --query TERMS [--query TERMS] [--scope local|full] [--ecosystem NAME] [--source NAME] [--json]
   node dist/src/cli.js check --project PATH --input request.json
@@ -33,7 +33,8 @@ No candidate code is executed. The host performs integration and validation.
 Clients: codex (default), claude-code, opencode, deepseek-harness.
 init writes native MCP configuration, a skill and project workflow guidance.
 DeepSeek requires launching dsh with the generated --patch overlay.
-OpenCode automatic merging supports strict opencode.json; JSONC needs manual setup.
+OpenCode merges one opencode.json or opencode.jsonc, preserving unrelated comments.
+Keep only one project config; ambiguous files and duplicate keys are left unchanged.
 --hooks is Codex-only and requires host trust. Shell writes are outside its coverage.
 `;
 

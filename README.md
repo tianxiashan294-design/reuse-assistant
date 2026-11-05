@@ -81,7 +81,7 @@ dsh --profile web --patch "/absolute/project/.dsh/reuse-assistant.cordis.patch.y
 
 Select that project as the session workspace. This server stays bound to the same project throughout the process; use a separate process and overlay for another project.
 
-For **OpenCode JSONC** configurations, follow the [manual setup instructions](docs/CLIENTS.md#manual-opencode-jsonc). Automatic setup merges strict `opencode.json` only.
+For **OpenCode**, automatic setup uses an existing `opencode.json` or `opencode.jsonc`, including comments and trailing commas; it creates `opencode.json` when neither exists. If both exist, reconcile them before running setup. See the [client guide](docs/CLIENTS.md) for preservation rules and optional manual setup.
 
 For **Codex**, optional hooks can supply a current-turn binding and guard supported patch tools:
 

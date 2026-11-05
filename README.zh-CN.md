@@ -81,7 +81,7 @@ dsh --profile web --patch "/absolute/project/.dsh/reuse-assistant.cordis.patch.y
 
 将目标项目选为会话工作区。这个服务在同一进程内始终绑定该项目；切换到其他项目时，使用独立进程和对应配置。
 
-**OpenCode 的 JSONC 配置**请按[手动接入说明](docs/CLIENTS.md#manual-opencode-jsonc)合并。自动安装只合并严格 JSON 格式的 `opencode.json`。
+**OpenCode** 自动接入已有的 `opencode.json` 或 `opencode.jsonc`，支持注释和尾随逗号；两者均不存在时创建 `opencode.json`。如果两个文件同时存在，请先整理为一个配置。内容保留规则和可选的手动接入见[客户端指南](docs/CLIENTS.md)。
 
 **Codex** 可以选择启用 hooks，用当前回合的绑定检查受支持的补丁工具：
 
