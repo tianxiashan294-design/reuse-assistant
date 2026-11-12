@@ -3,9 +3,12 @@ import { realpath } from 'node:fs/promises';
 import { Http } from './http.js';
 import { digest, projectFingerprint, searchLocal } from './project.js';
 import { mergeCandidates, searchGitHub, searchGitLab, searchNpm, verifyPypi } from './sources.js';
-import { readPubCatalog, searchPub, searchRegistry, type PubCatalog } from './registries.js';
+import { readPubCatalog, searchPub, searchRegistry, type PubCatalog, type RegistrySearchState } from './registries.js';
 import { SOURCE_CATALOG, selectedSources } from './catalog.js';
 import { searchPages, type SearchJob } from './pagination.js';
+import { planQueries } from './queries.js';
+import { cppCatalogSearch } from './cpp-catalog.js';
+import { validateGoModules, verifyGoModule } from './go-proxy.js';
 import { inspectCandidate } from './inspect.js';
 import { Store } from './store.js';
 import { decisionNextAction } from './format.js';
@@ -14,7 +17,7 @@ import { alignmentContractSchema, alignmentPrompt, assessAlignment, validateAlig
 import type { AlignmentInput, AlignmentReport, CheckInput, CheckReport, Decision, DecisionInput, Inspection, SourceResult } from './types.js';
 import { ECOSYSTEMS } from './types.js';
 
-const context = (input: CheckInput, fingerprint: string) => digest({ task: input.task, queries: input.queries, constraints: input.constraints ?? [], scope: input.scope, ecosystem: input.ecosystem, packages: input.packageNames ?? [], ...(input.sources ? { sources: input.sources } : {}), ...(input.maxPages !== undefined ? { maxPages: input.maxPages } : {}), ...(input.alignment ? { alignment: input.alignment } : {}), fingerprint });
+const context = (input: CheckInput, fingerprint: string) => digest({ task: input.task, queries: input.queries, constraints: input.constraints ?? [], scope: input.scope, ecosystem: input.ecosystem, packages: input.packageNames ?? [], ...(input.goModules?.length ? { goModules: input.goModules } : {}), ...(input.sources ? { sources: input.sources } : {}), ...(input.maxPages !== undefined ? { maxPages: input.maxPages } : {}), ...(input.maxRetries !== undefined ? { maxRetries: input.maxRetries } : {}), ...(input.queryVariants !== undefined ? { queryVariants: input.queryVariants } : {}), ...(input.alignment ? { alignment: input.alignment } : {}), fingerprint });
 
 export class ReuseAssistant {
   readonly store: Store;
@@ -28,20 +31,28 @@ export class ReuseAssistant {
     if (input.ecosystem && !ECOSYSTEMS.includes(input.ecosystem)) throw new Error('Unsupported ecosystem');
     if (input.scope && !['local', 'full'].includes(input.scope)) throw new Error('Unsupported scope');
     if (input.maxPages !== undefined && (!Number.isInteger(input.maxPages) || input.maxPages < 1 || input.maxPages > 3)) throw new Error('maxPages must be an integer from 1 to 3');
+    if (input.maxRetries !== undefined && (!Number.isInteger(input.maxRetries) || input.maxRetries < 0 || input.maxRetries > 1)) throw new Error('maxRetries must be an integer from 0 to 1');
+    const queryPlan = planQueries(input.queries, input.queryVariants);
+    validateGoModules(input.goModules);
     const selection = selectedSources(input);
-    if (!input.sources && input.queries.some(q => /^@[\w.-]+\/[\w.-]+$/.test(q.trim())) && !selection.includes('npm')) selection.push('npm');
+    if (!input.sources && queryPlan.executed.some(q => /^@[\w.-]+\/[\w.-]+$/.test(q)) && !selection.includes('npm')) selection.push('npm');
     if (input.scope !== 'local' && input.packageNames?.length && !selection.includes('pypi')) throw new Error('packageNames verifies PyPI distributions; include pypi in sources');
+    if (input.scope !== 'local' && input.goModules?.length && !selection.includes('goproxy')) throw new Error('goModules verifies Go modules; include goproxy in sources');
     const start = performance.now();
     const root = await realpath(this.projectRoot);
     const fingerprint = await projectFingerprint(root);
-    const normalized: CheckInput = { ...input, queries: [...new Set(input.queries.map(q => q.trim()))], scope: input.scope ?? 'full', ecosystem: input.ecosystem ?? 'auto', sources: input.scope === 'local' ? [] : selection, maxPages: input.maxPages ?? 2 };
+    const normalized: CheckInput = { ...input, queries: queryPlan.originals, ...(queryPlan.variants !== undefined ? { queryVariants: queryPlan.variants } : {}), scope: input.scope ?? 'full', ecosystem: input.ecosystem ?? 'auto', sources: input.scope === 'local' ? [] : selection, maxPages: input.maxPages ?? 2, maxRetries: input.maxRetries ?? 1 };
     const contextHash = context(normalized, fingerprint);
+    // New discovery semantics must not consume a pre-keyset remote cache.
+    // Keep decision context hashes unchanged for existing saved checks.
+    const cacheKey = digest({ contextHash, discoveryRevision: 2 });
     const signal = AbortSignal.timeout(Math.max(100, Math.min(120_000, input.budgetMs ?? 60_000)));
-    const localPromise = searchLocal(root, normalized.queries, signal);
-    const cached = normalized.scope === 'full' && input.useCache !== false ? await this.store.cache(contextHash) : undefined;
+    const localPromise = searchLocal(root, queryPlan.executed, signal);
+    const cached = normalized.scope === 'full' && input.useCache !== false ? await this.store.cache(cacheKey) : undefined;
     let remote: SourceResult[] = cached?.results ?? [];
     if (!cached && normalized.scope === 'full') {
       const jobs: SearchJob[] = [];
+      const cppCatalogs = { conan: cppCatalogSearch(this.http, 'conan', signal), vcpkg: cppCatalogSearch(this.http, 'vcpkg', signal) };
       let pubCorpus: Promise<PubCatalog & { cached: boolean }> | undefined;
       const pubCatalog = () => pubCorpus ??= (async () => {
         const entry = await this.store.read<PubCatalog>('cache', 'pub-names-v1');
@@ -52,36 +63,44 @@ export class ReuseAssistant {
         const fresh = await readPubCatalog(this.http, signal);
         await this.store.write('cache', 'pub-names-v1', fresh);
         return { ...fresh, cached: false };
-      })();
-      for (const q of normalized.queries) {
+      })().catch(error => { pubCorpus = undefined; throw error; });
+      for (const q of queryPlan.executed) {
         const scopedNpm = !input.sources && /^@[\w.-]+\/[\w.-]+$/.test(q);
         for (const source of selection) {
-          if (source === 'pypi') continue;
+          if (source === 'pypi' || source === 'goproxy') continue;
           if (scopedNpm && source !== 'npm') {
             jobs.push(async () => ({ source, query: q, status: 'skipped', candidates: [], elapsedMs: 0, notes: ['Exact scoped npm query routed to npm only.'] }));
           } else if (source === 'github') jobs.push(page => searchGitHub(this.http, q, signal, page));
-          else if (source === 'gitlab') jobs.push(page => searchGitLab(this.http, q, signal, page));
+          else if (source === 'gitlab') jobs.push((page, continuation) => searchGitLab(this.http, q, signal, page, continuation));
           else if (source === 'npm') jobs.push(page => searchNpm(this.http, q, signal, page));
           else if (source === 'pub') jobs.push(page => searchPub(q, signal, page, pubCatalog));
-          else jobs.push(page => searchRegistry(this.http, source, q, signal, page));
+          else if (source === 'conan' || source === 'vcpkg') jobs.push(page => cppCatalogs[source](q, page));
+          else {
+            const state: RegistrySearchState = {};
+            jobs.push((page, _continuation, attempt) => searchRegistry(this.http, source, q, signal, page, attempt, state));
+          }
         }
       }
       for (const name of normalized.packageNames ?? []) jobs.push(() => verifyPypi(this.http, name, signal));
-      remote = await searchPages(jobs, normalized.maxPages!, signal);
+      for (const module of normalized.goModules ?? []) jobs.push(() => verifyGoModule(this.http, module, signal));
+      remote = await searchPages(jobs, normalized.maxPages!, signal, normalized.maxRetries!);
       if (selection.includes('pypi') && !normalized.packageNames?.length) remote.push({ source: 'pypi', query: '', status: 'skipped', candidates: [], elapsedMs: 0, notes: ['Discover Python projects via repository search; inspect installation/project metadata to identify a distribution, then verify it with PyPI. PyPI full-text search is not available.'] });
-      if (remote.every(r => ['ok', 'empty', 'skipped'].includes(r.status))) await this.store.saveCache(contextHash, remote);
+      if (selection.includes('goproxy') && !normalized.goModules?.length) remote.push({ source: 'goproxy', query: '', status: 'skipped', candidates: [], elapsedMs: 0, notes: ['The Go proxy verifies only known public modules. Supply goModules from project/installation evidence; queries are not module paths and no Go module full-text search is available.'] });
+      if (remote.every(r => ['ok', 'empty', 'skipped'].includes(r.status))) await this.store.saveCache(cacheKey, remote);
     }
     const local = await localPromise;
     const sources = [local, ...remote];
     const report: CheckReport = {
-      id: randomUUID(), createdAt: new Date().toISOString(), projectRoot: root, contextHash, input: normalized,
+      id: randomUUID(), createdAt: new Date().toISOString(), projectRoot: root, contextHash, input: normalized, queryPlan: queryPlan.plan,
       coverage: sources.some(r => !['ok', 'empty', 'skipped'].includes(r.status)) ? 'partial' : 'complete',
       cached: Boolean(cached), cacheCreatedAt: cached?.createdAt, elapsedMs: Math.round(performance.now() - start),
-      sources, candidates: mergeCandidates(sources.flatMap(r => r.candidates), normalized.queries), inspections: [],
+      sources, candidates: mergeCandidates(sources.flatMap(r => r.candidates), queryPlan.executed), inspections: [],
       sourcePlan: SOURCE_CATALOG.map(s => ({ ...s, selected: normalized.sources!.includes(s.source) })),
-      notes: ['Complete means the bounded query plan finished, not exhaustive ecosystem or all-platform coverage.', `Searches fetch at most ${normalized.maxPages} pages per source/query, sharing the total budget; all first-page jobs run before continuations. Pagination exposes remaining results and stop reasons. Full pages without a reported total may have more results; totals and offset rankings can change between requests.`, 'At most 8 local matches appear in the merged shortlist; source results retain additional matches. Each returning remote source keeps a representative when possible.', 'Exact scoped npm names are routed to npm unless explicit sources override routing.', 'Go currently uses repository search; no Go registry full-text adapter is implemented.', 'Host must inspect relevant evidence and judge requirement fit; health signals do not authorize adoption.', ...(normalized.queries.some(q => /\p{Script=Han}/u.test(q)) ? ['Chinese queries are preserved. Add English technical synonyms when useful; this tool does not translate or invent them.'] : [])],
+      notes: ['Complete means the bounded query plan finished, not exhaustive ecosystem or all-platform coverage.', `Searches fetch at most ${normalized.maxPages} pages per source/query, sharing the total budget; all first-page jobs run before continuations. Pagination exposes remaining results and stop reasons. Full pages without a reported total may have more results; totals and offset rankings can change between requests.`, 'At most 8 local matches appear in the merged shortlist; source results retain additional matches. Each returning remote source keeps a representative when possible.', 'Exact scoped npm names are routed to npm unless explicit sources override routing.', 'Go uses repository search and explicit public module lookups; no Go registry full-text adapter is implemented.', 'Host must inspect relevant evidence and judge requirement fit; health signals do not authorize adoption.', ...(normalized.queries.some(q => /\p{Script=Han}/u.test(q)) ? ['Chinese queries are preserved. Add English technical synonyms when useful; this tool does not translate or invent them.'] : [])],
     };
+    report.notes.push(`Transient failed pages allow ${normalized.maxRetries} source-level retries under the original total budget, after each page round's initial attempts and before continuations. Network errors, request timeouts and HTTP 408/5xx are eligible while budget remains; server-requested delays, authentication, throttling and invalid responses are not retried here. Existing short HTTP throttle handling is separate. Source failure history remains visible after recovery and in cached reports.`);
     if (normalized.alignment) report.alignmentPrompt = alignmentPrompt(report);
+    report.notes.push(`Query plan executes ${queryPlan.executed.length} unique strings: original queries first, then explicit host-supplied variants, sharing the same total budget. The core does not translate or infer variants. Query provenance is public; local lexical token and result limits still apply. Remote shortlist slots favor the least represented available source, with fixed source-order ties and lexical ranking within each source; merged identities credit all their sources.`);
     if (normalized.binding) {
       const gate = await this.store.gate(normalized.binding.sessionId);
       if (!gate || gate.binding.turnId !== normalized.binding.turnId) throw new Error('Session/turn binding is stale or was not initialized by the client hook');

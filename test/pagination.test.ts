@@ -8,12 +8,12 @@ import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
 import { ReuseAssistant } from '../src/core.js';
 import { Http } from '../src/http.js';
 import { markdown } from '../src/format.js';
-import { REMOTE_SOURCES, type CheckInput } from '../src/types.js';
+import type { CheckInput, RemoteSource } from '../src/types.js';
 import { fixture, fakeFetch, json } from './support.js';
 import { pagedResponse, searchPage, searchSource } from './pagination-support.js';
 
-// pub pages locally over one cached official corpus; covered separately in v7.
-const sources = REMOTE_SOURCES.filter(s => s !== 'pypi' && s !== 'pub');
+// Original page adapters share this fixture; corpus/new metadata adapters have dedicated tests.
+const sources:RemoteSource[]=['github','gitlab','npm','crates','maven','nuget','rubygems','packagist','hex'];
 const request: CheckInput = { task: 'Find second_page_target', queries: ['second_page_target'], useCache: false, sources };
 
 for (const source of sources) test(`${source} pages through the public core with source-specific offsets and bounded recall`, async t => {

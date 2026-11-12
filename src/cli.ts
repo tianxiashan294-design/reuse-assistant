@@ -9,6 +9,7 @@ import { agentClient, doctorClient, installClient, uninstallClient } from './cli
 import { evaluateHook, readStdin } from './codex-hook.js';
 import { markdown } from './format.js';
 import { alignmentInputSchema } from './alignment.js';
+import { ECOSYSTEMS, REMOTE_SOURCES } from './types.js';
 
 const HELP = `Reuse Assistant 1.1.0 — evidence-based reuse checks
 
@@ -24,11 +25,15 @@ const HELP = `Reuse Assistant 1.1.0 — evidence-based reuse checks
   node dist/src/cli.js mcp --project PATH
 
 --input - reads JSON from stdin. Commands keep records in PROJECT/.reuse-assistant/.
-Ecosystems: auto, javascript, python, rust, java, dotnet, ruby, php, go, dart, flutter, elixir, erlang.
-Sources (repeat --source): github, gitlab, npm, pypi, crates, maven, nuget, rubygems, packagist, pub, hex.
+Use queryVariants in --input JSON for up to two explicit language variants per original query.
+Reports preserve queryPlan origin mappings; the core does not translate queries.
+Ecosystems: ${ECOSYSTEMS.join(', ')}.
+Sources (repeat --source): ${REMOTE_SOURCES.join(', ')}.
+--go-module path[@version] verifies a known public module at proxy.golang.org (repeat up to 3 times).
 pub searches the official limited name-completion corpus, not package descriptions.
 auto searches all implemented sources; --source overrides ecosystem selection.
 --max-pages 1..3 (default 2) bounds discovery pages per source/query under the total budget.
+--max-retries 0..1 (default 1) retries transient failed pages under that same budget, retaining failure history.
 No candidate code is executed. The host performs integration and validation.
 Clients: codex (default), claude-code, opencode, deepseek-harness.
 init writes native MCP configuration, a skill and project workflow guidance.
@@ -44,7 +49,7 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
     scope: { type: 'string' }, ecosystem: { type: 'string' }, check: { type: 'string' }, candidate: { type: 'string' },
     path: { type: 'string', multiple: true }, json: { type: 'boolean' }, hooks: { type: 'boolean' }, help: { type: 'boolean' },
     'no-cache': { type: 'boolean' }, budget: { type: 'string' }, package: { type: 'string', multiple: true }, source: { type: 'string', multiple: true },
-    'max-pages': { type: 'string' }, client: { type: 'string' },
+    'max-pages': { type: 'string' }, 'max-retries': { type: 'string' }, 'go-module': { type: 'string', multiple: true }, client: { type: 'string' },
   } });
   if (values.help || !positionals[0]) { process.stdout.write(HELP); return; }
   const command = positionals[0];
@@ -61,7 +66,11 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
   if (command === 'doctor') { print(await doctorClient(root, client)); return; }
   if (command === 'hook') { print(await evaluateHook(root, JSON.parse(await readStdin()))); return; }
   if (command === 'check') {
-    const input = checkSchema.parse(values.input ? await data() : { task: values.task, queries: values.query ?? [], scope: values.scope, ecosystem: values.ecosystem, sources: values.source, packageNames: values.package, useCache: !values['no-cache'], ...(values.budget ? { budgetMs: Number(values.budget) } : {}), ...(values['max-pages'] !== undefined ? { maxPages: Number(values['max-pages']) } : {}) });
+    const goModules = values['go-module']?.map(value => {
+      const at = value.indexOf('@');
+      return at < 0 ? { path: value } : { path: value.slice(0, at), version: value.slice(at + 1) };
+    });
+    const input = checkSchema.parse(values.input ? await data() : { task: values.task, queries: values.query ?? [], scope: values.scope, ecosystem: values.ecosystem, sources: values.source, packageNames: values.package, goModules, useCache: !values['no-cache'], ...(values.budget ? { budgetMs: Number(values.budget) } : {}), ...(values['max-pages'] !== undefined ? { maxPages: Number(values['max-pages']) } : {}), ...(values['max-retries'] !== undefined ? { maxRetries: Number(values['max-retries']) } : {}) });
     const result = await assistant.check(input);
     if (values.json) print(result); else process.stdout.write(markdown(result));
     return;

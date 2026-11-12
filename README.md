@@ -127,6 +127,10 @@ node dist/src/cli.js check --project "/absolute/project" --task "Add background 
 
 Add `--scope local` to search only the project. Use `--input request.json` for structured constraints, alignment contracts and decisions; `--input -` reads JSON from stdin. Run `--help` for the command list.
 
+For C and C++, `--ecosystem c` or `--ecosystem cpp` includes Conan Center Index and vcpkg alongside repository search. Use `--source conan --source vcpkg` to focus on the package catalogs. Catalog matches are by name, and inspection covers selected packaging files. See [C and C++ catalog coverage](docs/SOURCES.md#c-and-c-package-catalogs).
+
+Discovery retries a transient failed source/page once by default within the same total budget, after the other initial requests in that page round. Set `--max-retries 0` (MCP `maxRetries: 0`) to disable this; supported values are 0 and 1. Reports retain the original failure and retry outcome even after recovery. Authentication, rate limits, invalid data and positive `Retry-After` waits are not replayed by this scheduler. See [retry and coverage limits](docs/SOURCES.md#bounded-failed-source-retries).
+
 Records live in the target project's `.reuse-assistant/` directory, which initialization adds to `.gitignore`. Keep these task records local and use public technical terms in external queries. Reports distinguish failed searches, empty results and incomplete coverage; they do not promise exhaustive discovery.
 
 ## Open source and contribution

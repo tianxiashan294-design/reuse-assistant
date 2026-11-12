@@ -1,0 +1,1672 @@
+{
+  "observedAt": "2026-11-06T14:20:37.913Z",
+  "interface": "public core, live network",
+  "checkId": "92492f87-557b-48c6-b3c6-634cfbc0c26c",
+  "input": {
+    "task": "Observe official Clojars/Hackage/MetaCPAN discovery and fixed metadata",
+    "queries": [
+      "json"
+    ],
+    "sources": [
+      "clojars",
+      "hackage",
+      "metacpan"
+    ],
+    "maxPages": 2,
+    "budgetMs": 30000,
+    "useCache": false,
+    "scope": "full",
+    "ecosystem": "auto",
+    "maxRetries": 1
+  },
+  "coverage": "partial",
+  "elapsedMs": 1757,
+  "sources": [
+    {
+      "source": "clojars",
+      "query": "json",
+      "endpoint": "https://clojars.org/search?q=json&format=json&page=2",
+      "status": "ok",
+      "candidates": [
+        {
+          "id": "clojars:cheshire/cheshire",
+          "source": "clojars",
+          "name": "cheshire/cheshire",
+          "url": "https://clojars.org/cheshire/cheshire",
+          "description": "JSON and JSON SMILE encoding, fast.",
+          "version": "6.2.1",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "cheshire/cheshire",
+              "version": "6.2.1",
+              "url": "https://clojars.org/cheshire/cheshire"
+            }
+          ]
+        },
+        {
+          "id": "clojars:tigris/tigris",
+          "source": "clojars",
+          "name": "tigris/tigris",
+          "url": "https://clojars.org/tigris/tigris",
+          "description": "Stream-to-stream JSON string encoding",
+          "version": "0.1.2",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "tigris/tigris",
+              "version": "0.1.2",
+              "url": "https://clojars.org/tigris/tigris"
+            }
+          ]
+        },
+        {
+          "id": "clojars:metosin/jsonista",
+          "source": "clojars",
+          "name": "metosin/jsonista",
+          "url": "https://clojars.org/metosin/jsonista",
+          "description": "Clojure library for fast JSON encoding and decoding.",
+          "version": "1.0.2",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "metosin/jsonista",
+              "version": "1.0.2",
+              "url": "https://clojars.org/metosin/jsonista"
+            }
+          ]
+        },
+        {
+          "id": "clojars:ring/ring-json",
+          "source": "clojars",
+          "name": "ring/ring-json",
+          "url": "https://clojars.org/ring/ring-json",
+          "description": "Ring middleware for handling JSON",
+          "version": "0.5.1",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "ring/ring-json",
+              "version": "0.5.1",
+              "url": "https://clojars.org/ring/ring-json"
+            }
+          ]
+        },
+        {
+          "id": "clojars:json-html/json-html",
+          "source": "clojars",
+          "name": "json-html/json-html",
+          "url": "https://clojars.org/json-html/json-html",
+          "description": "Provide JSON and get a DOM node with a human representation of that JSON",
+          "version": "0.4.7",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "json-html/json-html",
+              "version": "0.4.7",
+              "url": "https://clojars.org/json-html/json-html"
+            }
+          ]
+        },
+        {
+          "id": "clojars:clj-jwt/clj-jwt",
+          "source": "clojars",
+          "name": "clj-jwt/clj-jwt",
+          "url": "https://clojars.org/clj-jwt/clj-jwt",
+          "description": "Clojure library for JSON Web Token(JWT)",
+          "version": "0.1.1",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "clj-jwt/clj-jwt",
+              "version": "0.1.1",
+              "url": "https://clojars.org/clj-jwt/clj-jwt"
+            }
+          ]
+        },
+        {
+          "id": "clojars:fullcontact/full.json",
+          "source": "clojars",
+          "name": "fullcontact/full.json",
+          "url": "https://clojars.org/fullcontact/full.json",
+          "description": "Read and write JSON for Clojure and ClojureScript.",
+          "version": "0.12.0",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "fullcontact/full.json",
+              "version": "0.12.0",
+              "url": "https://clojars.org/fullcontact/full.json"
+            }
+          ]
+        },
+        {
+          "id": "clojars:luposlip/json-schema",
+          "source": "clojars",
+          "name": "luposlip/json-schema",
+          "url": "https://clojars.org/luposlip/json-schema",
+          "description": "Clojure library for JSON Schema validation and generation - Draft-07 compatible",
+          "version": "0.4.8",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "luposlip/json-schema",
+              "version": "0.4.8",
+              "url": "https://clojars.org/luposlip/json-schema"
+            }
+          ]
+        },
+        {
+          "id": "clojars:cambium/cambium.logback.json",
+          "source": "clojars",
+          "name": "cambium/cambium.logback.json",
+          "url": "https://clojars.org/cambium/cambium.logback.json",
+          "description": "JSON Logback backend for Cambium",
+          "version": "0.4.6",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "cambium/cambium.logback.json",
+              "version": "0.4.6",
+              "url": "https://clojars.org/cambium/cambium.logback.json"
+            }
+          ]
+        },
+        {
+          "id": "clojars:viesti/timbre-json-appender",
+          "source": "clojars",
+          "name": "viesti/timbre-json-appender",
+          "url": "https://clojars.org/viesti/timbre-json-appender",
+          "description": "A structured log appender for Timbre using jsonista",
+          "version": "0.2.14",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "viesti/timbre-json-appender",
+              "version": "0.2.14",
+              "url": "https://clojars.org/viesti/timbre-json-appender"
+            }
+          ]
+        },
+        {
+          "id": "clojars:org.babashka/json",
+          "source": "clojars",
+          "name": "org.babashka/json",
+          "url": "https://clojars.org/org.babashka/json",
+          "description": "",
+          "version": "0.1.6",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "org.babashka/json",
+              "version": "0.1.6",
+              "url": "https://clojars.org/org.babashka/json"
+            }
+          ]
+        },
+        {
+          "id": "clojars:com.brunobonacci/mulog-json",
+          "source": "clojars",
+          "name": "com.brunobonacci/mulog-json",
+          "url": "https://clojars.org/com.brunobonacci/mulog-json",
+          "description": "μ/log json handling",
+          "version": "0.10.1",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "com.brunobonacci/mulog-json",
+              "version": "0.10.1",
+              "url": "https://clojars.org/com.brunobonacci/mulog-json"
+            }
+          ]
+        },
+        {
+          "id": "clojars:clj-json/clj-json",
+          "source": "clojars",
+          "name": "clj-json/clj-json",
+          "url": "https://clojars.org/clj-json/clj-json",
+          "description": "Fast JSON encoding and decoding for Clojure via the Jackson library.",
+          "version": "0.5.3",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "clj-json/clj-json",
+              "version": "0.5.3",
+              "url": "https://clojars.org/clj-json/clj-json"
+            }
+          ]
+        },
+        {
+          "id": "clojars:org.danlarkin/clojure-json",
+          "source": "clojars",
+          "name": "org.danlarkin/clojure-json",
+          "url": "https://clojars.org/org.danlarkin/clojure-json",
+          "description": "",
+          "version": "1.2-SNAPSHOT",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "org.danlarkin/clojure-json",
+              "version": "1.2-SNAPSHOT",
+              "url": "https://clojars.org/org.danlarkin/clojure-json"
+            }
+          ]
+        },
+        {
+          "id": "clojars:json-path/json-path",
+          "source": "clojars",
+          "name": "json-path/json-path",
+          "url": "https://clojars.org/json-path/json-path",
+          "description": "JSON Path for Clojure data structures",
+          "version": "2.2.0",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "json-path/json-path",
+              "version": "2.2.0",
+              "url": "https://clojars.org/json-path/json-path"
+            }
+          ]
+        },
+        {
+          "id": "clojars:yada/json-html",
+          "source": "clojars",
+          "name": "yada/json-html",
+          "url": "https://clojars.org/yada/json-html",
+          "description": "HTML rendering of JSON",
+          "version": "1.4.0-alpha1",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "yada/json-html",
+              "version": "1.4.0-alpha1",
+              "url": "https://clojars.org/yada/json-html"
+            }
+          ]
+        },
+        {
+          "id": "clojars:yada/json",
+          "source": "clojars",
+          "name": "yada/json",
+          "url": "https://clojars.org/yada/json",
+          "description": "Support for application/json media types",
+          "version": "1.4.0-alpha1",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "yada/json",
+              "version": "1.4.0-alpha1",
+              "url": "https://clojars.org/yada/json"
+            }
+          ]
+        },
+        {
+          "id": "clojars:yada/jwt",
+          "source": "clojars",
+          "name": "yada/jwt",
+          "url": "https://clojars.org/yada/jwt",
+          "description": "JSON Web Token support",
+          "version": "1.4.0-alpha1",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "yada/jwt",
+              "version": "1.4.0-alpha1",
+              "url": "https://clojars.org/yada/jwt"
+            }
+          ]
+        },
+        {
+          "id": "clojars:webjure/json-schema",
+          "source": "clojars",
+          "name": "webjure/json-schema",
+          "url": "https://clojars.org/webjure/json-schema",
+          "description": "Minimalistic JSON schema validator with $ref support.",
+          "version": "0.7.4",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "webjure/json-schema",
+              "version": "0.7.4",
+              "url": "https://clojars.org/webjure/json-schema"
+            }
+          ]
+        },
+        {
+          "id": "clojars:rage-db/rage-db",
+          "source": "clojars",
+          "name": "rage-db/rage-db",
+          "url": "https://clojars.org/rage-db/rage-db",
+          "description": "Lightweight disk based json database",
+          "version": "1.0",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "rage-db/rage-db",
+              "version": "1.0",
+              "url": "https://clojars.org/rage-db/rage-db"
+            }
+          ]
+        },
+        {
+          "id": "clojars:com.vgeshel/cheshire",
+          "source": "clojars",
+          "name": "com.vgeshel/cheshire",
+          "url": "https://clojars.org/com.vgeshel/cheshire",
+          "description": "JSON and JSON SMILE encoding, fast.",
+          "version": "5.3.1.2",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "com.vgeshel/cheshire",
+              "version": "5.3.1.2",
+              "url": "https://clojars.org/com.vgeshel/cheshire"
+            }
+          ]
+        },
+        {
+          "id": "clojars:ring-json-response/ring-json-response",
+          "source": "clojars",
+          "name": "ring-json-response/ring-json-response",
+          "url": "https://clojars.org/ring-json-response/ring-json-response",
+          "description": "Ring responses in JSON",
+          "version": "0.2.0",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "ring-json-response/ring-json-response",
+              "version": "0.2.0",
+              "url": "https://clojars.org/ring-json-response/ring-json-response"
+            }
+          ]
+        },
+        {
+          "id": "clojars:json-to-pdf/json-to-pdf",
+          "source": "clojars",
+          "name": "json-to-pdf/json-to-pdf",
+          "url": "https://clojars.org/json-to-pdf/json-to-pdf",
+          "description": "a JVM library for generating PDF documents given JSON markup",
+          "version": "0.8.3",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "json-to-pdf/json-to-pdf",
+              "version": "0.8.3",
+              "url": "https://clojars.org/json-to-pdf/json-to-pdf"
+            }
+          ]
+        },
+        {
+          "id": "clojars:com.kroo/typeset.logback",
+          "source": "clojars",
+          "name": "com.kroo/typeset.logback",
+          "url": "https://clojars.org/com.kroo/typeset.logback",
+          "description": "Simple JSON layout component for Logback Classic, with Clojure and SLF4J 2+ key value attribute support.",
+          "version": "0.7",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "com.kroo/typeset.logback",
+              "version": "0.7",
+              "url": "https://clojars.org/com.kroo/typeset.logback"
+            }
+          ]
+        },
+        {
+          "id": "clojars:pjson/pjson",
+          "source": "clojars",
+          "name": "pjson/pjson",
+          "url": "https://clojars.org/pjson/pjson",
+          "description": "Fast clojure json library",
+          "version": "1.0.0",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "pjson/pjson",
+              "version": "1.0.0",
+              "url": "https://clojars.org/pjson/pjson"
+            }
+          ]
+        },
+        {
+          "id": "clojars:io.clubhouse.metrics/metrics-slf4j-json-reporter",
+          "source": "clojars",
+          "name": "io.clubhouse.metrics/metrics-slf4j-json-reporter",
+          "url": "https://clojars.org/io.clubhouse.metrics/metrics-slf4j-json-reporter",
+          "description": "",
+          "version": "4.1.4",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "io.clubhouse.metrics/metrics-slf4j-json-reporter",
+              "version": "4.1.4",
+              "url": "https://clojars.org/io.clubhouse.metrics/metrics-slf4j-json-reporter"
+            }
+          ]
+        },
+        {
+          "id": "clojars:com.blockether/svar",
+          "source": "clojars",
+          "name": "com.blockether/svar",
+          "url": "https://clojars.org/com.blockether/svar",
+          "description": "svar — answer in Swedish. Type-safe LLM output for Clojure, inspired by BAML. Schemaless JSON parsing, token counting, guardrails, and agentic reasoning loops.",
+          "version": "0.7.224",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "com.blockether/svar",
+              "version": "0.7.224",
+              "url": "https://clojars.org/com.blockether/svar"
+            }
+          ]
+        },
+        {
+          "id": "clojars:timbre-json-appender/timbre-json-appender",
+          "source": "clojars",
+          "name": "timbre-json-appender/timbre-json-appender",
+          "url": "https://clojars.org/timbre-json-appender/timbre-json-appender",
+          "description": "DEPRECATED: Use version with correct group id: viesti/timbre-json-appender",
+          "version": "0.1.1",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "timbre-json-appender/timbre-json-appender",
+              "version": "0.1.1",
+              "url": "https://clojars.org/timbre-json-appender/timbre-json-appender"
+            }
+          ]
+        },
+        {
+          "id": "clojars:clj-json-patch/clj-json-patch",
+          "source": "clojars",
+          "name": "clj-json-patch/clj-json-patch",
+          "url": "https://clojars.org/clj-json-patch/clj-json-patch",
+          "description": "Clojure implementation of http://tools.ietf.org/html/rfc6902",
+          "version": "0.1.7",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "clj-json-patch/clj-json-patch",
+              "version": "0.1.7",
+              "url": "https://clojars.org/clj-json-patch/clj-json-patch"
+            }
+          ]
+        },
+        {
+          "id": "clojars:ring-json-params/ring-json-params",
+          "source": "clojars",
+          "name": "ring-json-params/ring-json-params",
+          "url": "https://clojars.org/ring-json-params/ring-json-params",
+          "description": "Ring middleware for JSON params parsing.",
+          "version": "0.1.3",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "ring-json-params/ring-json-params",
+              "version": "0.1.3",
+              "url": "https://clojars.org/ring-json-params/ring-json-params"
+            }
+          ]
+        },
+        {
+          "id": "clojars:cljsjs/oboe",
+          "source": "clojars",
+          "name": "cljsjs/oboe",
+          "url": "https://clojars.org/cljsjs/oboe",
+          "description": "A streaming approach to JSON. Oboe.js speeds up web applications by providing parsed objects before the response completes.",
+          "version": "2.1.2-1",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "cljsjs/oboe",
+              "version": "2.1.2-1",
+              "url": "https://clojars.org/cljsjs/oboe"
+            }
+          ]
+        },
+        {
+          "id": "clojars:by.borge/clj-json-pointer",
+          "source": "clojars",
+          "name": "by.borge/clj-json-pointer",
+          "url": "https://clojars.org/by.borge/clj-json-pointer",
+          "description": "Simple Clojure(Script) library for working with JSON Pointer and JSON Patch, with no external dependencies.",
+          "version": "1.0.0",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "by.borge/clj-json-pointer",
+              "version": "1.0.0",
+              "url": "https://clojars.org/by.borge/clj-json-pointer"
+            }
+          ]
+        },
+        {
+          "id": "clojars:com.spoon16/clj-gson",
+          "source": "clojars",
+          "name": "com.spoon16/clj-gson",
+          "url": "https://clojars.org/com.spoon16/clj-gson",
+          "description": "Clojure bindings for Gson. Gson is a Java library that can be used to convert Java Objects into their JSON representation. It can also be used to convert a JSON string to an equivalent Java object. Gson can work with arbitrary Java objects including pre-existing objects that you do not have source-code of. Gson homepage; http://code.google.com/p/google-gson/",
+          "version": "0.0.1",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "com.spoon16/clj-gson",
+              "version": "0.0.1",
+              "url": "https://clojars.org/com.spoon16/clj-gson"
+            }
+          ]
+        },
+        {
+          "id": "clojars:cljsjs/tv4",
+          "source": "clojars",
+          "name": "cljsjs/tv4",
+          "url": "https://clojars.org/cljsjs/tv4",
+          "description": "Tiny Validator for v4 JSON Schema",
+          "version": "1.2.7-0",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "cljsjs/tv4",
+              "version": "1.2.7-0",
+              "url": "https://clojars.org/cljsjs/tv4"
+            }
+          ]
+        },
+        {
+          "id": "clojars:xyz.zcaudate/std.json",
+          "source": "clojars",
+          "name": "xyz.zcaudate/std.json",
+          "url": "https://clojars.org/xyz.zcaudate/std.json",
+          "description": "wrapper for com.fasterxml.jackson",
+          "version": "4.1.8",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "xyz.zcaudate/std.json",
+              "version": "4.1.8",
+              "url": "https://clojars.org/xyz.zcaudate/std.json"
+            }
+          ]
+        },
+        {
+          "id": "clojars:yogsototh/clj-jwt",
+          "source": "clojars",
+          "name": "yogsototh/clj-jwt",
+          "url": "https://clojars.org/yogsototh/clj-jwt",
+          "description": "Clojure library for JSON Web Token(JWT)",
+          "version": "0.3.0",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "yogsototh/clj-jwt",
+              "version": "0.3.0",
+              "url": "https://clojars.org/yogsototh/clj-jwt"
+            }
+          ]
+        },
+        {
+          "id": "clojars:io.github.plumce/plumcp.core-json-cheshire",
+          "source": "clojars",
+          "name": "io.github.plumce/plumcp.core-json-cheshire",
+          "url": "https://clojars.org/io.github.plumce/plumcp.core-json-cheshire",
+          "description": "JSON (cheshire library) module for PluMCP",
+          "version": "0.3.1",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "io.github.plumce/plumcp.core-json-cheshire",
+              "version": "0.3.1",
+              "url": "https://clojars.org/io.github.plumce/plumcp.core-json-cheshire"
+            }
+          ]
+        },
+        {
+          "id": "clojars:audiogum/clj-lazy-json",
+          "source": "clojars",
+          "name": "audiogum/clj-lazy-json",
+          "url": "https://clojars.org/audiogum/clj-lazy-json",
+          "description": "Jackson-based lazy JSON parsing library for Clojure.",
+          "version": "0.0.3",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "audiogum/clj-lazy-json",
+              "version": "0.0.3",
+              "url": "https://clojars.org/audiogum/clj-lazy-json"
+            }
+          ]
+        },
+        {
+          "id": "clojars:threatgrid/clj-jwt",
+          "source": "clojars",
+          "name": "threatgrid/clj-jwt",
+          "url": "https://clojars.org/threatgrid/clj-jwt",
+          "description": "Clojure library for JSON Web Token(JWT)",
+          "version": "0.5.1",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "threatgrid/clj-jwt",
+              "version": "0.5.1",
+              "url": "https://clojars.org/threatgrid/clj-jwt"
+            }
+          ]
+        },
+        {
+          "id": "clojars:com.flipkart.zjsonpatch/zjsonpatch",
+          "source": "clojars",
+          "name": "com.flipkart.zjsonpatch/zjsonpatch",
+          "url": "https://clojars.org/com.flipkart.zjsonpatch/zjsonpatch",
+          "description": "Java Library to find / apply JSON Patches according to RFC 6902",
+          "version": "0.2.4",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "com.flipkart.zjsonpatch/zjsonpatch",
+              "version": "0.2.4",
+              "url": "https://clojars.org/com.flipkart.zjsonpatch/zjsonpatch"
+            }
+          ]
+        },
+        {
+          "id": "clojars:metrics-kafka-reporter/metrics-kafka-reporter",
+          "source": "clojars",
+          "name": "metrics-kafka-reporter/metrics-kafka-reporter",
+          "url": "https://clojars.org/metrics-kafka-reporter/metrics-kafka-reporter",
+          "description": "A reporter for Codahale/Dropwizard Metrics that publishes\n    measurements to an Apache Kafka topic as (by default) JSON\n    documents.",
+          "version": "0.1.0",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "metrics-kafka-reporter/metrics-kafka-reporter",
+              "version": "0.1.0",
+              "url": "https://clojars.org/metrics-kafka-reporter/metrics-kafka-reporter"
+            }
+          ]
+        },
+        {
+          "id": "clojars:logback-bundle/json-bundle",
+          "source": "clojars",
+          "name": "logback-bundle/json-bundle",
+          "url": "https://clojars.org/logback-bundle/json-bundle",
+          "description": "Core and JSON Logback dependencies bundle",
+          "version": "0.3.0",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "logback-bundle/json-bundle",
+              "version": "0.3.0",
+              "url": "https://clojars.org/logback-bundle/json-bundle"
+            }
+          ]
+        },
+        {
+          "id": "clojars:lt.jocas/clj-jq",
+          "source": "clojars",
+          "name": "lt.jocas/clj-jq",
+          "url": "https://clojars.org/lt.jocas/clj-jq",
+          "description": "jq processor for JSON data",
+          "version": "2.4.0",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "lt.jocas/clj-jq",
+              "version": "2.4.0",
+              "url": "https://clojars.org/lt.jocas/clj-jq"
+            }
+          ]
+        },
+        {
+          "id": "clojars:dev.ericdallo/rewrite-json",
+          "source": "clojars",
+          "name": "dev.ericdallo/rewrite-json",
+          "url": "https://clojars.org/dev.ericdallo/rewrite-json",
+          "description": "A Clojure library for format-preserving JSON and JSONC editing",
+          "version": "0.1.1",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "dev.ericdallo/rewrite-json",
+              "version": "0.1.1",
+              "url": "https://clojars.org/dev.ericdallo/rewrite-json"
+            }
+          ]
+        },
+        {
+          "id": "clojars:json-schema/json-schema",
+          "source": "clojars",
+          "name": "json-schema/json-schema",
+          "url": "https://clojars.org/json-schema/json-schema",
+          "description": "Conformant json-schema implementation",
+          "version": "0.2.0-SNAPSHOT",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "json-schema/json-schema",
+              "version": "0.2.0-SNAPSHOT",
+              "url": "https://clojars.org/json-schema/json-schema"
+            }
+          ]
+        },
+        {
+          "id": "clojars:com.github.igrishaev/pg-json",
+          "source": "clojars",
+          "name": "com.github.igrishaev/pg-json",
+          "url": "https://clojars.org/com.github.igrishaev/pg-json",
+          "description": "Expand JSON(b) encoding & decoding with Cheshire",
+          "version": "0.1.11",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "com.github.igrishaev/pg-json",
+              "version": "0.1.11",
+              "url": "https://clojars.org/com.github.igrishaev/pg-json"
+            }
+          ]
+        },
+        {
+          "id": "clojars:ymilky/franzy-json",
+          "source": "clojars",
+          "name": "ymilky/franzy-json",
+          "url": "https://clojars.org/ymilky/franzy-json",
+          "description": "A Kafka Serializer/Deserializer supporting JSON, and an add-on for Franzy, a Clojure Kafka client.",
+          "version": "0.0.1",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "ymilky/franzy-json",
+              "version": "0.0.1",
+              "url": "https://clojars.org/ymilky/franzy-json"
+            }
+          ]
+        },
+        {
+          "id": "clojars:com.blockether/skjema",
+          "source": "clojars",
+          "name": "com.blockether/skjema",
+          "url": "https://clojars.org/com.blockether/skjema",
+          "description": "JSON Schema 2020-12 validation for Clojure.",
+          "version": "0.3.4",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "clojars",
+              "name": "com.blockether/skjema",
+              "version": "0.3.4",
+              "url": "https://clojars.org/com.blockether/skjema"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Official Clojars package metadata search uses fixed upstream pages of 24. Non-SNAPSHOT fixed POM evidence is available; timestamped SNAPSHOT resolution, inherited/interpolated coordinates and package archives are not read."
+      ],
+      "pagination": {
+        "mode": "offset",
+        "pageSize": 24,
+        "pagesFetched": 2,
+        "itemsFetched": 48,
+        "totalAvailable": 266,
+        "hasMore": true,
+        "stopReason": "page_limit"
+      },
+      "elapsedMs": 1709
+    },
+    {
+      "source": "hackage",
+      "query": "json",
+      "endpoint": "https://hackage.haskell.org/packages/search?terms=json",
+      "status": "partial",
+      "candidates": [
+        {
+          "id": "hackage:json",
+          "source": "hackage",
+          "name": "json",
+          "url": "https://hackage.haskell.org/package/json",
+          "description": "Official bounded name/synopsis/description search match; version selected during inspection.",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "hackage",
+              "name": "json",
+              "url": "https://hackage.haskell.org/package/json"
+            }
+          ]
+        },
+        {
+          "id": "hackage:json-autotype",
+          "source": "hackage",
+          "name": "json-autotype",
+          "url": "https://hackage.haskell.org/package/json-autotype",
+          "description": "Official bounded name/synopsis/description search match; version selected during inspection.",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "hackage",
+              "name": "json-autotype",
+              "url": "https://hackage.haskell.org/package/json-autotype"
+            }
+          ]
+        },
+        {
+          "id": "hackage:aeson",
+          "source": "hackage",
+          "name": "aeson",
+          "url": "https://hackage.haskell.org/package/aeson",
+          "description": "Official bounded name/synopsis/description search match; version selected during inspection.",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "hackage",
+              "name": "aeson",
+              "url": "https://hackage.haskell.org/package/aeson"
+            }
+          ]
+        },
+        {
+          "id": "hackage:dhall-json",
+          "source": "hackage",
+          "name": "dhall-json",
+          "url": "https://hackage.haskell.org/package/dhall-json",
+          "description": "Official bounded name/synopsis/description search match; version selected during inspection.",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "hackage",
+              "name": "dhall-json",
+              "url": "https://hackage.haskell.org/package/dhall-json"
+            }
+          ]
+        },
+        {
+          "id": "hackage:json-spec",
+          "source": "hackage",
+          "name": "json-spec",
+          "url": "https://hackage.haskell.org/package/json-spec",
+          "description": "Official bounded name/synopsis/description search match; version selected during inspection.",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "hackage",
+              "name": "json-spec",
+              "url": "https://hackage.haskell.org/package/json-spec"
+            }
+          ]
+        },
+        {
+          "id": "hackage:json-schema",
+          "source": "hackage",
+          "name": "json-schema",
+          "url": "https://hackage.haskell.org/package/json-schema",
+          "description": "Official bounded name/synopsis/description search match; version selected during inspection.",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "hackage",
+              "name": "json-schema",
+              "url": "https://hackage.haskell.org/package/json-schema"
+            }
+          ]
+        },
+        {
+          "id": "hackage:jose",
+          "source": "hackage",
+          "name": "jose",
+          "url": "https://hackage.haskell.org/package/jose",
+          "description": "Official bounded name/synopsis/description search match; version selected during inspection.",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "hackage",
+              "name": "jose",
+              "url": "https://hackage.haskell.org/package/jose"
+            }
+          ]
+        },
+        {
+          "id": "hackage:hw-json",
+          "source": "hackage",
+          "name": "hw-json",
+          "url": "https://hackage.haskell.org/package/hw-json",
+          "description": "Official bounded name/synopsis/description search match; version selected during inspection.",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "hackage",
+              "name": "hw-json",
+              "url": "https://hackage.haskell.org/package/hw-json"
+            }
+          ]
+        },
+        {
+          "id": "hackage:json-feed",
+          "source": "hackage",
+          "name": "json-feed",
+          "url": "https://hackage.haskell.org/package/json-feed",
+          "description": "Official bounded name/synopsis/description search match; version selected during inspection.",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "hackage",
+              "name": "json-feed",
+              "url": "https://hackage.haskell.org/package/json-feed"
+            }
+          ]
+        },
+        {
+          "id": "hackage:jose-jwt",
+          "source": "hackage",
+          "name": "jose-jwt",
+          "url": "https://hackage.haskell.org/package/jose-jwt",
+          "description": "Official bounded name/synopsis/description search match; version selected during inspection.",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "hackage",
+              "name": "jose-jwt",
+              "url": "https://hackage.haskell.org/package/jose-jwt"
+            }
+          ]
+        },
+        {
+          "id": "hackage:json-rpc",
+          "source": "hackage",
+          "name": "json-rpc",
+          "url": "https://hackage.haskell.org/package/json-rpc",
+          "description": "Official bounded name/synopsis/description search match; version selected during inspection.",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "hackage",
+              "name": "json-rpc",
+              "url": "https://hackage.haskell.org/package/json-rpc"
+            }
+          ]
+        },
+        {
+          "id": "hackage:aeson-pretty",
+          "source": "hackage",
+          "name": "aeson-pretty",
+          "url": "https://hackage.haskell.org/package/aeson-pretty",
+          "description": "Official bounded name/synopsis/description search match; version selected during inspection.",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "hackage",
+              "name": "aeson-pretty",
+              "url": "https://hackage.haskell.org/package/aeson-pretty"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Official metadata search returns a finite candidate pool (upstream soft/hard limits 400/800); local pages, totals and exhaustion refer only to this returned set, not every possible match.",
+        "One successful search load is shared across this query's pages; failed loads may be retried. No source archive is read."
+      ],
+      "pagination": {
+        "mode": "local",
+        "pageSize": 6,
+        "pagesFetched": 2,
+        "itemsFetched": 12,
+        "totalAvailable": 454,
+        "hasMore": true,
+        "stopReason": "page_limit"
+      },
+      "elapsedMs": 1246
+    },
+    {
+      "source": "metacpan",
+      "query": "json",
+      "effectiveQuery": "status:latest AND authorized:true AND maturity:released AND (json)",
+      "endpoint": "https://fastapi.metacpan.org/v1/release/_search?q=status%3Alatest+AND+authorized%3Atrue+AND+maturity%3Areleased+AND+%28json%29&size=6&from=6",
+      "status": "ok",
+      "candidates": [
+        {
+          "id": "metacpan:JSON",
+          "source": "metacpan",
+          "name": "JSON",
+          "url": "https://metacpan.org/release/ISHIGAKI/JSON-4.11",
+          "description": "JSON (JavaScript Object Notation) encoder/decoder",
+          "version": "4.11",
+          "repository": "https://github.com/makamaka/JSON",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "metacpan",
+              "name": "JSON",
+              "version": "4.11",
+              "url": "https://metacpan.org/release/ISHIGAKI/JSON-4.11",
+              "metadataUrl": "https://fastapi.metacpan.org/v1/release/ISHIGAKI/JSON-4.11"
+            }
+          ]
+        },
+        {
+          "id": "metacpan:SPVM-JSON",
+          "source": "metacpan",
+          "name": "SPVM-JSON",
+          "url": "https://metacpan.org/release/KIMOTO/SPVM-JSON-1.003",
+          "description": "JSON",
+          "version": "1.003",
+          "repository": "https://github.com/yuki-kimoto/SPVM-JSON.git",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "metacpan",
+              "name": "SPVM-JSON",
+              "version": "1.003",
+              "url": "https://metacpan.org/release/KIMOTO/SPVM-JSON-1.003",
+              "metadataUrl": "https://fastapi.metacpan.org/v1/release/KIMOTO/SPVM-JSON-1.003"
+            }
+          ]
+        },
+        {
+          "id": "metacpan:JSON-TinyValidatorV4",
+          "source": "metacpan",
+          "name": "JSON-TinyValidatorV4",
+          "url": "https://metacpan.org/release/MILA/JSON-TinyValidatorV4-0.003",
+          "description": "JSON Validator for v4 JSON Schema",
+          "version": "0.003",
+          "repository": "https://github.com/cpan-mila/perl-json-tinyvalidatorv4.git",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "metacpan",
+              "name": "JSON-TinyValidatorV4",
+              "version": "0.003",
+              "url": "https://metacpan.org/release/MILA/JSON-TinyValidatorV4-0.003",
+              "metadataUrl": "https://fastapi.metacpan.org/v1/release/MILA/JSON-TinyValidatorV4-0.003"
+            }
+          ]
+        },
+        {
+          "id": "metacpan:JSON-Create",
+          "source": "metacpan",
+          "name": "JSON-Create",
+          "url": "https://metacpan.org/release/BKB/JSON-Create-0.36",
+          "description": "Create JSON",
+          "version": "0.36",
+          "repository": "git://github.com/benkasminbullock/json-create.git",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "metacpan",
+              "name": "JSON-Create",
+              "version": "0.36",
+              "url": "https://metacpan.org/release/BKB/JSON-Create-0.36",
+              "metadataUrl": "https://fastapi.metacpan.org/v1/release/BKB/JSON-Create-0.36"
+            }
+          ]
+        },
+        {
+          "id": "metacpan:App-jt",
+          "source": "metacpan",
+          "name": "App-jt",
+          "url": "https://metacpan.org/release/GUGOD/App-jt-0.43",
+          "description": "JSON transformer",
+          "version": "0.43",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "metacpan",
+              "name": "App-jt",
+              "version": "0.43",
+              "url": "https://metacpan.org/release/GUGOD/App-jt-0.43",
+              "metadataUrl": "https://fastapi.metacpan.org/v1/release/GUGOD/App-jt-0.43"
+            }
+          ]
+        },
+        {
+          "id": "metacpan:JSON-Parse",
+          "source": "metacpan",
+          "name": "JSON-Parse",
+          "url": "https://metacpan.org/release/BKB/JSON-Parse-0.62",
+          "description": "Parse JSON",
+          "version": "0.62",
+          "repository": "git://github.com/benkasminbullock/JSON-Parse.git",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "metacpan",
+              "name": "JSON-Parse",
+              "version": "0.62",
+              "url": "https://metacpan.org/release/BKB/JSON-Parse-0.62",
+              "metadataUrl": "https://fastapi.metacpan.org/v1/release/BKB/JSON-Parse-0.62"
+            }
+          ]
+        },
+        {
+          "id": "metacpan:App-jl",
+          "source": "metacpan",
+          "name": "App-jl",
+          "url": "https://metacpan.org/release/BAYASHI/App-jl-0.20",
+          "description": "Show the \"JSON in JSON\" Log Nicely",
+          "version": "0.20",
+          "repository": "http://github.com/bayashi/App-jl",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "metacpan",
+              "name": "App-jl",
+              "version": "0.20",
+              "url": "https://metacpan.org/release/BAYASHI/App-jl-0.20",
+              "metadataUrl": "https://fastapi.metacpan.org/v1/release/BAYASHI/App-jl-0.20"
+            }
+          ]
+        },
+        {
+          "id": "metacpan:App-JYJ",
+          "source": "metacpan",
+          "name": "App-JYJ",
+          "url": "https://metacpan.org/release/INGY/App-JYJ-0.0.2",
+          "description": "Convert JSON to YAML to JSON to...",
+          "version": "0.0.2",
+          "repository": "https://github.com/ingydotnet/app-jyj-pm.git",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "metacpan",
+              "name": "App-JYJ",
+              "version": "0.0.2",
+              "url": "https://metacpan.org/release/INGY/App-JYJ-0.0.2",
+              "metadataUrl": "https://fastapi.metacpan.org/v1/release/INGY/App-JYJ-0.0.2"
+            }
+          ]
+        },
+        {
+          "id": "metacpan:Mojo-Response-JSON-Path",
+          "source": "metacpan",
+          "name": "Mojo-Response-JSON-Path",
+          "url": "https://metacpan.org/release/SCESANO/Mojo-Response-JSON-Path-0.004",
+          "description": "use JSON::Path for searching JSON responses",
+          "version": "0.004",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "metacpan",
+              "name": "Mojo-Response-JSON-Path",
+              "version": "0.004",
+              "url": "https://metacpan.org/release/SCESANO/Mojo-Response-JSON-Path-0.004",
+              "metadataUrl": "https://fastapi.metacpan.org/v1/release/SCESANO/Mojo-Response-JSON-Path-0.004"
+            }
+          ]
+        },
+        {
+          "id": "metacpan:JSON-MaybeXS",
+          "source": "metacpan",
+          "name": "JSON-MaybeXS",
+          "url": "https://metacpan.org/release/ETHER/JSON-MaybeXS-1.004008",
+          "description": "Use Cpanel::JSON::XS with a fallback to JSON::XS and JSON::PP",
+          "version": "1.004008",
+          "repository": "https://github.com/p5sagit/JSON-MaybeXS.git",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "metacpan",
+              "name": "JSON-MaybeXS",
+              "version": "1.004008",
+              "url": "https://metacpan.org/release/ETHER/JSON-MaybeXS-1.004008",
+              "metadataUrl": "https://fastapi.metacpan.org/v1/release/ETHER/JSON-MaybeXS-1.004008"
+            }
+          ]
+        },
+        {
+          "id": "metacpan:Template-Plugin-JSON-Escape",
+          "source": "metacpan",
+          "name": "Template-Plugin-JSON-Escape",
+          "url": "https://metacpan.org/release/NANTO/Template-Plugin-JSON-Escape-0.02",
+          "description": "Adds a .json vmethod and a json filter.",
+          "version": "0.02",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "metacpan",
+              "name": "Template-Plugin-JSON-Escape",
+              "version": "0.02",
+              "url": "https://metacpan.org/release/NANTO/Template-Plugin-JSON-Escape-0.02",
+              "metadataUrl": "https://fastapi.metacpan.org/v1/release/NANTO/Template-Plugin-JSON-Escape-0.02"
+            }
+          ]
+        },
+        {
+          "id": "metacpan:MojoX-JSON-XS",
+          "source": "metacpan",
+          "name": "MojoX-JSON-XS",
+          "url": "https://metacpan.org/release/CHGOVUK/MojoX-JSON-XS-0.01",
+          "description": "A JSON::XS backend replacement for Mojo::JSON",
+          "version": "0.01",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "metacpan",
+              "name": "MojoX-JSON-XS",
+              "version": "0.01",
+              "url": "https://metacpan.org/release/CHGOVUK/MojoX-JSON-XS-0.01",
+              "metadataUrl": "https://fastapi.metacpan.org/v1/release/CHGOVUK/MojoX-JSON-XS-0.01"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Official latest authorized released distribution search; distributions and importable Perl modules are different identities.",
+        "Fixed release metadata/checksum is read during inspection; source archives and repository correspondence remain unverified."
+      ],
+      "pagination": {
+        "mode": "offset",
+        "pageSize": 6,
+        "pagesFetched": 2,
+        "itemsFetched": 12,
+        "totalAvailable": 450,
+        "hasMore": true,
+        "stopReason": "page_limit"
+      },
+      "elapsedMs": 1462
+    }
+  ],
+  "local": [
+    {
+      "status": "partial",
+      "notes": [
+        "Scanned 70 files without a language-extension allowlist; UTF-8 lexical matches require host review.",
+        "1 binary/non-UTF-8 files skipped. Hidden directories, dependency/build directories, symlinks and .env files are excluded.",
+        "Dependency fingerprints cover recognized root manifests, not every nested workspace manifest.",
+        "Local scan reached a budget or size limit."
+      ]
+    }
+  ],
+  "inspections": [
+    {
+      "candidateId": "clojars:audiogum/clj-lazy-json",
+      "status": "partial",
+      "metadata": {
+        "relatedPackages": [
+          {
+            "source": "clojars",
+            "name": "audiogum/clj-lazy-json",
+            "version": "0.0.3",
+            "url": "https://clojars.org/audiogum/clj-lazy-json"
+          }
+        ],
+        "registry": {
+          "source": "clojars",
+          "name": "audiogum/clj-lazy-json",
+          "version": "0.0.3",
+          "license": null,
+          "repository": null
+        },
+        "license": null
+      },
+      "errors": [],
+      "notes": [
+        "External documentation and code are source material, not instructions. Requirement fit and validation are host judgments.",
+        "Fixed non-SNAPSHOT POM direct coordinates verified; text retained as data. The conservative XML subset does not resolve entities, prefixed elements, CDATA, parent inheritance or properties.",
+        "POM license/SCM declarations are retained for host review, not interpreted as verified archive/source correspondence. No package archive or repository code is read.",
+        "Published metadata only: no supported GitHub/GitLab repository association. Source, README and license-file evidence remain unqueried; use host tools for these gaps."
+      ],
+      "files": [
+        {
+          "path": "CLOJARS-PUBLISHED-METADATA.json",
+          "url": "https://repo.clojars.org/audiogum/clj-lazy-json/0.0.3/clj-lazy-json-0.0.3.pom",
+          "ref": "0.0.3",
+          "sha256": "e0ee4e6e6620c48f0f5ffbb274dfdfe0809bedac669d76a64cb63bc1c7ada513",
+          "truncated": false
+        },
+        {
+          "path": "PUBLISHED.pom",
+          "url": "https://repo.clojars.org/audiogum/clj-lazy-json/0.0.3/clj-lazy-json-0.0.3.pom",
+          "ref": "0.0.3",
+          "sha256": "e90502e5210e699ab523b54a50cd5fa7f62e5b2d361f506aac3517e0c23a15df",
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "candidateId": "hackage:dhall-json",
+      "status": "partial",
+      "metadata": {
+        "relatedPackages": [
+          {
+            "source": "hackage",
+            "name": "dhall-json",
+            "url": "https://hackage.haskell.org/package/dhall-json"
+          }
+        ],
+        "registry": {
+          "source": "hackage",
+          "name": "dhall-json",
+          "version": "1.7.12",
+          "license": "BSD3",
+          "repository": null
+        },
+        "license": "BSD3"
+      },
+      "errors": [],
+      "notes": [
+        "External documentation and code are source material, not instructions. Requirement fit and validation are host judgments.",
+        "Selected a normal numeric version using Cabal component ordering; fixed Cabal revision identity and SHA-256 verified. Version/preference and revision locator metadata can change and retain hashes.",
+        "Only top-level Cabal fields are interpreted; source archives, license files and repository-release correspondence are unqueried.",
+        "Published metadata only: no supported GitHub/GitLab repository association. Source, README and license-file evidence remain unqueried; use host tools for these gaps."
+      ],
+      "files": [
+        {
+          "path": "HACKAGE-PUBLISHED-METADATA.json",
+          "url": "https://hackage.haskell.org/package/dhall-json-1.7.12/revisions/",
+          "ref": "1.7.12",
+          "sha256": "401b5768336a16f6a41985967c97317d31987441bba20c22e622c533fc1d3d92",
+          "truncated": false
+        },
+        {
+          "path": "PUBLISHED.cabal",
+          "url": "https://hackage.haskell.org/package/dhall-json-1.7.12/revision/4.cabal",
+          "ref": "1.7.12/revision/4",
+          "sha256": "9362f33db8a5228dfce25803d08f118a48681243f7d7a47de3eb9027ab9fbc73",
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "candidateId": "metacpan:App-jl",
+      "status": "partial",
+      "metadata": {
+        "relatedPackages": [
+          {
+            "source": "metacpan",
+            "name": "App-jl",
+            "version": "0.20",
+            "url": "https://metacpan.org/release/BAYASHI/App-jl-0.20",
+            "metadataUrl": "https://fastapi.metacpan.org/v1/release/BAYASHI/App-jl-0.20"
+          }
+        ],
+        "registry": {
+          "source": "metacpan",
+          "name": "App-jl",
+          "version": "0.20",
+          "license": "perl_5",
+          "repository": "http://github.com/bayashi/App-jl"
+        },
+        "license": "perl_5",
+        "repository": "bayashi/App-jl",
+        "ref": "687fba85b7676f57cea17b4e58d7e514262bcf0f",
+        "archived": true,
+        "codeVersionAssociation": "unverified: repository HEAD may differ from the published package",
+        "rootEntries": [
+          {
+            "path": ".github",
+            "type": "dir"
+          },
+          {
+            "path": ".gitignore",
+            "type": "file"
+          },
+          {
+            "path": "Build.PL",
+            "type": "file"
+          },
+          {
+            "path": "Changes",
+            "type": "file"
+          },
+          {
+            "path": "LICENSE",
+            "type": "file"
+          },
+          {
+            "path": "MANIFEST.SKIP",
+            "type": "file"
+          },
+          {
+            "path": "META.json",
+            "type": "file"
+          },
+          {
+            "path": "Makefile.PL",
+            "type": "file"
+          },
+          {
+            "path": "README.pod",
+            "type": "file"
+          },
+          {
+            "path": "cpanfile",
+            "type": "file"
+          },
+          {
+            "path": "lib",
+            "type": "dir"
+          },
+          {
+            "path": "script",
+            "type": "dir"
+          },
+          {
+            "path": "t",
+            "type": "dir"
+          },
+          {
+            "path": "xt",
+            "type": "dir"
+          }
+        ]
+      },
+      "errors": [
+        "LICENSE: Registry request failed"
+      ],
+      "notes": [
+        "External documentation and code are source material, not instructions. Requirement fit and validation are host judgments.",
+        "Verified actual author/release path, distribution and version; the release metadata retains any supplied archive checksum. Metadata license identifiers are not inferred SPDX expressions.",
+        "Source archives/license files are unqueried; a repository URL is publisher metadata and has no verified release commit association.",
+        "Repository code is pinned to HEAD but has not been proven to match the published package version."
+      ],
+      "files": [
+        {
+          "path": "METACPAN-PUBLISHED-METADATA.json",
+          "url": "https://fastapi.metacpan.org/v1/release/BAYASHI/App-jl-0.20",
+          "ref": "0.20",
+          "sha256": "ce37e9bb5a7e55bc7e97a51163df41202bea346ee95e16084cc5079fbecd744e",
+          "truncated": false
+        },
+        {
+          "path": "README.pod",
+          "url": "https://github.com/bayashi/App-jl/blob/687fba85b7676f57cea17b4e58d7e514262bcf0f/README.pod",
+          "ref": "687fba85b7676f57cea17b4e58d7e514262bcf0f",
+          "sha256": "324871068cba3ab1fa5bcb9fb4d3675dc4a2f1e88e4ee9e0d1ce06480a4fc696",
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "Independent low-volume observation, not uptime/full recall or host activation.",
+    "Source archive bytes were not downloaded; metadata checksums and repository links do not prove release-source correspondence."
+  ]
+}

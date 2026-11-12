@@ -3,12 +3,13 @@ import type { RemoteSource } from '../src/types.js';
 
 export const searchSource = (url: URL): RemoteSource => ({
   'api.github.com': 'github', 'gitlab.com': 'gitlab', 'registry.npmjs.org': 'npm',
-  'crates.io': 'crates', 'search.maven.org': 'maven', 'azuresearch-usnc.nuget.org': 'nuget',
+  'crates.io': 'crates', 'search.maven.org': 'maven', 'azuresearch-usnc.nuget.org': 'nuget', 'azuresearch-ussc.nuget.org': 'nuget',
   'rubygems.org': 'rubygems', 'packagist.org': 'packagist',
   'hex.pm': 'hex',
 }[url.hostname] as RemoteSource);
 
 export function searchPage(url: URL): number {
+  if (url.hostname === 'gitlab.com' && url.searchParams.has('id_after')) return Number(url.searchParams.get('id_after')) / 6 + 1;
   const offset = url.searchParams.get('from') ?? url.searchParams.get('start') ?? url.searchParams.get('skip');
   return offset === null ? Number(url.searchParams.get('page') ?? 1) : Number(offset) / 6 + 1;
 }
@@ -26,7 +27,13 @@ export function pagedResponse(url: URL, overridePage?: number): Response {
     return { name, description: index === size ? 'second_page_target' : 'library', version: '1.0.0' };
   });
   if (source === 'github') return json({ total_count: total, incomplete_results: false, items: rows.map(p => ({ ...p, full_name: `example/${p.name}` })) });
-  if (source === 'gitlab') return json(rows.map(p => ({ ...p, path_with_namespace: `example/${p.name}`, web_url: `https://gitlab.com/example/${p.name}`, visibility: 'public' })));
+  if (source === 'gitlab') {
+    const next = new URL(url);
+    next.searchParams.delete('page');
+    next.searchParams.set('id_after', String(page * size));
+    return json(rows.map((p,i) => ({ ...p, id:(page-1)*size+i+1, path_with_namespace: `example/${p.name}`, web_url: `https://gitlab.com/example/${p.name}`, visibility: 'public' })), 200,
+      page * size < total ? {link:`<${next.href}>; rel="next"`} : {});
+  }
   if (source === 'npm') return json({ total, objects: rows.map(p => ({ package: p })) });
   if (source === 'crates') return json({ crates: rows.map(p => ({ ...p, max_stable_version: p.version })), meta: { total } });
   if (source === 'maven') return json({ response: { numFound: total, docs: rows.map(p => ({ g: 'org.example', a: p.name, latestVersion: p.version })) } });

@@ -1,6 +1,8 @@
-import { Http, SourceError } from './http.js';
+import { Http, SourceError, nugetHost } from './http.js';
 import { outcome, repositoryKey } from './sources.js';
 import { pageProgress } from './pagination.js';
+import { registryCandidate as candidate } from './packages.js';
+import { searchAdditionalRegistry, readAdditionalPackage, type AdditionalSearchState } from './ecosystems.js';
 import type { Candidate, PackageIdentity, RegistrySource, SourceResult } from './types.js';
 
 function array(value: unknown, label: string): any[] {
@@ -11,12 +13,6 @@ const string = (value: unknown): string | undefined => typeof value === 'string'
 const repo = (...values: unknown[]) => values.find((v): v is string => typeof v === 'string' && Boolean(repositoryKey(v)));
 const licenses = (value: unknown): string | undefined => Array.isArray(value) ? value.filter(v => typeof v === 'string').join(' OR ') || undefined : string(value);
 
-function candidate(source: RegistrySource, query: string, name: unknown, url: string, description: unknown, version?: unknown, repository?: unknown, metadataUrl?: string, platform?: string): Candidate {
-  if (!string(name) || (version !== undefined && !string(version))) throw new SourceError('invalid_response', `Missing ${source} package identity`);
-  const pkg: PackageIdentity = { source, name: name as string, version: string(version), url, metadataUrl, platform };
-  return { id: `${source}:${name}`, source, name: pkg.name, url, description: string(description) ?? '', version: pkg.version, repository: string(repository), matchedQueries: [query], packages: [pkg] };
-}
-
 export async function nugetResource(http: Http, type: string, signal: AbortSignal): Promise<string> {
   const data = await http.json('https://api.nuget.org/v3/index.json', signal);
   const resource = array(data.resources, 'NuGet service index').find(r => r['@type'] === type);
@@ -24,7 +20,28 @@ export async function nugetResource(http: Http, type: string, signal: AbortSigna
   return resource['@id'];
 }
 
-export function searchRegistry(http: Http, source: Exclude<RegistrySource, 'npm' | 'pypi'>, query: string, signal: AbortSignal, page = 1): Promise<SourceResult> {
+async function nugetSearchResources(http: Http, signal: AbortSignal): Promise<string[]> {
+  const data = await http.json('https://api.nuget.org/v3/index.json', signal);
+  const compatible = new Set(['SearchQueryService', 'SearchQueryService/3.0.0-beta', 'SearchQueryService/3.0.0-rc', 'SearchQueryService/3.5.0']);
+  const entries = array(data.resources, 'NuGet service index');
+  if (entries.some(resource => !resource || typeof resource !== 'object' || Array.isArray(resource) || typeof resource['@type'] !== 'string')) throw new SourceError('invalid_response', 'NuGet service index contains malformed resource entries');
+  const resources = entries.filter(r => compatible.has(r['@type']));
+  const endpoints = resources.map(resource => {
+    let url: URL;
+    try { url = new URL(resource['@id']); } catch { throw new SourceError('invalid_response', 'NuGet search resource has no valid URL'); }
+    if (url.protocol !== 'https:' || !nugetHost(url.hostname) || url.username || url.password || url.port || url.hash) throw new SourceError('invalid_url', 'NuGet search resource is outside the official endpoint policy');
+    return url.href;
+  });
+  const unique = [...new Set(endpoints)].slice(0, 8);
+  if (!unique.length) throw new SourceError('invalid_response', 'NuGet service index has no compatible SearchQueryService');
+  return unique;
+}
+
+export interface RegistrySearchState extends AdditionalSearchState { nugetResources?: Promise<string[]> }
+
+export function searchRegistry(http: Http, source: Exclude<RegistrySource, 'npm' | 'pypi' | 'goproxy' | 'conan' | 'vcpkg'>, query: string, signal: AbortSignal, page = 1, attempt = 0, state?: RegistrySearchState): Promise<SourceResult> {
+  if (source === 'clojars' || source === 'hackage' || source === 'metacpan') return searchAdditionalRegistry(http, source, query, signal, page, state);
+  let endpoint: string | undefined;
   return outcome(source, query, signal, async () => {
     let candidates: Candidate[];
     let total: unknown;
@@ -44,9 +61,16 @@ export function searchRegistry(http: Http, source: Exclude<RegistrySource, 'npm'
         return candidate(source, query, `${p.g}:${p.a}`, `https://central.sonatype.com/artifact/${encodeURIComponent(p.g)}/${encodeURIComponent(p.a)}`, `${p.g}:${p.a} (${p.p ?? 'artifact'})`, p.latestVersion ?? p.v);
       });
     } else if (source === 'nuget') {
-      const url = new URL(await nugetResource(http, 'SearchQueryService', signal));
+      endpoint = 'https://api.nuget.org/v3/index.json';
+      // Pin the successfully read index for this source/query so upstream
+      // reordering cannot turn a fallback into a replay of the primary.
+      const resources = await (state ? state.nugetResources ??= nugetSearchResources(http, signal).catch(error => { state.nugetResources = undefined; throw error; }) : nugetSearchResources(http, signal));
+      const url = new URL(resources[Math.min(attempt, resources.length - 1)]!);
       url.search = new URLSearchParams({ q: query, take: '6', skip: String((page - 1) * 6), prerelease: 'false', semVerLevel: '2.0.0' }).toString();
-      const data = await http.json(url.href, signal);
+      endpoint = url.href;
+      const response = await http.jsonResponse(url.href, signal);
+      endpoint = response.url;
+      const data = response.data;
       total = data.totalHits;
       candidates = array(data.data, 'NuGet search').map(p => {
         const c = candidate(source, query, p.id, `https://www.nuget.org/packages/${encodeURIComponent(p.id)}`, p.description, p.version, repo(p.projectUrl), string(p.versions?.find((v: any) => v.version === p.version)?.['@id']));
@@ -71,8 +95,8 @@ export function searchRegistry(http: Http, source: Exclude<RegistrySource, 'npm'
       total = data.total;
       candidates = array(data.results, 'Packagist search').map(p => candidate(source, query, p.name, `https://packagist.org/packages/${encodeURIComponent(p.name).replace('%2F', '/')}`, p.description, undefined, p.repository));
     } else throw new SourceError('invalid_response', 'Use the dedicated pub name-corpus reader');
-    return { candidates, effectiveQuery: query, pagination: pageProgress(page, source === 'rubygems' ? 30 : 6, candidates.length, total), notes: ['Bounded package metadata discovery; not exhaustive recall or global source-code search.', ...(source === 'maven' ? ['Maven query syntax searches artifact coordinates; natural-language needs may require shorter technical terms.'] : [])] };
-  });
+    return { candidates, effectiveQuery: query, endpoint, pagination: pageProgress(page, source === 'rubygems' ? 30 : 6, candidates.length, total), notes: ['Bounded package metadata discovery; not exhaustive recall or global source-code search.', ...(source === 'nuget' ? ['Search endpoints come from compatible official service-index resources (at most eight distinct endpoints); the existing single source retry may select the second endpoint. Authentication, throttling, invalid responses and server-requested waits do not trigger endpoint switching.'] : []), ...(source === 'maven' ? ['Maven query syntax searches artifact coordinates; natural-language needs may require shorter technical terms.'] : [])] };
+  }, () => endpoint);
 }
 
 export interface PubCatalog { createdAt: string; names: string[] }
@@ -88,7 +112,7 @@ export function searchPub(query: string, signal: AbortSignal, page: number, cata
     const data = await catalog();
     const names = data.names.filter(n => n.includes(query.toLowerCase()));
     const candidates = names.slice((page - 1) * 6, page * 6).map(name => candidate('pub', query, name, `https://pub.dev/packages/${name}`, 'Official limited name-completion match; inspect for published metadata.'));
-    return { candidates, effectiveQuery: query, pagination: pageProgress(page, 6, candidates.length, names.length), notes: [
+    return { candidates, effectiveQuery: query, pagination: { ...pageProgress(page, 6, candidates.length, names.length), mode: 'local' }, notes: [
       'Name search in the official top-name completion corpus only; not description/full-text search or complete pub.dev coverage. Page totals/exhaustion refer only to this corpus.',
       `Corpus timestamp: ${data.createdAt}; corpus cache: ${data.cached}; 8-hour per-project corpus TTL, independent of query-result cache. Concurrent cold checks may fetch independently.`,
     ] };
@@ -104,10 +128,11 @@ export interface PublishedPackage {
   ref?: string;
   license?: string;
   notes: string[];
-  extra?: { path: string; url: string; content: string; mutable?: boolean };
+  extra?: { path: string; url: string; content: string; mutable?: boolean; ref?: string };
 }
 
 export async function readPublishedPackage(http: Http, pkg: PackageIdentity, signal: AbortSignal): Promise<PublishedPackage> {
+  if (pkg.source === 'clojars' || pkg.source === 'hackage' || pkg.source === 'metacpan') return readAdditionalPackage(http, pkg, signal);
   const name = pkg.name;
   let version = pkg.version;
   let url: string;

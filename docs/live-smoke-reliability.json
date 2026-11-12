@@ -1,0 +1,508 @@
+{
+  "observedAt": "2026-11-06T13:52:37.343Z",
+  "interface": "public core, live network",
+  "checkId": "d3f8781c-f2a1-4896-8807-0121f67d680e",
+  "input": {
+    "task": "Observe bounded official keyset and NuGet search endpoints",
+    "queries": [
+      "json"
+    ],
+    "sources": [
+      "gitlab",
+      "nuget"
+    ],
+    "maxPages": 2,
+    "maxRetries": 1,
+    "budgetMs": 20000,
+    "useCache": false,
+    "scope": "full",
+    "ecosystem": "auto"
+  },
+  "coverage": "partial",
+  "elapsedMs": 4134,
+  "sources": [
+    {
+      "source": "gitlab",
+      "query": "json",
+      "effectiveQuery": "json",
+      "endpoint": "https://gitlab.com/api/v4/projects?id_after=47628&imported=false&include_hidden=false&membership=false&order_by=id&owned=false&page=1&pagination=keyset&per_page=6&repository_checksum_failed=false&search=json&simple=false&sort=asc&starred=false&statistics=false&visibility=public&wiki_checksum_failed=false&with_custom_attributes=false&with_issues_enabled=false&with_merge_requests_enabled=false",
+      "status": "ok",
+      "candidates": [
+        {
+          "id": "gitlab:bat/js2json",
+          "source": "gitlab",
+          "name": "bat/js2json",
+          "url": "https://gitlab.com/bat/js2json",
+          "repository": "https://gitlab.com/bat/js2json",
+          "description": "",
+          "stars": 0,
+          "updatedAt": "2013-10-11T05:42:39.000Z",
+          "matchedQueries": [
+            "json"
+          ]
+        },
+        {
+          "id": "gitlab:chrisallick/ruby-json-websocket-server",
+          "source": "gitlab",
+          "name": "chrisallick/ruby-json-websocket-server",
+          "url": "https://gitlab.com/chrisallick/ruby-json-websocket-server",
+          "repository": "https://gitlab.com/chrisallick/ruby-json-websocket-server",
+          "description": "This project runs a websocket server and forwards JSON objects.",
+          "stars": 0,
+          "updatedAt": "2014-03-07T22:02:46.000Z",
+          "matchedQueries": [
+            "json"
+          ]
+        },
+        {
+          "id": "gitlab:tarmstrong/git2json",
+          "source": "gitlab",
+          "name": "tarmstrong/git2json",
+          "url": "https://gitlab.com/tarmstrong/git2json",
+          "repository": "https://gitlab.com/tarmstrong/git2json",
+          "description": "Mirror of github.com/tarmstrong/git2json",
+          "stars": 0,
+          "updatedAt": "2014-04-21T21:27:31.000Z",
+          "matchedQueries": [
+            "json"
+          ]
+        },
+        {
+          "id": "gitlab:benjyw/rgonaut",
+          "source": "gitlab",
+          "name": "benjyw/rgonaut",
+          "url": "https://gitlab.com/benjyw/rgonaut",
+          "repository": "https://gitlab.com/benjyw/rgonaut",
+          "description": "Yet another Scala DSL for JSON. \r\n\r\nCreated as part of a JSON DSL bake-off at Foursquare in 2012, with the primary design goal of supporting multiple JSON generators. \r\n\r\nNot maintained or used in production anywhere.",
+          "stars": 0,
+          "updatedAt": "2014-04-26T04:23:29.000Z",
+          "matchedQueries": [
+            "json"
+          ]
+        },
+        {
+          "id": "gitlab:ricardokirkner/collection-json-python",
+          "source": "gitlab",
+          "name": "ricardokirkner/collection-json-python",
+          "url": "https://gitlab.com/ricardokirkner/collection-json-python",
+          "repository": "https://gitlab.com/ricardokirkner/collection-json-python",
+          "description": "",
+          "stars": 0,
+          "updatedAt": "2014-04-27T19:31:51.000Z",
+          "matchedQueries": [
+            "json"
+          ]
+        },
+        {
+          "id": "gitlab:jmkoni/book-app",
+          "source": "gitlab",
+          "name": "jmkoni/book-app",
+          "url": "https://gitlab.com/jmkoni/book-app",
+          "repository": "https://gitlab.com/jmkoni/book-app",
+          "description": "import read json books",
+          "stars": 0,
+          "updatedAt": "2014-05-01T15:29:03.000Z",
+          "matchedQueries": [
+            "json"
+          ]
+        },
+        {
+          "id": "gitlab:Dorianux/data_repo_test",
+          "source": "gitlab",
+          "name": "Dorianux/data_repo_test",
+          "url": "https://gitlab.com/Dorianux/data_repo_test",
+          "repository": "https://gitlab.com/Dorianux/data_repo_test",
+          "description": "just some json data",
+          "stars": 0,
+          "updatedAt": "2014-07-15T10:26:24.292Z",
+          "matchedQueries": [
+            "json"
+          ]
+        },
+        {
+          "id": "gitlab:jeff.triplett/flask-whois",
+          "source": "gitlab",
+          "name": "jeff.triplett/flask-whois",
+          "url": "https://gitlab.com/jeff.triplett/flask-whois",
+          "repository": "https://gitlab.com/jeff.triplett/flask-whois",
+          "description": "Just a quick flask-whois demo with JSON support.",
+          "stars": 1,
+          "updatedAt": "2015-01-12T02:32:33.416Z",
+          "matchedQueries": [
+            "json"
+          ]
+        },
+        {
+          "id": "gitlab:magnum/cloudstats",
+          "source": "gitlab",
+          "name": "magnum/cloudstats",
+          "url": "https://gitlab.com/magnum/cloudstats",
+          "repository": "https://gitlab.com/magnum/cloudstats",
+          "description": "Command Line application to process Cloud Tests, and to generate statistics based on results of custom JSON intput files",
+          "stars": 0,
+          "updatedAt": "2014-06-20T04:36:06.453Z",
+          "matchedQueries": [
+            "json"
+          ]
+        },
+        {
+          "id": "gitlab:jksdua/jsonschema-extra",
+          "source": "gitlab",
+          "name": "jksdua/jsonschema-extra",
+          "url": "https://gitlab.com/jksdua/jsonschema-extra",
+          "repository": "https://gitlab.com/jksdua/jsonschema-extra",
+          "description": "Extends jsonschema with additional types and attributes",
+          "stars": 0,
+          "updatedAt": "2014-12-22T11:04:00.368Z",
+          "matchedQueries": [
+            "json"
+          ]
+        },
+        {
+          "id": "gitlab:gzw/create-json",
+          "source": "gitlab",
+          "name": "gzw/create-json",
+          "url": "https://gitlab.com/gzw/create-json",
+          "repository": "https://gitlab.com/gzw/create-json",
+          "description": "This is a tool to create JSON",
+          "stars": 0,
+          "updatedAt": "2014-10-22T05:50:55.173Z",
+          "matchedQueries": [
+            "json"
+          ]
+        },
+        {
+          "id": "gitlab:ancc_GitLab/jsonfordic",
+          "source": "gitlab",
+          "name": "ancc_GitLab/jsonfordic",
+          "url": "https://gitlab.com/ancc_GitLab/jsonfordic",
+          "repository": "https://gitlab.com/ancc_GitLab/jsonfordic",
+          "description": "",
+          "stars": 0,
+          "updatedAt": "2014-09-03T10:58:12.167Z",
+          "matchedQueries": [
+            "json"
+          ]
+        }
+      ],
+      "notes": [
+        "Public gitlab.com project name/path/description substring search; bounded keyset traversal of checked official next Links, ascending project ID rather than relevance order. Not global code search or self-hosted GitLab coverage."
+      ],
+      "pagination": {
+        "mode": "keyset",
+        "pageSize": 6,
+        "pagesFetched": 2,
+        "itemsFetched": 12,
+        "hasMore": true,
+        "stopReason": "page_limit",
+        "next": "https://gitlab.com/api/v4/projects?id_after=84576&imported=false&include_hidden=false&membership=false&order_by=id&owned=false&page=1&pagination=keyset&per_page=6&repository_checksum_failed=false&search=json&simple=false&sort=asc&starred=false&statistics=false&visibility=public&wiki_checksum_failed=false&with_custom_attributes=false&with_issues_enabled=false&with_merge_requests_enabled=false"
+      },
+      "elapsedMs": 2079,
+      "failures": [
+        {
+          "page": 2,
+          "error": {
+            "code": "unavailable",
+            "message": "Registry request failed",
+            "endpoint": "https://gitlab.com/api/v4/projects?id_after=47628&imported=false&include_hidden=false&membership=false&order_by=id&owned=false&page=1&pagination=keyset&per_page=6&repository_checksum_failed=false&search=json&simple=false&sort=asc&starred=false&statistics=false&visibility=public&wiki_checksum_failed=false&with_custom_attributes=false&with_issues_enabled=false&with_merge_requests_enabled=false"
+          },
+          "retry": "recovered"
+        }
+      ]
+    },
+    {
+      "source": "nuget",
+      "query": "json",
+      "effectiveQuery": "json",
+      "endpoint": "https://azuresearch-usnc.nuget.org/query?q=json&take=6&skip=6&prerelease=false&semVerLevel=2.0.0",
+      "status": "ok",
+      "candidates": [
+        {
+          "id": "nuget:Newtonsoft.Json",
+          "source": "nuget",
+          "name": "Newtonsoft.Json",
+          "url": "https://www.nuget.org/packages/Newtonsoft.Json",
+          "description": "Json.NET is a popular high-performance JSON framework for .NET",
+          "version": "13.0.4",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "nuget",
+              "name": "Newtonsoft.Json",
+              "version": "13.0.4",
+              "url": "https://www.nuget.org/packages/Newtonsoft.Json",
+              "metadataUrl": "https://api.nuget.org/v3/registration5-gz-semver2/newtonsoft.json/13.0.4.json",
+              "registrationUrl": "https://api.nuget.org/v3/registration5-gz-semver2/newtonsoft.json/index.json"
+            }
+          ]
+        },
+        {
+          "id": "nuget:System.Text.Json",
+          "source": "nuget",
+          "name": "System.Text.Json",
+          "url": "https://www.nuget.org/packages/System.Text.Json",
+          "description": "Provides high-performance and low-allocating types that serialize objects to JavaScript Object Notation (JSON) text and deserialize JSON text to objects, with UTF-8 support built-in. Also provides types to read and write JSON text encoded as UTF-8, and to create an in-memory document object model (DOM), that is read-only, for random access of the JSON elements within a structured view of the data.\n\nThe System.Text.Json library is built-in as part of the shared framework in .NET Runtime. The package can be installed when you need to use it in other target frameworks.",
+          "version": "10.0.14",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "nuget",
+              "name": "System.Text.Json",
+              "version": "10.0.14",
+              "url": "https://www.nuget.org/packages/System.Text.Json",
+              "metadataUrl": "https://api.nuget.org/v3/registration5-gz-semver2/system.text.json/10.0.14.json",
+              "registrationUrl": "https://api.nuget.org/v3/registration5-gz-semver2/system.text.json/index.json"
+            }
+          ]
+        },
+        {
+          "id": "nuget:Microsoft.IdentityModel.JsonWebTokens",
+          "source": "nuget",
+          "name": "Microsoft.IdentityModel.JsonWebTokens",
+          "url": "https://www.nuget.org/packages/Microsoft.IdentityModel.JsonWebTokens",
+          "description": "Includes types that provide support for creating, serializing and validating JSON Web Tokens. This is a newer, faster version of System.IdentityModel.Tokens.Jwt that has additional functionality.",
+          "version": "8.23.0",
+          "repository": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "nuget",
+              "name": "Microsoft.IdentityModel.JsonWebTokens",
+              "version": "8.23.0",
+              "url": "https://www.nuget.org/packages/Microsoft.IdentityModel.JsonWebTokens",
+              "metadataUrl": "https://api.nuget.org/v3/registration5-gz-semver2/microsoft.identitymodel.jsonwebtokens/8.23.0.json",
+              "registrationUrl": "https://api.nuget.org/v3/registration5-gz-semver2/microsoft.identitymodel.jsonwebtokens/index.json"
+            }
+          ]
+        },
+        {
+          "id": "nuget:Microsoft.Extensions.Configuration.Json",
+          "source": "nuget",
+          "name": "Microsoft.Extensions.Configuration.Json",
+          "url": "https://www.nuget.org/packages/Microsoft.Extensions.Configuration.Json",
+          "description": "JSON configuration provider implementation for Microsoft.Extensions.Configuration. This package enables you to read your application's settings from a JSON file. You can use JsonConfigurationExtensions.AddJsonFile extension method on IConfigurationBuilder to add the JSON configuration provider to the configuration builder.",
+          "version": "10.0.14",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "nuget",
+              "name": "Microsoft.Extensions.Configuration.Json",
+              "version": "10.0.14",
+              "url": "https://www.nuget.org/packages/Microsoft.Extensions.Configuration.Json",
+              "metadataUrl": "https://api.nuget.org/v3/registration5-gz-semver2/microsoft.extensions.configuration.json/10.0.14.json",
+              "registrationUrl": "https://api.nuget.org/v3/registration5-gz-semver2/microsoft.extensions.configuration.json/index.json"
+            }
+          ]
+        },
+        {
+          "id": "nuget:Microsoft.AspNetCore.JsonPatch",
+          "source": "nuget",
+          "name": "Microsoft.AspNetCore.JsonPatch",
+          "url": "https://www.nuget.org/packages/Microsoft.AspNetCore.JsonPatch",
+          "description": "ASP.NET Core support for JSON PATCH.\n\nThis package was built from the source code at https://github.com/dotnet/dotnet/tree/0427b9abbead3fa64c6655eb4290c537397131fa",
+          "version": "10.0.14",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "nuget",
+              "name": "Microsoft.AspNetCore.JsonPatch",
+              "version": "10.0.14",
+              "url": "https://www.nuget.org/packages/Microsoft.AspNetCore.JsonPatch",
+              "metadataUrl": "https://api.nuget.org/v3/registration5-gz-semver2/microsoft.aspnetcore.jsonpatch/10.0.14.json",
+              "registrationUrl": "https://api.nuget.org/v3/registration5-gz-semver2/microsoft.aspnetcore.jsonpatch/index.json"
+            }
+          ]
+        },
+        {
+          "id": "nuget:Newtonsoft.Json.Bson",
+          "source": "nuget",
+          "name": "Newtonsoft.Json.Bson",
+          "url": "https://www.nuget.org/packages/Newtonsoft.Json.Bson",
+          "description": "Json.NET BSON adds support for reading and writing BSON",
+          "version": "1.0.3",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "nuget",
+              "name": "Newtonsoft.Json.Bson",
+              "version": "1.0.3",
+              "url": "https://www.nuget.org/packages/Newtonsoft.Json.Bson",
+              "metadataUrl": "https://api.nuget.org/v3/registration5-gz-semver2/newtonsoft.json.bson/1.0.3.json",
+              "registrationUrl": "https://api.nuget.org/v3/registration5-gz-semver2/newtonsoft.json.bson/index.json"
+            }
+          ]
+        },
+        {
+          "id": "nuget:Microsoft.AspNetCore.Mvc.NewtonsoftJson",
+          "source": "nuget",
+          "name": "Microsoft.AspNetCore.Mvc.NewtonsoftJson",
+          "url": "https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.NewtonsoftJson",
+          "description": "ASP.NET Core MVC features that use Newtonsoft.Json. Includes input and output formatters for JSON and JSON PATCH.\n\nThis package was built from the source code at https://github.com/dotnet/dotnet/tree/0427b9abbead3fa64c6655eb4290c537397131fa",
+          "version": "10.0.14",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "nuget",
+              "name": "Microsoft.AspNetCore.Mvc.NewtonsoftJson",
+              "version": "10.0.14",
+              "url": "https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.NewtonsoftJson",
+              "metadataUrl": "https://api.nuget.org/v3/registration5-gz-semver2/microsoft.aspnetcore.mvc.newtonsoftjson/10.0.14.json",
+              "registrationUrl": "https://api.nuget.org/v3/registration5-gz-semver2/microsoft.aspnetcore.mvc.newtonsoftjson/index.json"
+            }
+          ]
+        },
+        {
+          "id": "nuget:Microsoft.AspNetCore.Mvc.Formatters.Json",
+          "source": "nuget",
+          "name": "Microsoft.AspNetCore.Mvc.Formatters.Json",
+          "url": "https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.Formatters.Json",
+          "description": "ASP.NET Core MVC formatters for JSON input and output and for JSON PATCH input using Json.NET.",
+          "version": "2.3.13",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "nuget",
+              "name": "Microsoft.AspNetCore.Mvc.Formatters.Json",
+              "version": "2.3.13",
+              "url": "https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.Formatters.Json",
+              "metadataUrl": "https://api.nuget.org/v3/registration5-gz-semver2/microsoft.aspnetcore.mvc.formatters.json/2.3.13.json",
+              "registrationUrl": "https://api.nuget.org/v3/registration5-gz-semver2/microsoft.aspnetcore.mvc.formatters.json/index.json"
+            }
+          ]
+        },
+        {
+          "id": "nuget:System.IdentityModel.Tokens.Jwt",
+          "source": "nuget",
+          "name": "System.IdentityModel.Tokens.Jwt",
+          "url": "https://www.nuget.org/packages/System.IdentityModel.Tokens.Jwt",
+          "description": "Includes types that provide support for creating, serializing and validating JSON Web Tokens. As of IdentityModel 7x, this is a legacy tool that should be replaced with Microsoft.IdentityModel.JsonWebTokens.",
+          "version": "8.23.0",
+          "repository": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "nuget",
+              "name": "System.IdentityModel.Tokens.Jwt",
+              "version": "8.23.0",
+              "url": "https://www.nuget.org/packages/System.IdentityModel.Tokens.Jwt",
+              "metadataUrl": "https://api.nuget.org/v3/registration5-gz-semver2/system.identitymodel.tokens.jwt/8.23.0.json",
+              "registrationUrl": "https://api.nuget.org/v3/registration5-gz-semver2/system.identitymodel.tokens.jwt/index.json"
+            }
+          ]
+        },
+        {
+          "id": "nuget:System.Runtime.Serialization.Json",
+          "source": "nuget",
+          "name": "System.Runtime.Serialization.Json",
+          "url": "https://www.nuget.org/packages/System.Runtime.Serialization.Json",
+          "description": "Provides classes for serializing objects to the JavaScript Object Notation (JSON) and deserializing JSON data to objects.\n\nCommonly Used Types:\nSystem.Runtime.Serialization.Json.DataContractJsonSerializer\n \nWhen using NuGet 3.x this package requires at least version 3.4.",
+          "version": "4.3.0",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "nuget",
+              "name": "System.Runtime.Serialization.Json",
+              "version": "4.3.0",
+              "url": "https://www.nuget.org/packages/System.Runtime.Serialization.Json",
+              "metadataUrl": "https://api.nuget.org/v3/registration5-gz-semver2/system.runtime.serialization.json/4.3.0.json",
+              "registrationUrl": "https://api.nuget.org/v3/registration5-gz-semver2/system.runtime.serialization.json/index.json"
+            }
+          ]
+        },
+        {
+          "id": "nuget:Serilog.Formatting.Compact",
+          "source": "nuget",
+          "name": "Serilog.Formatting.Compact",
+          "url": "https://www.nuget.org/packages/Serilog.Formatting.Compact",
+          "description": "A simple, compact JSON-based event format for Serilog.",
+          "version": "3.0.0",
+          "repository": "https://github.com/serilog/serilog-formatting-compact",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "nuget",
+              "name": "Serilog.Formatting.Compact",
+              "version": "3.0.0",
+              "url": "https://www.nuget.org/packages/Serilog.Formatting.Compact",
+              "metadataUrl": "https://api.nuget.org/v3/registration5-gz-semver2/serilog.formatting.compact/3.0.0.json",
+              "registrationUrl": "https://api.nuget.org/v3/registration5-gz-semver2/serilog.formatting.compact/index.json"
+            }
+          ]
+        },
+        {
+          "id": "nuget:JsonSubTypes",
+          "source": "nuget",
+          "name": "JsonSubTypes",
+          "url": "https://www.nuget.org/packages/JsonSubTypes",
+          "description": "Discriminated Json Subtypes Converter implementation for .NET",
+          "version": "2.2.0",
+          "repository": "https://github.com/manuc66/JsonSubTypes",
+          "matchedQueries": [
+            "json"
+          ],
+          "packages": [
+            {
+              "source": "nuget",
+              "name": "JsonSubTypes",
+              "version": "2.2.0",
+              "url": "https://www.nuget.org/packages/JsonSubTypes",
+              "metadataUrl": "https://api.nuget.org/v3/registration5-gz-semver2/jsonsubtypes/2.2.0.json",
+              "registrationUrl": "https://api.nuget.org/v3/registration5-gz-semver2/jsonsubtypes/index.json"
+            }
+          ]
+        }
+      ],
+      "notes": [
+        "Bounded package metadata discovery; not exhaustive recall or global source-code search.",
+        "Search endpoints come from compatible official service-index resources (at most eight distinct endpoints); the existing single source retry may select the second endpoint. Authentication, throttling, invalid responses and server-requested waits do not trigger endpoint switching."
+      ],
+      "pagination": {
+        "mode": "offset",
+        "pageSize": 6,
+        "pagesFetched": 2,
+        "itemsFetched": 12,
+        "totalAvailable": 12667,
+        "hasMore": true,
+        "stopReason": "page_limit"
+      },
+      "elapsedMs": 3301
+    }
+  ],
+  "local": [
+    {
+      "status": "partial",
+      "notes": [
+        "Scanned 72 files without a language-extension allowlist; UTF-8 lexical matches require host review.",
+        "1 binary/non-UTF-8 files skipped. Hidden directories, dependency/build directories, symlinks and .env files are excluded.",
+        "Dependency fingerprints cover recognized root manifests, not every nested workspace manifest.",
+        "Local scan reached a budget or size limit."
+      ]
+    }
+  ],
+  "notes": [
+    "One observation is not an uptime, full-recall or host-activation claim.",
+    "No synthetic upstream outage was introduced; successful primary reads do not prove live fallback was exercised."
+  ]
+}

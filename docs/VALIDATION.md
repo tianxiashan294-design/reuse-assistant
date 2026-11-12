@@ -1,5 +1,78 @@
 # Validation record
 
+## Pre-push full regression — 2026-11-12 (Asia/Shanghai)
+
+Environment: Windows PowerShell, Node v24.15.0. `npm test` passed **174/174**, with no failures, cancellations or skips, including the C/C++ text decoding fix. The command rebuilds the project and exercises the public core, compiled CLI and MCP SDK stdio through deterministic fixtures. `npm run check` and `git diff --check` also passed.
+
+This run is offline regression evidence. The live endpoint and Codex host observations below remain separate and retain their coverage limits; other host activation, cross-platform/Node versions and remote CI were not assessed by this run. The package version remains 1.1.0 and these changes remain under Unreleased.
+
+## Conan Center Index and Microsoft vcpkg — 2026-11-09 to 2026-11-10 (Asia/Shanghai)
+
+Live compiled CLI `check --source <conan|vcpkg> --query zlib --no-cache --json` and `inspect --check <id> --candidate <id>` used the official public GitHub API. A check also requires `--task`. These observations cover the retrieved catalog commits and selected packaging files.
+
+| Source | Catalog check | Fixed inspection |
+|---|---|---|
+| Conan Center Index | Queries `zlib` and `openssl` each returned two name matches on one local page at `f2858dd17b7119905e3de074a62bd3f6dcf09c5f`. The recipes tree contained 1,976 directories and was not truncated. | `conan:zlib` retained `config.yml` and two files from `all`. `conan:openssl` retained its config and six files from `1.x.x`, `3.x.x` and `4.x.x`. Two Python previews were clipped with full text hashes retained. |
+| Microsoft vcpkg | `zlib` returned three name matches on one local page at `ec48c11eae9448c8c6e7739d93e06fa2433aa95f`. | `vcpkg:zlib` matched `1.3.2#3` to port tree `ee4b8b348dabe4261e6bfbe2dc537fa49ca5e613`, retaining the baseline, version record, `vcpkg.json` and `portfile.cmake`. All three identity flags were true. |
+
+All live CLI inspections reported partial coverage with zero retrieval errors. Upstream source, Conan release revisions and binaries remained unqueried. The live Conan adaptation decision was rejected because the packaging inspection had no identified code license. The vcpkg manifest's declared package license is recorded only within registry metadata.
+
+On November 10, `npm test` passed **173/173** on Windows with Node v24.15.0 before the text decoding fix. After the fix, `npm run build` and `node --test dist/test/conan-catalog.test.js dist/test/vcpkg-catalog.test.js dist/test/cpp-catalog.test.js` passed **11/11**. The fixture tests cover public core, compiled CLI and MCP over SDK stdio. The new regression uses a hash-valid recipe with an embedded NUL: inspection reports the invalid file and retains its two valid siblings.
+
+The connected **Codex MCP host** separately queried both live catalogs for `zlib` (`d5de7dca-c634-4457-b628-44891bf8a86b`). Conan returned two matches at `f2858dd17b7119905e3de074a62bd3f6dcf09c5f` and retained three recipe files. vcpkg returned three matches at `dee92af2943e2216d7ba21ec4516a2c538c34c53` and confirmed all three identity checks for `zlib@1.3.2#3`, retaining four files. Both inspections reported partial coverage and no retrieval errors. Local discovery remained bounded. This observation covers the running Codex server's check and inspect tools; other hosts and the local decoder fix were not assessed by that live session.
+
+The November 9 catalog plan `1f683b1d-b444-4689-8366-aab531a8fa54` expired before the session could close it. The decoder fix has a fresh local check and linked verified decision `5fc734e0-c851-4f6a-8179-d873ba1acc12`.
+
+## Go module proxy — 2026-11-08 (Asia/Shanghai)
+
+`npm test` passed **163/163** on Windows with Node v24.15.0. The seven Go groups exercise the shared core, compiled CLI flags and JSON input, and actual MCP SDK stdio with a fixture transport. Cases cover routing, lookup and cache isolation, fixed and proxy-selected versions, case encoding, pseudo-versions, `+incompatible`, HTTP failures and retries, `.info`/`.mod` mismatch, and independent evidence retention. The fixture verifies that inspection does not follow reported Origin links or send GitHub/GitLab tokens to the proxy. A CLI inspection subprocess exited once without output on an earlier run. Both subsequent runs passed that case at default concurrency.
+
+Separate live observations used the compiled `check --source goproxy --go-module <coordinate> --no-cache --json` and `inspect --check <id> --candidate <id>` commands against the official public proxy. A `check` also requires `--task` and `--query`.
+
+| Public module coordinate | Observation |
+|---|---|
+| `github.com/Masterminds/semver/v3@v3.2.1` | The escaped `!masterminds` endpoint returned fixed `.info` and `.mod` with matching version and declared path. |
+| `gopkg.in/yaml.v3` | `@latest` selected `v3.0.1`. The fixed responses matched the version and the quoted module declaration. |
+| `github.com/coreos/etcd@v3.3.27+incompatible` | The escaped `%2Bincompatible` endpoint returned both fixed responses with matching identities. |
+| `github.com/Sirupsen/logrus@v1.9.3` | Fixed `.info` matched the version. The published `.mod` declared `github.com/sirupsen/logrus`; inspection retained `.info` and recorded the case mismatch. |
+| `golang.org/x/mod@v9999.0.0+incompatible` | HTTP 404 was retained with its endpoint, zero candidates and `not_retried`. |
+
+Successful inspections still report partial coverage for archives, checksum database and repository evidence. The live checks establish individual endpoint behavior. Actual host loading of the new schema remains pending.
+
+## Clojars, Hackage and MetaCPAN — 2026-11-06 (Asia/Shanghai)
+
+Unreleased increment. The focused offline test `node --test dist/test/ecosystems.test.js` passed **6/6** on Windows with Node v24.15.0. Tests use deterministic fixtures for search, fixed package evidence, failure and incomplete coverage, ecosystem routing and cache isolation. They also exercise the public CLI and real MCP SDK stdio transport.
+
+The [saved live public core observation](live-smoke-ecosystems.json) records two pages from each source. Clojars returned 48 candidates, Hackage returned 12 candidates across two local slices with partial coverage, and MetaCPAN returned 12 candidates. Inspection retained the fixed `audiogum/clj-lazy-json@0.0.3` POM, the checksum-verified `dhall-json@1.7.12` Cabal revision 4 and `BAYASHI/App-jl-0.20` release metadata. Overall inspection remained partial for all three. The MetaCPAN candidate's repository README was pinned to a separate commit, and its LICENSE request failed. Package archive and release-to-repository correspondence remain unverified. The observation covers individual endpoint requests and does not establish host activation or ecosystem-wide recall.
+
+On 2026-11-08 (Asia/Shanghai), the live CLI query `3d` with `--source hackage --max-pages 1 --no-cache` returned six names including `3d-graphics-examples`. Inspection verified fixed `PUBLISHED.cabal` at `0.0.0.2/revision/0` with no retrieval errors and partial overall coverage. Offline public checks exercise digit-led name components and detect saturation before name deduplication. [Cabal package name grammar](https://cabal.readthedocs.io/en/stable/cabal-package-description-file.html#package-names).
+
+## GitLab keyset and official NuGet fallback — 2026-11-06 (Asia/Shanghai)
+
+Windows PowerShell/Node v24.15.0, unreleased increment. `npm run build` passes. Focused continuation/pagination/retry/HTTP/recall/v2 public-interface checks pass **58/58**; after cache-namespace and public formatting updates, continuation/core/pagination/retry/HTTP/recall pass **50/50**. The five new continuation groups cover unchanged Link retry, official default parameters, malformed/ambiguous/host/path/query rejection, cursor cycles, compatible NuGet aliases/dedup, secondary success/failure provenance, excluded switching and real MCP stdio. Existing v2 checks cover pinned inspection and credential isolation. No full suite or actual host activation is claimed.
+
+`node dist/test/live-smoke-reliability.js` separately exercised the public core on the live network. [Saved observation](live-smoke-reliability.json) records two successful pages and twelve candidates each for GitLab/NuGet. GitLab page two had a real transient `unavailable` failure and recovered on the same-cursor retry; the failure remains public. NuGet primary succeeded, so live secondary failover was not exercised; that path is established only by deterministic fixtures. Both stop at the finite page limit with more available results. One observation does not establish uptime or full recall.
+
+Independent review led to rejecting credential/privileged/unknown GitLab next-link parameters, explicitly classifying malformed NuGet index entries as invalid rather than transient, and pinning the successful NuGet index per source/query so reordering cannot replay the primary. The focused continuation/pagination checks passed **24/24** after these refinements.
+
+Protocol evidence: [GitLab official keyset/Link contract](https://docs.gitlab.com/api/rest/#keyset-based-pagination), [NuGet service-index alternatives](https://learn.microsoft.com/en-us/nuget/api/service-index), [compatible search resource versions](https://learn.microsoft.com/en-us/nuget/api/search-query-service-resource). No external implementation was copied. Check `77d21546-c083-4263-a037-62f26966e311` retained GitHub HTTP403/rate-limit failures and bounded local/static gaps; npm search was available. Inspections `5010f2b5-945f-454f-ae2a-f4a6a22ab2b6` / `3949e250-443a-40df-8e5e-e142ecb0f373`, ready alignment `fbc1c3a6-2970-4526-891f-c1ba125fe41d`, planned `78a45738-706c-4d32-a052-21162611ed59` and applied `873cbdf7-3030-4c8b-b235-59088e5f37a8` preserve those acknowledged gaps. Inspection/parser budgets and semantic judgments remain explicitly limited and host-reported.
+
+## Query variants and fair source allocation — 2026-11-06 (Asia/Shanghai)
+
+Unreleased working-tree increment, Windows PowerShell/Node v24.15.0. `npm run build` and `git diff --check` pass. The focused public core/CLI/SDK stdio MCP recall file passes **4/4** after correcting a test-only TypeScript non-null annotation; the affected core/pagination/retry/recall runtime checks passed **42/42**. No full suite or live retry/translation/host-activation claim. Fixed JSON samples cover English-only variant recall, provenance and deduplication, local hits, cache isolation, invalid inputs, skewed source counts, multi-package repository credit and source outage retention.
+
+Current-turn check `a0666681-caf4-4866-b4fc-3ca1272c53a6` reused the explicitly reported valid remote search cache from full check `de833f5c-2173-4647-9cda-d45c73728ace`; local discovery and static linkage remain partial and acknowledged. Fresh inspections `52f639ec-7a80-410e-bd6c-a67391038192` / `b1e9d470-e6d6-45e7-970e-221a31ba6060`, ready alignment `efc0c455-87e1-4a51-880a-ca60f8a54ba6`, planned `41e8954e-50e4-4688-b319-1a754b46454b` and applied `347a9ce1-edca-4b55-942f-dc75779277e0` record local reuse without a new dependency or copied upstream implementation. Automatic goal continuation had omitted prompt-hook initialization; the actual current turn was confirmed from local session metadata and initialized through the existing public hook CLI before repeating the check/inspection/alignment/decision chain. The patch guard was retained.
+
+## Bounded failed-source retry increment — 2026-11-06 (Asia/Shanghai)
+
+Environment: Windows PowerShell, Node v24.15.0. This is an unreleased working-tree increment after v1.1.0. The shared core now supports `maxRetries: 0|1` (default 1), with CLI/MCP adapters, retained page-failure history and cache-policy isolation. The scheduler reuses the original signal and four-worker limit; rejected pub corpus loads can be fetched again without changing the successful corpus's eight-hour cache. No dependency or external source code was added. Pre-existing RSS example and third-party notice changes were retained.
+
+`npm run build` and `git diff --check` pass. Focused offline checks passed: **7/7** with `node --test dist/test/retry.test.js`, and **22/22** with `node --test dist/test/pagination.test.js dist/test/http.test.js`. These exercise public core recovery and durable failure, original/retry error retention, successful-page counts, phase ordering and concurrency, upstream partial flags, deadline exhaustion, excluded error classes/Retry-After, disabling retries, cache isolation, pub re-fetch and successful corpus caching. Compiled CLI and real SDK MCP stdio checks cover the parameter bound and public failure history. An independent static review found no material blocker. The full suite was not run for this increment.
+
+Reuse check `8d7fcfae-74ee-40bc-beae-ba95a4e550b8` queried GitHub/npm successfully but bounded local discovery reached its size limit; other sources were not queried. Local inspections `592cba11-1ce0-4cba-b49c-02091a65f68e` and `5c7a15d2-9e76-4aa8-b9f6-d16b5ef21bab` covered the existing core, scheduler, transport, source outcome, public adapters, registry and store. Ready alignment `f7c9ee43-4a3f-4b06-b598-1f9e8f208766`, planned decision `281be7ee-9732-408e-9a9b-91ffb38600e1` and applied decision `66497688-d0e9-41ec-bbe9-4681e567a46b` retain acknowledged discovery and static-linkage gaps. Semantic and validation claims remain host-reported.
+
+The live requests above were reuse discovery, not endpoint reliability or retry acceptance. No new live-source smoke, actual host activation, desktop MCP reload, cross-platform/Node 22 run, remote CI or publication was performed. Running MCP processes need a restart to load the rebuilt parameter schema. Source-level retries deliberately exclude auth/rate limiting, invalid responses and positive server-requested waits; existing short transport throttling retries remain separate even with `maxRetries: 0`. Successful recovery can complete the bounded plan while its original failure remains public; it does not imply exhaustive recall.
+
 ## v1.1 local verification — 2026-11-05 (Asia/Shanghai)
 
 Environment: Windows PowerShell, Node v24.15.0. OpenCode now supports automatic init/doctor/uninstall using the sole existing root `opencode.json` or `opencode.jsonc`; both accept comments and trailing commas. New projects still default to `opencode.json`. Package, lockfile, CLI help and newly launched MCP server report `1.1.0`. Discovery/evidence/alignment/decision behavior stays in the shared core; other clients and unrelated RSS example changes are retained.

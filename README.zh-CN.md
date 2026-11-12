@@ -127,6 +127,10 @@ node dist/src/cli.js check --project "/absolute/project" --task "加入后台任
 
 加上 `--scope local` 可仅搜索项目。复杂约束、对齐契约和决策参数通过 `--input request.json` 传入；`--input -` 从标准输入读取 JSON。完整命令列表可通过 `--help` 查看。
 
+用 `--ecosystem c` 或 `--ecosystem cpp` 检索时，除了代码仓库，也会查询 Conan Center Index 和 vcpkg。只查这两个包目录时可传入 `--source conan --source vcpkg`。目录按包名匹配，取证范围限于指定的打包文件，详见 [C/C++ 目录覆盖范围](docs/SOURCES.md#c-and-c-package-catalogs)。
+
+检索默认会在同一总预算内，对瞬时失败的来源/页重查一次；本轮其他初次请求先完成，再执行重查。用 `--max-retries 0`（MCP `maxRetries: 0`）关闭，参数支持 0 和 1。恢复后仍保留原始失败及重查结果。调度器不会重查认证、限流、无效数据或要求正数 `Retry-After` 等待的失败。详见[重查与覆盖限制](docs/SOURCES.md#bounded-failed-source-retries)。
+
 记录保存在目标项目的 `.reuse-assistant/` 中，初始化会将它加入 `.gitignore`。这些任务记录保留在本地；对外检索使用公开的技术词。报告会区分搜索失败、零结果和覆盖不完整，检索结果不代表穷尽所有实现。
 
 ## 开源使用与贡献

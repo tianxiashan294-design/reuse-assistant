@@ -1,12 +1,13 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { ReuseAssistant } from '../src/core.js';
-import { REMOTE_SOURCES, type RemoteSource } from '../src/types.js';
+import type { RemoteSource } from '../src/types.js';
 
 // Real public core/HTTP requests. No injected fixtures and no candidate execution.
 const selected = process.argv.slice(2);
-if (selected.some(s => !REMOTE_SOURCES.includes(s as RemoteSource) || s === 'pypi' || s === 'pub')) throw new Error('Select numbered remote discovery sources; use smoke:v7 for the pub name corpus');
-const sources = (selected.length ? selected : REMOTE_SOURCES.filter(s => s !== 'pypi' && s !== 'pub')) as RemoteSource[];
+const originalSources: RemoteSource[] = ['github','gitlab','npm','crates','maven','nuget','rubygems','packagist','hex'];
+if (selected.some(s => !originalSources.includes(s as RemoteSource))) throw new Error('Select original bounded discovery adapters; newer/corpus sources have separate live observations');
+const sources = (selected.length ? selected : originalSources) as RemoteSource[];
 const assistant = new ReuseAssistant(process.cwd());
 const startedAt = new Date().toISOString();
 const observations = [];

@@ -1,4 +1,17 @@
-import type { CheckReport, Decision } from './types.js';
+import type { CheckReport, Decision, SourceResult } from './types.js';
+
+function sourceNotes(source: SourceResult): string {
+  const errorText = (error: NonNullable<SourceResult['error']>) => `${error.code}${error.status !== undefined ? ` HTTP ${error.status}` : ''} (${error.message})${error.endpoint ? `; endpoint=${error.endpoint}` : ''}${error.retryAfterMs !== undefined ? `; retryAfterMs=${error.retryAfterMs}` : ''}`;
+  const pagination = source.pagination;
+  return [
+    ...(source.error ? [errorText(source.error)] : []),
+    ...(source.endpoint ? [`Last successful endpoint=${source.endpoint}.`] : []),
+    ...(source.catalogRevision ? [`Catalog commit=${source.catalogRevision}.`] : []),
+    ...(source.failures ?? []).map(failure => `Failure page=${failure.page}: ${errorText(failure.error)}; retry=${failure.retry}${failure.retryError ? `; retry error=${errorText(failure.retryError)}` : ''}.`),
+    ...(pagination ? [`${pagination.pagesFetched} pages / ${pagination.itemsFetched} items; ${pagination.stopReason}; hasMore=${pagination.hasMore}${pagination.mode ? `; mode=${pagination.mode}` : ''}${pagination.totalAvailable !== undefined ? `; reported total=${pagination.totalAvailable}` : ''}${pagination.failedPage ? `; failed page=${pagination.failedPage}` : ''}${pagination.next ? `; next=${pagination.next}` : ''}`] : []),
+    ...source.notes,
+  ].join(' ');
+}
 export function decisionNextAction(status: Decision['status']): string {
   return status === 'planned' ? 'Implement the selected approach, then record applied linked to this decision.'
     : status === 'applied' ? 'Run the appropriate validation, then record verified with this decision as predecessor and the actual command/outcome.'
@@ -9,8 +22,9 @@ export function markdown(report: CheckReport, decision?: Decision): string {
   return [
     `# Reuse check: ${esc(report.input.task)}`,
     `Check: ${report.id} | scope: ${report.input.scope} | coverage: ${report.coverage} | ${report.elapsedMs} ms${report.cached ? ` | remote cache: ${report.cacheCreatedAt}` : ''}`,
+    ...(report.queryPlan ? ['', '## Query plan', '', ...report.queryPlan.map(q => `- ${q.kind}: ${esc(q.query)}; origin: ${esc(q.origin)}`)] : []),
     '', '## Source coverage', '', '| Source | Query | Status | Results | Notes |', '|---|---|---|---:|---|',
-    ...report.sources.map(s => `| ${s.source} | ${esc(s.effectiveQuery ?? s.query)} | ${s.status} | ${s.candidates.length} | ${esc([s.error?.message, ...(s.pagination ? [`${s.pagination.pagesFetched} pages / ${s.pagination.itemsFetched} items; ${s.pagination.stopReason}; hasMore=${s.pagination.hasMore}${s.pagination.totalAvailable !== undefined ? `; reported total=${s.pagination.totalAvailable}` : ''}${s.pagination.failedPage ? `; failed page=${s.pagination.failedPage}` : ''}`] : []), ...s.notes].filter(Boolean).join(' '))} |`),
+    ...report.sources.map(s => `| ${s.source} | ${esc(s.effectiveQuery ?? s.query)} | ${s.status} | ${s.candidates.length} | ${esc(sourceNotes(s))} |`),
     ...(report.sourcePlan ? ['', '## Supported source plan', '', ...report.sourcePlan.map(s => `- ${s.source}: ${s.selected ? 'selected' : 'not selected'}; ${s.mode}. ${esc(s.limitations.join(' '))}`)] : []),
     '', '## Candidates requiring review', '', '| ID | Candidate | Source | Version | Description |', '|---|---|---|---|---|',
     ...report.candidates.map(c => `| ${esc(c.id)} | ${esc(c.name)} | ${(c.sources ?? [c.source]).join(', ')} | ${esc(c.packages?.map(p => `${p.source}:${p.name}@${p.version ?? '?'}`).join('; ') || c.version || '')} | ${esc(c.description)} |`),

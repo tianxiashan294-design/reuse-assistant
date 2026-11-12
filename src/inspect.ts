@@ -5,6 +5,10 @@ import { Http, SourceError } from './http.js';
 import { confined, digest } from './project.js';
 import { githubRepo, gitlabRepo, repositoryKey } from './sources.js';
 import { readPublishedPackage } from './registries.js';
+import { readFixedGoInfo, readFixedGoMod } from './go-proxy.js';
+import { CatalogGit } from './cpp-git.js';
+import { inspectConanCatalog } from './conan-catalog.js';
+import { inspectVcpkgCatalog } from './vcpkg-catalog.js';
 import type { Candidate, EvidenceFile, Inspection } from './types.js';
 
 const clip = (text: string, length = 24_000) => text.slice(0, length);
@@ -61,6 +65,38 @@ export async function inspectCandidate(http: Http, root: string, candidate: Cand
   let publishedRef: string | undefined;
   let publishedAssociation: string | undefined;
   if (packages.length) result.metadata.relatedPackages = packages;
+  if (pkg?.source === 'conan' || pkg?.source === 'vcpkg') {
+    result.status = 'partial';
+    result.notes.push('Catalog evidence covers official registry metadata and selected packaging files. Upstream source, binaries and upstream license files remain unqueried.');
+    if (paths.length) result.errors.push('Requested repository paths were not read; the registry catalog does not establish an upstream repository association.');
+    const git = new CatalogGit(pkg.source, http, signal);
+    const inspect = pkg.source === 'conan' ? inspectConanCatalog : inspectVcpkgCatalog;
+    await attempt(`${pkg.source} catalog evidence`, () => inspect(git, pkg, {
+      attempt,
+      add: (path, file, ref) => result.files.push(evidence(path, file.url, file.content, ref)),
+      metadata: result.metadata,
+      notes: result.notes,
+    }));
+    if (result.files.some(f => f.truncated)) result.notes.push('Some files are excerpted; hashes cover their full downloaded text.');
+    return result;
+  }
+  if (pkg?.source === 'goproxy') {
+    result.status = 'partial';
+    result.notes.push('Go proxy evidence covers version metadata and the published go.mod, which the proxy may synthesize. Archive, checksum database, repository correspondence, README and license files remain unqueried.');
+    if (paths.length) result.errors.push('Requested repository paths were not read; Go proxy metadata does not establish a repository association.');
+    const { name, version } = pkg;
+    if (!version) {
+      result.errors.push('Missing fixed Go module version.');
+      return result;
+    }
+    const info = await attempt('Go proxy fixed .info', () => readFixedGoInfo(http, name, version, signal));
+    if (info) result.files.push(evidence('PUBLISHED.info', info.url, info.content, version));
+    const mod = await attempt('Go proxy fixed .mod', () => readFixedGoMod(http, name, version, signal));
+    if (mod) result.files.push(evidence('PUBLISHED.go.mod', mod.url, mod.content, version));
+    result.metadata.registry = { source: pkg.source, name, version, versionVerified: Boolean(info), modulePathVerified: Boolean(mod) };
+    if (result.files.some(f => f.truncated)) result.notes.push('Some files are excerpted; hashes cover their full downloaded text.');
+    return result;
+  }
   if (pkg?.source === 'npm') {
     await attempt('npm published metadata', async () => {
       const url = `https://registry.npmjs.org/${encodeURIComponent(pkg.name)}/${encodeURIComponent(pkg.version ?? 'latest')}`;
@@ -109,7 +145,7 @@ export async function inspectCandidate(http: Http, root: string, candidate: Cand
       result.metadata.license = published.license ?? null;
       result.notes.push(...published.notes);
       result.files.push(evidence(`${pkg.source.toUpperCase()}-PUBLISHED-METADATA.json`, published.url, JSON.stringify(published.document, null, 2), published.version));
-      if (published.extra) result.files.push(evidence(published.extra.path, published.extra.url, published.extra.content, published.extra.mutable ? undefined : published.version));
+      if (published.extra) result.files.push(evidence(published.extra.path, published.extra.url, published.extra.content, published.extra.mutable ? undefined : published.extra.ref ?? published.version));
     });
   }
 

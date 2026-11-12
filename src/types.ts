@@ -1,5 +1,5 @@
-export const REMOTE_SOURCES = ['github', 'gitlab', 'npm', 'pypi', 'crates', 'maven', 'nuget', 'rubygems', 'packagist', 'pub', 'hex'] as const;
-export const ECOSYSTEMS = ['auto', 'javascript', 'python', 'rust', 'java', 'dotnet', 'ruby', 'php', 'go', 'dart', 'flutter', 'elixir', 'erlang'] as const;
+export const REMOTE_SOURCES = ['github', 'gitlab', 'npm', 'pypi', 'crates', 'maven', 'nuget', 'rubygems', 'packagist', 'pub', 'hex', 'clojars', 'hackage', 'metacpan', 'goproxy', 'conan', 'vcpkg'] as const;
+export const ECOSYSTEMS = ['auto', 'javascript', 'python', 'rust', 'java', 'dotnet', 'ruby', 'php', 'go', 'dart', 'flutter', 'elixir', 'erlang', 'clojure', 'haskell', 'perl', 'c', 'cpp'] as const;
 export type RemoteSource = typeof REMOTE_SOURCES[number];
 export type Ecosystem = typeof ECOSYSTEMS[number];
 export type Source = 'local' | RemoteSource;
@@ -12,6 +12,8 @@ export interface PackageIdentity {
   metadataUrl?: string;
   registrationUrl?: string;
   platform?: string;
+  catalogRevision?: string;
+  catalogTree?: string;
 }
 export interface SourceCapability {
   source: RemoteSource;
@@ -21,22 +23,28 @@ export interface SourceCapability {
 }
 export type SourceStatus = 'ok' | 'empty' | 'partial' | 'rate_limited' | 'timeout' | 'unavailable' | 'skipped';
 export interface SearchPagination {
+  mode?: 'offset' | 'keyset' | 'lookup' | 'local';
+  next?: string;
   pageSize: number;
   pagesFetched: number;
   itemsFetched: number;
   totalAvailable?: number;
   hasMore: boolean;
-  stopReason: 'exhausted' | 'page_limit' | 'error' | 'budget' | 'no_new_candidates' | 'lookup';
+  stopReason: 'exhausted' | 'page_limit' | 'error' | 'budget' | 'no_new_candidates' | 'lookup' | 'invalid_continuation' | 'cursor_cycle';
   failedPage?: number;
 }
 export interface SourceResult {
   source: Source;
   query: string;
   effectiveQuery?: string;
+  endpoint?: string;
+  catalogRevision?: string;
   status: SourceStatus;
   candidates: Candidate[];
   elapsedMs: number;
-  error?: { code: string; message: string; status?: number; retryAfterMs?: number };
+  error?: { code: string; message: string; status?: number; retryAfterMs?: number; endpoint?: string };
+  /** Page failures remain visible even when a later attempt recovers. */
+  failures?: { page: number; error: NonNullable<SourceResult['error']>; retry: 'not_retried' | 'recovered' | 'failed'; retryError?: NonNullable<SourceResult['error']> }[];
   notes: string[];
   pagination?: SearchPagination;
 }
@@ -61,16 +69,21 @@ export interface Candidate {
   packages?: PackageIdentity[];
 }
 export interface Binding { sessionId: string; turnId: string }
+export interface QueryPlanEntry { query: string; origin: string; kind: 'original' | 'variant' }
+export interface GoModuleLookup { path: string; version?: string }
 export interface CheckInput {
   task: string;
   queries: string[];
+  queryVariants?: { query: string; variants: string[] }[];
   constraints?: string[];
   scope?: 'local' | 'full';
   ecosystem?: Ecosystem;
   sources?: RemoteSource[];
   packageNames?: string[];
+  goModules?: GoModuleLookup[];
   budgetMs?: number;
   maxPages?: number;
+  maxRetries?: number;
   useCache?: boolean;
   binding?: Binding;
   alignment?: AlignmentContract;
@@ -103,6 +116,7 @@ export interface CheckReport {
   projectRoot: string;
   contextHash: string;
   input: CheckInput;
+  queryPlan?: QueryPlanEntry[];
   coverage: 'complete' | 'partial';
   cached: boolean;
   cacheCreatedAt?: string;

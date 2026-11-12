@@ -6,6 +6,7 @@ import { ReuseAssistant } from '../src/core.js';
 import { Http } from '../src/http.js';
 import { fixture, fakeFetch, json, repo, githubEvidence, SHA } from './support.js';
 import { markdown } from '../src/format.js';
+import { REMOTE_SOURCES } from '../src/types.js';
 
 test('existing local implementation can be inspected, selected and actually verified', async t => {
   const root = await fixture(t);
@@ -70,9 +71,9 @@ test('global deadline bounds a transport that ignores AbortSignal', { timeout: 5
   // Keep the test runner alive while Node's unref'ed AbortSignal timer fires.
   const keepAlive = setInterval(() => {}, 2000);
   try {
-    const report = await assistant.check({ task: 'Find bounded requests', queries: ['request retry'], budgetMs: 100, useCache: false });
+    const report = await assistant.check({ task: 'Find bounded requests', queries: ['request retry'], goModules: [{ path: 'example.com/public-module' }], budgetMs: 100, useCache: false });
     assert(performance.now() - start < 2000);
-    assert.equal(report.sources.filter(s => s.status === 'timeout').length, 10);
+    assert.equal(report.sources.filter(s => s.status === 'timeout').length, REMOTE_SOURCES.filter(s=>s!=='pypi').length);
     assert.equal(report.coverage, 'partial');
   } finally { clearInterval(keepAlive); }
 });

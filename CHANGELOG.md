@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+- Add Conan Center Index and Microsoft vcpkg name discovery from fixed GitHub catalog snapshots. Inspect recipe files or the default baseline port tree and preserve catalog, version, and upstream source boundaries.
+
+- Verify known public Go modules through `goproxy` in the shared core, CLI and MCP. Preserve case-sensitive module/version identities, fixed `.info` and `go.mod` evidence, and explicit lookup, archive and source limits.
+- Add Clojars, Hackage and MetaCPAN metadata discovery to the shared core and CLI/MCP ecosystem selection. Preserve bounded pages, upstream partial results and fixed POM, Cabal revision or author/release evidence. Keep package archives and unproven source correspondence explicit in inspection gaps.
+
+- Add checked GitLab keyset/Link traversal and compatible official NuGet search-endpoint fallback within the existing source retry. Retain actual endpoint provenance, malformed/cyclic cursor gaps and successful pages; preserve the bounded transport interfaces and old decision hashes while isolating old discovery caches.
+
+- Add bounded host-provided multilingual query variants with public origin mappings and cache isolation. Allocate shortlist slots to the least represented available source, retaining lexical ordering, merged repository/package identities and fixed recall samples exercised through core/CLI/MCP.
+
+- Retry transient discovery failures once per source/query/page by default, after the page round's initial requests and before continuations, under the same deadline and four-worker limit. Expose `maxRetries: 0|1` through core/MCP and `--max-retries` through CLI; isolate cached plans by retry policy.
+- Preserve original page failures and retry outcomes in public results and cached recovered results. Retry network unavailability, live-budget timeouts and HTTP 408/5xx; skip authentication, throttling, invalid data and positive `Retry-After` waits. Existing transport-level short throttling retries remain separate.
+- Clear rejected pub.dev corpus loads so eligible retries perform a fresh read while retaining the independent eight-hour corpus cache. Validation and host activation remain separately reported.
+
 ## 1.1.0 — 2026-11-05
 
 - Support automatic OpenCode setup, diagnosis and selective removal using a single existing `opencode.json` or `opencode.jsonc`, including comments and trailing commas. Default new projects to `opencode.json`.

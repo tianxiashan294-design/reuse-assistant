@@ -8,6 +8,7 @@ export class SourceError extends Error {
     message: string,
     public status?: number,
     public retryAfterMs?: number,
+    public endpoint?: string,
   ) { super(message); }
 }
 
@@ -33,18 +34,26 @@ export function retryAfter(value: string | null, now = Date.now()): number | und
   return Number.isFinite(date) ? Math.max(0, date - now) : undefined;
 }
 
-const HOSTS = new Set(['api.github.com', 'gitlab.com', 'registry.npmjs.org', 'pypi.org', 'crates.io', 'search.maven.org', 'repo.maven.apache.org', 'api.nuget.org', 'azuresearch-usnc.nuget.org', 'azuresearch-ussc.nuget.org', 'rubygems.org', 'packagist.org', 'repo.packagist.org', 'pub.dev', 'hex.pm']);
-const nugetHost = (host: string) => host === 'api.nuget.org' || /^azuresearch-[a-z0-9-]+\.nuget\.org$/.test(host) || ['nuget.azure.cn', 'nuget.cdn.azure.cn'].includes(host);
+const HOSTS = new Set(['api.github.com', 'gitlab.com', 'registry.npmjs.org', 'pypi.org', 'crates.io', 'search.maven.org', 'repo.maven.apache.org', 'api.nuget.org', 'azuresearch-usnc.nuget.org', 'azuresearch-ussc.nuget.org', 'rubygems.org', 'packagist.org', 'repo.packagist.org', 'pub.dev', 'hex.pm', 'clojars.org', 'repo.clojars.org', 'hackage.haskell.org', 'fastapi.metacpan.org', 'proxy.golang.org']);
+export const nugetHost = (host: string) => host === 'api.nuget.org' || /^azuresearch-[a-z0-9-]+\.nuget\.org$/.test(host) || ['nuget.azure.cn', 'nuget.cdn.azure.cn'].includes(host);
 export class Http {
   constructor(private fetcher: typeof fetch = fetch, private token = process.env.GITHUB_TOKEN, private gitlabToken = process.env.GITLAB_TOKEN) {}
 
   async json<T = any>(url: string, parent: AbortSignal, limit = 2_000_000): Promise<T> {
-    const text = await this.text(url, parent, limit);
-    try { return JSON.parse(text) as T; }
-    catch { throw new SourceError('invalid_response', 'Invalid registry JSON'); }
+    return (await this.jsonResponse<T>(url, parent, limit)).data;
+  }
+
+  async jsonResponse<T = any>(url: string, parent: AbortSignal, limit = 2_000_000): Promise<{ data: T; headers: Headers; url: string }> {
+    const response = await this.textResponse(url, parent, limit);
+    try { return { data: JSON.parse(response.text) as T, headers: response.headers, url: response.url }; }
+    catch { throw new SourceError('invalid_response', 'Invalid registry JSON', undefined, undefined, response.url); }
   }
 
   async text(url: string, parent: AbortSignal, limit = 2_000_000): Promise<string> {
+    return (await this.textResponse(url, parent, limit)).text;
+  }
+
+  async textResponse(url: string, parent: AbortSignal, limit = 2_000_000): Promise<{ text: string; headers: Headers; url: string }> {
     const target = new URL(url);
     if (target.protocol !== 'https:' || (!HOSTS.has(target.hostname) && !nugetHost(target.hostname)) || target.username || target.password || target.port) {
       throw new SourceError('invalid_url', 'Only supported public registry endpoints are readable');
@@ -57,12 +66,14 @@ export class Http {
       if (this.token) headers.Authorization = `Bearer ${this.token}`;
     }
     if (target.hostname === 'gitlab.com' && target.pathname.startsWith('/api/v4/') && this.gitlabToken) headers['PRIVATE-TOKEN'] = this.gitlabToken;
+    let endpoint = target.href;
     try {
       for (let attempt = 0; attempt < 2; attempt++) {
         let current = target;
         let redirects = 0;
         let response: Response;
         while (true) {
+          endpoint = current.href;
           response = await abortable(this.fetcher(current.href, { headers, signal, redirect: nugetHost(target.hostname) ? 'manual' : 'error' }), signal);
           if (![301, 302, 303, 307, 308].includes(response.status)) break;
           const location = response.headers.get('location');
@@ -101,13 +112,13 @@ export class Http {
             chunks.push(chunk.value);
           }
         } finally { await reader.cancel().catch(() => {}); }
-        return Buffer.concat(chunks).toString('utf8');
+        return { text: Buffer.concat(chunks).toString('utf8'), headers: response.headers, url: current.href };
       }
       throw new SourceError('unavailable', 'Registry request did not complete');
     } catch (error) {
-      if (error instanceof SourceError) throw error;
-      if (signal.aborted) throw new SourceError('timeout', 'Request budget exhausted');
-      throw new SourceError('unavailable', error instanceof SyntaxError ? 'Invalid registry JSON' : 'Registry request failed');
+      if (error instanceof SourceError) { error.endpoint ??= endpoint; throw error; }
+      if (signal.aborted) throw new SourceError('timeout', 'Request budget exhausted', undefined, undefined, endpoint);
+      throw new SourceError('unavailable', error instanceof SyntaxError ? 'Invalid registry JSON' : 'Registry request failed', undefined, undefined, endpoint);
     }
   }
 }

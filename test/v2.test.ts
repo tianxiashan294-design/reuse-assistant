@@ -51,10 +51,10 @@ test('explicit sources override ecosystems, isolate caches and never bypass loca
 test('ecosystem routing retains both repository platforms and the matching package registry', async t => {
   const root = await fixture(t);
   const assistant = new ReuseAssistant(root, new Http(v2Fetch(), '', ''));
-  const routes = { javascript: 'npm', python: 'pypi', rust: 'crates', java: 'maven', dotnet: 'nuget', ruby: 'rubygems', php: 'packagist', go: undefined } as const;
+  const routes = { javascript: 'npm', python: 'pypi', rust: 'crates', java: 'maven', dotnet: 'nuget', ruby: 'rubygems', php: 'packagist', go: 'goproxy' } as const;
   for (const [ecosystem, registry] of Object.entries(routes)) {
     const r = await assistant.check({ task: 'Find scheduler', queries: ['scheduler'], ecosystem: ecosystem as CheckInput['ecosystem'], useCache: false });
-    assert.deepEqual(new Set(r.input.sources), new Set(['github', 'gitlab', ...(registry ? [registry] : [])]));
+    assert.deepEqual(new Set(r.input.sources), new Set(['github', 'gitlab', registry]));
   }
 });
 

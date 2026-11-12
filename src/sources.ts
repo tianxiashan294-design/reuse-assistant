@@ -5,6 +5,8 @@ import { Http, SourceError, abortable } from './http.js';
 import { queryTokens } from './project.js';
 import { pageProgress } from './pagination.js';
 import type { Candidate, SearchPagination, Source, SourceResult } from './types.js';
+import { REMOTE_SOURCES } from './types.js';
+import { gitlabNext, gitlabPageUrl } from './continuation.js';
 
 export function githubRepo(value?: string): string | undefined {
   if (!value) return undefined;
@@ -35,15 +37,15 @@ export function repositoryKey(value?: string): string | undefined {
 }
 
 export async function outcome(source: Source, query: string, signal: AbortSignal,
-  operation: () => Promise<{ candidates: Candidate[]; partial?: boolean; notes?: string[]; effectiveQuery?: string; pagination?: SearchPagination }>): Promise<SourceResult> {
+  operation: () => Promise<{ candidates: Candidate[]; partial?: boolean; notes?: string[]; effectiveQuery?: string; pagination?: SearchPagination; endpoint?: string; catalogRevision?: string }>, endpoint?: () => string | undefined): Promise<SourceResult> {
   const start = performance.now();
   try {
     if (signal.aborted) throw new SourceError('timeout', 'Request budget exhausted before this source could start');
     const result = await abortable(operation(), signal);
-    return { source, query, effectiveQuery: result.effectiveQuery, status: result.partial ? 'partial' : result.candidates.length ? 'ok' : 'empty', candidates: result.candidates, notes: result.notes ?? [], pagination: result.pagination, elapsedMs: Math.round(performance.now() - start) };
+    return { source, query, effectiveQuery: result.effectiveQuery, endpoint: result.endpoint, catalogRevision: result.catalogRevision, status: result.partial ? 'partial' : result.candidates.length ? 'ok' : 'empty', candidates: result.candidates, notes: result.notes ?? [], pagination: result.pagination, elapsedMs: Math.round(performance.now() - start) };
   } catch (error) {
     const e = error instanceof SourceError ? error : new SourceError('unavailable', 'Source did not complete');
-    return { source, query, status: e.code === 'rate_limited' ? 'rate_limited' : e.code === 'timeout' ? 'timeout' : 'unavailable', candidates: [], elapsedMs: Math.round(performance.now() - start), error: { code: e.code, message: e.message, status: e.status, retryAfterMs: e.retryAfterMs }, notes: [] };
+    return { source, query, status: e.code === 'rate_limited' ? 'rate_limited' : e.code === 'timeout' ? 'timeout' : 'unavailable', candidates: [], elapsedMs: Math.round(performance.now() - start), error: { code: e.code, message: e.message, status: e.status, retryAfterMs: e.retryAfterMs, endpoint: e.endpoint ?? endpoint?.() }, notes: [] };
   }
 }
 
@@ -87,28 +89,37 @@ export function searchGitHub(http: Http, query: string, signal: AbortSignal, pag
   });
 }
 
-export function searchGitLab(http: Http, query: string, signal: AbortSignal, page = 1): Promise<SourceResult> {
+export function searchGitLab(http: Http, query: string, signal: AbortSignal, page = 1, continuation?: string): Promise<SourceResult> {
+  let endpoint: string | undefined;
   return outcome('gitlab', query, signal, async () => {
     const exact = gitlabRepo(query);
-    const url = new URL('https://gitlab.com/api/v4/projects');
+    const url = continuation ? gitlabPageUrl(continuation, query) : new URL('https://gitlab.com/api/v4/projects');
+    if (!exact && page > 1 && !continuation) throw new SourceError('invalid_continuation', 'GitLab keyset continuation is missing');
     if (exact) url.pathname += `/${encodeURIComponent(exact)}`;
-    else {
+    else if (!continuation) {
       url.searchParams.set('search', query);
       url.searchParams.set('visibility', 'public');
       url.searchParams.set('per_page', '6');
-      url.searchParams.set('page', String(page));
+      url.searchParams.set('pagination', 'keyset');
       url.searchParams.set('order_by', 'id');
       url.searchParams.set('sort', 'asc');
     }
-    const data = await http.json(url.href, signal);
+    endpoint = url.href;
+    const response = await http.jsonResponse(url.href, signal);
+    const data = response.data;
     const projects = exact ? data.visibility === 'public' ? [data] : [] : data;
     if (!Array.isArray(projects) || projects.some(p => typeof p.path_with_namespace !== 'string' || !gitlabRepo(p.web_url))) throw new SourceError('invalid_response', 'Invalid GitLab project search response');
-    return { effectiveQuery: query, pagination: exact ? { ...pageProgress(1, 1, projects.length), hasMore: false, stopReason: 'lookup' } : pageProgress(page, 6, projects.length), candidates: projects.map((p: any): Candidate => ({
+    const next: ReturnType<typeof gitlabNext> = exact ? {} : gitlabNext(response.headers.get('link'), url, query);
+    const pagination: SearchPagination = exact ? { ...pageProgress(1, 1, projects.length), mode: 'lookup', hasMore: false, stopReason: 'lookup' } : {
+      ...pageProgress(page, 6, projects.length), mode: 'keyset', next: next.next,
+      hasMore: Boolean(next.next || next.stop), stopReason: next.stop ?? (next.next ? 'page_limit' : 'exhausted'),
+    };
+    return { effectiveQuery: query, endpoint: response.url, partial: Boolean(next.stop), pagination, candidates: projects.map((p: any): Candidate => ({
       id: `gitlab:${p.path_with_namespace}`, source: 'gitlab', name: p.path_with_namespace,
       url: p.web_url, repository: p.web_url, description: p.description ?? '',
       stars: p.star_count, archived: p.archived, updatedAt: p.last_activity_at, matchedQueries: [query],
-    })), notes: [exact ? 'Exact public gitlab.com project lookup; non-public project metadata is excluded.' : 'Public gitlab.com project name/path/description substring search; ascending project ID for stable paging, not relevance order, global code search or self-hosted GitLab coverage.'] };
-  });
+    })), notes: [exact ? 'Exact public gitlab.com project lookup; non-public project metadata is excluded.' : 'Public gitlab.com project name/path/description substring search; bounded keyset traversal of checked official next Links, ascending project ID rather than relevance order. Not global code search or self-hosted GitLab coverage.', ...(next.note ? [next.note] : [])] };
+  }, () => endpoint);
 }
 
 export function repoSignals(repo: any, now = Date.now()): string[] {
@@ -185,13 +196,25 @@ export function mergeCandidates(candidates: Candidate[], queries: string[]): Can
   const score = (c: Candidate) => (c.source === 'local' ? 1000 : 0)
     + tokens.filter(t => `${c.name} ${c.description}`.toLowerCase().includes(t)).length * 10
     + (c.matchedQueries?.length ?? 0) - (c.archived ? 20 : 0);
-  const sorted = [...merged.values()].sort((a, b) => score(b) - score(a));
+  const identity = (c: Candidate) => repositoryKey(c.repository) ?? c.id;
+  const sorted = [...merged.values()].sort((a, b) => score(b) - score(a) || (identity(a) < identity(b) ? -1 : identity(a) > identity(b) ? 1 : 0));
   const local = sorted.filter(c => c.source === 'local').slice(0, 8);
   const remote = sorted.filter(c => c.source !== 'local');
-  const representatives = new Set<Candidate>();
-  for (const source of new Set(remote.flatMap(c => c.sources ?? [c.source]))) {
-    const best = remote.find(c => (c.sources ?? [c.source]).includes(source));
-    if (best) representatives.add(best);
+  const selected = new Set<Candidate>();
+  const credits = new Map(REMOTE_SOURCES.map(source => [source, 0]));
+  while (selected.size < 30 - local.length) {
+    // A shared repository can satisfy several sources. Credit every source
+    // that returned it before allocating another slot to an overfull source.
+    let next: Candidate | undefined;
+    let minimum = Infinity;
+    for (const source of REMOTE_SOURCES) {
+      const candidate = remote.find(c => !selected.has(c) && (c.sources ?? [c.source]).includes(source));
+      const count = credits.get(source)!;
+      if (candidate && count < minimum) { next = candidate; minimum = count; }
+    }
+    if (!next) break;
+    selected.add(next);
+    for (const source of REMOTE_SOURCES) if ((next.sources ?? [next.source]).includes(source)) credits.set(source, credits.get(source)! + 1);
   }
-  return [...local, ...[...new Set([...representatives, ...remote])].slice(0, 30 - local.length)];
+  return [...local, ...selected];
 }

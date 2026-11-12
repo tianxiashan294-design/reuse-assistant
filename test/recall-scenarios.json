@@ -1,0 +1,10 @@
+{
+  "crossLanguage": { "query": "定时任务", "english": "background scheduler", "target": "scheduler-target" },
+  "dedup": {
+    "queries": ["定时任务", "scheduler"],
+    "queryVariants": [{"query":" 定时任务 ","variants":["scheduler"," background scheduler "]},{"query":"scheduler","variants":["background scheduler"]}],
+    "executed": ["定时任务", "scheduler", "background scheduler"]
+  },
+  "fairness": {"query":"fairness highsignal","githubCount":18,"npmCount":18,"rubygemsCount":30,"localCount":12},
+  "outage": {"source":"github","status":503}
+}

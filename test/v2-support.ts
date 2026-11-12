@@ -1,4 +1,7 @@
 import { fakeFetch, json, SHA } from './support.js';
+import { ecosystemsResponse } from './ecosystems-support.js';
+import { conanCatalogResponse } from './conan-catalog-support.js';
+import { vcpkgCatalogResponse } from './vcpkg-catalog-support.js';
 
 export const GL = 'group/subgroup/scheduler';
 export function v2Response(url: URL): Response {
@@ -45,6 +48,8 @@ export function v2Response(url: URL): Response {
       'dev-main': { name: 'example/scheduler', version: 'dev-main' },
     } } });
   }
+  const added = ecosystemsResponse(url) ?? conanCatalogResponse(url) ?? vcpkgCatalogResponse(url);
+  if (added) return added;
   throw new Error(`Unexpected fixture URL ${url.href}`);
 }
 export const v2Fetch = () => fakeFetch(v2Response);
